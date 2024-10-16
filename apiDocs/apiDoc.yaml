@@ -1,0 +1,90 @@
+openapi: 3.0.0
+info:
+  title: UrbanFlow API
+  description: _Docs_ ufficiali per le API utilizzati nel progetto UrbanFlow.
+  version: 0.1.9
+
+servers:
+  - url: http://api.example.com/v1
+    description: Optional server description, e.g. Main (production) server
+  - url: http://staging-api.example.com
+    description: Optional server description, e.g. Internal staging server for testing
+
+paths:
+  /users:
+    get:
+      summary: Restituisce la lista degli utenti.
+      description: Restituisce la lista degli utenti presenti sulla piattaforma
+      responses:
+        "200": # success
+          description: Risorsa JSON contenente lista degli utenti.
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  type: object
+        "401": #unautorized
+          description: Accesso non autorizzato alla risorsa.
+          content:
+            application/json:
+              schema:
+                type: object            
+    post:
+      summary: Crea un nuovo utente.
+      description: Aggiunge un nuovo utente al _database_
+      responses:
+        "204": # no-content
+          description: Utente creato
+          
+  /events:
+    get:
+      summary: Restituisce la lista degli eventi
+      parameters:
+        - in: query
+          name: startDate
+          schema:
+            type: string
+          required: false
+      responses:
+        200: #success
+          description: Risorsa JSON contenente lista di eventi.
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  type: object
+
+        400: # bad request
+          description: Richiesta non corretta
+          content: 
+            application/json:
+              schema:
+                type: object
+        401
+      
+      
+        
+
+components:
+  schemas:
+    User:
+     type: object
+     properties:
+      Nome: 
+        type: string
+        description: Nome dell'utente.
+      Cognome:
+        type: string
+        description: Cognome dell'utente.
+      Email:
+        type: string
+        description: Email istituzionale dell'utente.
+      Ruolo:
+        type: string
+        enum:
+          - amministratore
+          - base
+        description: Ruolo dell'utente nella piattaforma.
+        
