@@ -2,7 +2,7 @@ openapi: 3.0.0
 info:
   title: UrbanFlow API
   description: _Docs_ ufficiali per le API utilizzati nel progetto UrbanFlow.
-  version: 0.1.9
+  version: 0.0.1
 
 servers:
   - url: http://api.example.com/v1
@@ -10,13 +10,14 @@ servers:
   - url: http://staging-api.example.com
     description: Optional server description, e.g. Internal staging server for testing
 
+# per i JWT come facciamo?
 paths:
   /users:
     get:
       summary: Restituisce la lista degli utenti.
       description: Restituisce la lista degli utenti presenti sulla piattaforma
       responses:
-        "200": # success
+        200: # success
           description: Risorsa JSON contenente lista degli utenti.
           content:
             application/json:
@@ -24,18 +25,64 @@ paths:
                 type: array
                 items:
                   type: object
-        "401": #unautorized
-          description: Accesso non autorizzato alla risorsa.
-          content:
-            application/json:
-              schema:
-                type: object            
+                  properties:
+                    name:
+                      type: string
+                      example: Mario
+                    surname:
+                      type: string
+                      example: Rossi
+                    email:
+                      type: string
+                      format: email
+                      example: mario.rossi@email.com
+                    role:
+                      type: string
+                      enum:
+                        - base
+                        - admin
+                      example: admin
+        400: #bad request
+          description: Richeista mal formata.
+        401: #unautorized
+          description: Accesso non autorizzato alla risorsa.      
     post:
       summary: Crea un nuovo utente.
-      description: Aggiunge un nuovo utente al _database_
+      description: Aggiunge un nuovo utente al database
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                name:
+                  type: string
+                  example: Mario
+                surname:
+                  type: string
+                  example: Rossi
+                email:
+                  type: string
+                  format: email
+                  example: mario.rossi@email.com
+                role:
+                  type: string
+                  enum:
+                    - base
+                    - admin
+              required:
+                - name
+                - surname
+                - email
+                - role
       responses:
-        "204": # no-content
+        204: # no-content
           description: Utente creato
+        400: # bad request
+          description: Richiesta mal formata
+        401: # unauthorized
+          description: Accesso non autorizzato alla risorsa. 
           
   /events:
     get:
@@ -45,46 +92,153 @@ paths:
           name: startDate
           schema:
             type: string
+            format: local_date
+            example: '2024-08-17T14:07:30'
           required: false
+        - in: query
+          name: endDate
+          schema:
+            type: string
+            format: local_date
+            example: '2024-08-17T14:07:30'
+          required: false
+
       responses:
         200: #success
           description: Risorsa JSON contenente lista di eventi.
           content:
             application/json:
               schema:
-                type: array
-                items:
-                  type: object
-
-        400: # bad request
-          description: Richiesta non corretta
-          content: 
-            application/json:
-              schema:
                 type: object
-        401
+                properties:
+                  title:
+                    type: string
+                    example: Festival dell'economia
+                  startDate:
+                    type: string
+                    format: date
+                    example: '2024-08-17T14:07:30'
+                  endDate:
+                    type: string
+                    format: date
+                    example: '2024-08-20T14:07:30'
+                  coordinates:
+                    type: object
+                    properties:
+                      lat:
+                        type: number
+                        example: 46.06652452690293
+                      lon: 
+                        type: number
+                        example: 11.122683615718385
+                  zones:
+                    type: array
+                    items:
+                      type: number
+                      example: 43
+                    description: Contiene gli id delle zone coinvolte nell'evento
+                        
+        400: # bad request
+          description: Richiesta mal formata.
+                
+        401: #unauthorized
+          description: Accesso non autorizzato alla risorsa. 
+    post:
+      summary: Crea un evento 
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                title:
+                  type: string
+                  example: Festival dell'economia
+                startDate:
+                  type: string
+                  format: local_date
+                  example: '2024-08-17T14:07:30'
+                endDate:
+                  type: string
+                  format: local_date
+                  example: '2024-08-20T14:07:30'
+                coordinates:
+                    type: object
+                    properties:
+                      lat:
+                        type: number
+                        example: 46.06652452690293
+                      lon: 
+                        type: number
+                        example: 11.122683615718385
+                zones:
+                  type: array
+                  items:
+                    type: number
+                    example: 43
+                  description: Array di interi, sono gli identificativi delle zone in cui l'evento ha luogo.
+           
+              required:
+                - name
+                - startDate
+                - endDate
+                - coordinates
+                - zones
+      responses:
+        204: #no content
+          description: Evento inserito
+        400: #bad request
+          description: Richiesta mal formata
+        401: #unauthorized
+          description: Accesso non autorizzato alla risorsa. 
       
       
         
 
 components:
   schemas:
-    User:
+    user:
      type: object
      properties:
-      Nome: 
+      name: 
         type: string
         description: Nome dell'utente.
-      Cognome:
+      surname:
         type: string
         description: Cognome dell'utente.
-      Email:
+      email:
         type: string
         description: Email istituzionale dell'utente.
-      Ruolo:
+      role:
         type: string
         enum:
           - amministratore
           - base
         description: Ruolo dell'utente nella piattaforma.
-        
+    event:
+     type: object
+     properties:
+      title:
+        type: string
+        description: Titolo dell'evento registrato.
+      startDate:
+        type: string
+        description: Data di inizio dell'evento (oggetto data convertito in stringa).
+      endDate:
+        type: string
+        description: Data di fine dell'evento (oggetto data convertito in stringa).
+      coordinates:
+        type: object
+        properties:
+          lat:
+            type: number
+            description: Latitudine dell'evento (punto centrale).
+          lon:
+            type: number
+            description: Longitudine dell'evento (punto centrale).
+      zones:
+        type: array
+        description: Array di interi, sono gli identificativi delle zone in cui l'evento ha luogo.
+        items:
+          type: integer             
