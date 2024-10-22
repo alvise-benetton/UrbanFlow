@@ -83,7 +83,9 @@ paths:
           description: Richiesta mal formata
         401: # unauthorized
           description: Accesso non autorizzato alla risorsa. 
-          
+         
+  #/users/{id}: TODO
+
   /events:
     get:
       summary: Restituisce la lista degli eventi
@@ -192,9 +194,126 @@ paths:
           description: Richiesta mal formata
         401: #unauthorized
           description: Accesso non autorizzato alla risorsa. 
-      
-      
-        
+
+    #put TODO
+    #delete TODO
+  #/events/{id} TODO
+  /zones:
+    get:
+      summary: Restituisce la lista delle zone
+      description: Ottiene un elenco di tutte le zone disponibili.
+      responses:
+        '200':
+          description:  Risorsa JSON contenente lista di zone.
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  type: object
+                  properties:
+                    id:
+                      type: string
+                      description: ID della zona.
+                    name:
+                      type: string
+                      description: Nome della zona.
+                    description:
+                      type: string
+                      description: Descrizione della zona.
+                    coordinates:
+                      type: object
+                      properties:
+                        lat:
+                          type: number
+                          example: 46.06652452690293
+                        lon: 
+                          type: number
+                          example: 11.122683615718385
+                      description: Coordinate della zona.
+                    
+                    latestData:
+                      type: object
+                      properties:
+                        density:
+                          type: number
+                          description: Densità ultima misurazione
+                          example: 8
+                        date:
+                          type: string
+                          format: date
+                          description: Data ultima misurazione
+                          example: "2024-08-17T14:07:30"      
+        '400': #bad request
+          description: Richiesta mal formata
+        '401': #unauthorized
+          description: Accesso non autorizzato alla risorsa.
+        '500': # internal server error
+          description: Errore del server.
+    #post TODO
+    #put TODO
+    #delete TODO
+
+
+  /zones/{id}:
+    get:
+      summary: Restituisce le informazioni di una zona specifica
+      description: Ottiene i dettagli di una singola zona dato il suo ID.
+      parameters:
+        - name: id
+          in: path
+          required: true
+          description: ID della zona da cercare.
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Informazioni della zona restituite con successo.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  id:
+                    type: string
+                    description: ID della zona.
+                  name:
+                    type: string
+                    description: Nome della zona.
+                  description:
+                    type: string
+                    description: Descrizione della zona.
+                  coordinates:
+                      type: object
+                      properties:
+                        lat:
+                          type: number
+                          example: 46.06652452690293
+                        lon: 
+                          type: number
+                          example: 11.122683615718385
+                      description: Coordinate della zona.
+                  latestData:
+                    type: object
+                    properties:
+                      density:
+                        type: number
+                        description: Densità ultima misurazione
+                        example: 8
+                      date:
+                        type: string
+                        format: date
+                        description: Data ultima misurazione
+                        example: "2024-08-17T14:07:30"
+        '400': #bad request
+          description: Richiesta mal formata
+        '401': #unauthorized
+          description: Accesso non autorizzato alla risorsa.
+        '404': # not found
+          description: Zona non trovata.
+
+    
+
 
 components:
   schemas:
@@ -213,7 +332,7 @@ components:
       role:
         type: string
         enum:
-          - amministratore
+          - admin
           - base
         description: Ruolo dell'utente nella piattaforma.
     event:
