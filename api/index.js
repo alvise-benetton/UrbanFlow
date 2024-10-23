@@ -1,33 +1,29 @@
 // Importa Express
 const express = require('express');
 const app = express();
-
-// Imposta una porta
 const PORT = 3000;
 
-// Middleware per il parsing dei JSON
+// importo rotte
+const userRoutes = require('./routers/user.route');
+
+// Definisco il body in JSON (middleware)
 app.use(express.json());
+
+app.use((req,res,next)=>{
+  console.log(req.method, req.url,Date(Date.now()));
+  next();
+})
 
 // Una semplice route GET
 app.get('/', (req, res) => {
-  res.send('Benvenuto nella mia API!');
+  res.send('Hello World');
 });
 
-// Una semplice route GET per dati di esempio
-app.get('/api/users', (req, res) => {
-  const users = [
-    { id: 1, name: 'Mario Rossi' },
-    { id: 2, name: 'Luigi Verdi' }
-  ];
-  res.json(users);
-});
-
-// Una route POST per creare nuovi utenti
-app.post('/api/users', (req, res) => {
-  const newUser = req.body;
-  // Qui puoi aggiungere logica per salvare l'utente nel database
-  res.status(201).json(newUser);
-});
+// rotte utenti
+app.use('/api/users', userRoutes);
+//app.use('/api/events',eventRoutes);
+//app.use('/api/zones',zoneRoutes);
+//app.use('/api/auth',authRoutes);
 
 // Avvio del server
 app.listen(PORT, () => {
