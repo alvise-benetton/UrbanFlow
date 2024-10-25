@@ -45,7 +45,7 @@ paths:
         400: #bad request
           description: Richeista mal formata.
         401: #unautorized
-          description: Accesso non autorizzato alla risorsa.      
+          description: Accesso non autorizzato alla risorsa.
     post:
       summary: Crea un nuovo utente.
       description: Aggiunge un nuovo utente al database
@@ -82,8 +82,8 @@ paths:
         400: # bad request
           description: Richiesta mal formata
         401: # unauthorized
-          description: Accesso non autorizzato alla risorsa. 
-         
+          description: Accesso non autorizzato alla risorsa.
+
   #/users/{id}: TODO
 
   /events:
@@ -95,14 +95,14 @@ paths:
           schema:
             type: string
             format: local_date
-            example: '2024-08-17T14:07:30'
+            example: "2024-08-17T14:07:30"
           required: false
         - in: query
           name: endDate
           schema:
             type: string
             format: local_date
-            example: '2024-08-17T14:07:30'
+            example: "2024-08-17T14:07:30"
           required: false
 
       responses:
@@ -119,18 +119,18 @@ paths:
                   startDate:
                     type: string
                     format: date
-                    example: '2024-08-17T14:07:30'
+                    example: "2024-08-17T14:07:30"
                   endDate:
                     type: string
                     format: date
-                    example: '2024-08-20T14:07:30'
+                    example: "2024-08-20T14:07:30"
                   coordinates:
                     type: object
                     properties:
                       lat:
                         type: number
                         example: 46.06652452690293
-                      lon: 
+                      lon:
                         type: number
                         example: 11.122683615718385
                   zones:
@@ -139,14 +139,14 @@ paths:
                       type: number
                       example: 43
                     description: Contiene gli id delle zone coinvolte nell'evento
-                        
+
         400: # bad request
           description: Richiesta mal formata.
-                
+
         401: #unauthorized
-          description: Accesso non autorizzato alla risorsa. 
+          description: Accesso non autorizzato alla risorsa.
     post:
-      summary: Crea un evento 
+      summary: Crea un evento.
       requestBody:
         required: true
         content:
@@ -160,27 +160,27 @@ paths:
                 startDate:
                   type: string
                   format: local_date
-                  example: '2024-08-17T14:07:30'
+                  example: "2024-08-17T14:07:30"
                 endDate:
                   type: string
                   format: local_date
-                  example: '2024-08-20T14:07:30'
+                  example: "2024-08-20T14:07:30"
                 coordinates:
-                    type: object
-                    properties:
-                      lat:
-                        type: number
-                        example: 46.06652452690293
-                      lon: 
-                        type: number
-                        example: 11.122683615718385
+                  type: object
+                  properties:
+                    lat:
+                      type: number
+                      example: 46.06652452690293
+                    lon:
+                      type: number
+                      example: 11.122683615718385
                 zones:
                   type: array
                   items:
                     type: number
                     example: 43
                   description: Array di interi, sono gli identificativi delle zone in cui l'evento ha luogo.
-           
+
               required:
                 - name
                 - startDate
@@ -193,7 +193,7 @@ paths:
         400: #bad request
           description: Richiesta mal formata
         401: #unauthorized
-          description: Accesso non autorizzato alla risorsa. 
+          description: Accesso non autorizzato alla risorsa.
 
     #put TODO
     #delete TODO
@@ -203,8 +203,8 @@ paths:
       summary: Restituisce la lista delle zone
       description: Ottiene un elenco di tutte le zone disponibili.
       responses:
-        '200':
-          description:  Risorsa JSON contenente lista di zone.
+        "200":
+          description: Risorsa JSON contenente lista di zone.
           content:
             application/json:
               schema:
@@ -227,11 +227,11 @@ paths:
                         lat:
                           type: number
                           example: 46.06652452690293
-                        lon: 
+                        lon:
                           type: number
                           example: 11.122683615718385
                       description: Coordinate della zona.
-                    
+
                     latestData:
                       type: object
                       properties:
@@ -243,17 +243,16 @@ paths:
                           type: string
                           format: date
                           description: Data ultima misurazione
-                          example: "2024-08-17T14:07:30"      
-        '400': #bad request
+                          example: "2024-08-17T14:07:30"
+        "400": #bad request
           description: Richiesta mal formata
-        '401': #unauthorized
+        "401": #unauthorized
           description: Accesso non autorizzato alla risorsa.
-        '500': # internal server error
+        "500": # internal server error
           description: Errore del server.
     #post TODO
     #put TODO
     #delete TODO
-
 
   /zones/{id}:
     get:
@@ -267,7 +266,7 @@ paths:
           schema:
             type: string
       responses:
-        '200':
+        "200":
           description: Informazioni della zona restituite con successo.
           content:
             application/json:
@@ -284,15 +283,15 @@ paths:
                     type: string
                     description: Descrizione della zona.
                   coordinates:
-                      type: object
-                      properties:
-                        lat:
-                          type: number
-                          example: 46.06652452690293
-                        lon: 
-                          type: number
-                          example: 11.122683615718385
-                      description: Coordinate della zona.
+                    type: object
+                    properties:
+                      lat:
+                        type: number
+                        example: 46.06652452690293
+                      lon:
+                        type: number
+                        example: 11.122683615718385
+                    description: Coordinate della zona.
                   latestData:
                     type: object
                     properties:
@@ -305,59 +304,100 @@ paths:
                         format: date
                         description: Data ultima misurazione
                         example: "2024-08-17T14:07:30"
-        '400': #bad request
+        "400": #bad request
           description: Richiesta mal formata
-        '401': #unauthorized
+        "401": #unauthorized
           description: Accesso non autorizzato alla risorsa.
-        '404': # not found
+        "404": # not found
           description: Zona non trovata.
-
-    
-
 
 components:
   schemas:
     user:
-     type: object
-     properties:
-      name: 
-        type: string
-        description: Nome dell'utente.
-      surname:
-        type: string
-        description: Cognome dell'utente.
-      email:
-        type: string
-        description: Email istituzionale dell'utente.
-      role:
-        type: string
-        enum:
-          - admin
-          - base
-        description: Ruolo dell'utente nella piattaforma.
+      type: object
+      required:
+        - name
+        - surname
+        - email
+        - role
+      properties:
+        name:
+          type: string
+          description: Nome dell'utente.
+        surname:
+          type: string
+          description: Cognome dell'utente.
+        email:
+          type: string
+          description: Email istituzionale dell'utente.
+        role:
+          type: string
+          enum:
+            - admin
+            - base
+          description: Ruolo dell'utente nella piattaforma.
     event:
-     type: object
-     properties:
-      title:
-        type: string
-        description: Titolo dell'evento registrato.
-      startDate:
-        type: string
-        description: Data di inizio dell'evento (oggetto data convertito in stringa).
-      endDate:
-        type: string
-        description: Data di fine dell'evento (oggetto data convertito in stringa).
-      coordinates:
-        type: object
-        properties:
-          lat:
-            type: number
-            description: Latitudine dell'evento (punto centrale).
-          lon:
-            type: number
-            description: Longitudine dell'evento (punto centrale).
-      zones:
-        type: array
-        description: Array di interi, sono gli identificativi delle zone in cui l'evento ha luogo.
-        items:
-          type: integer             
+      type: object
+      required:
+        - title
+        - startDate
+        - endDate
+        - coordinates
+      properties:
+        title:
+          type: string
+          description: Titolo dell'evento registrato.
+        startDate:
+          type: string
+          format: date-time
+          description: Data di inizio dell'evento (oggetto data convertito in stringa).
+        endDate:
+          type: string
+          format: date-time
+          description: Data di fine dell'evento (oggetto data convertito in stringa).
+        coordinates:
+          type: object
+          properties:
+            lat:
+              type: number
+              description: Latitudine dell'evento (punto centrale).
+            lon:
+              type: number
+              description: Longitudine dell'evento (punto centrale).
+        zones:
+          type: array
+          description: Array di interi, sono gli id delle zone in cui l'evento ha luogo.
+          items:
+            type: integer
+    zone:
+      type: object
+      required:
+        - id
+        - name
+        - coordinates
+      properties:
+        id:
+          type: string
+          description: Identificativo della zona.
+        name:
+          type: string
+          description: Nome della zona.
+        coordinates:
+          type: array
+          description: Array di coppie latitudine-longitudine per identificare i vertici del poligono rappresentante una zona.
+          items:
+            type: array
+            items:
+              type: number
+            minItems: 2
+            maxItems: 2
+        latestData:
+          type: object
+          properties:
+            density:
+              type: number
+              description: Densità registrata nella zona.
+            date:
+              type: string
+              format: date-time
+              description: Data dell'ultima rilevazione.
