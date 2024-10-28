@@ -1,7 +1,26 @@
+# Cosa bisogna fare?
+# -- FATTO get /users
+# -- FATTO post
+# -- FATTO get /users/{id}
+# put
+# delete
+# -- FATTO get /events
+# post
+# -- FATTO get /events/{id}
+# put
+# delete
+# -- FATTO get /zone
+# -- FATTO get /zones/{id}
+# get /cameras
+# get /cameras/{id}
+
+# Per le resources usare lo schema definito sotto (con $ref:, vedi linea 45 per esempio)
+# I dati di esempio son da definire nella parte components
+
 openapi: 3.0.0
 info:
   title: UrbanFlow API
-  description: _Docs_ ufficiali per le API utilizzati nel progetto UrbanFlow.
+  description: Docs ufficiali per le API utilizzati nel progetto UrbanFlow.
   version: 0.0.1
 
 servers:
@@ -10,7 +29,7 @@ servers:
   - url: http://staging-api.example.com
     description: Optional server description, e.g. Internal staging server for testing
 
-# per i JWT come facciamo?
+# per i JWT come facciamo? ALV: Boh non so cosa siano
 paths:
   /users:
     get:
@@ -24,28 +43,11 @@ paths:
               schema:
                 type: array
                 items:
-                  type: object
-                  properties:
-                    name:
-                      type: string
-                      example: Mario
-                    surname:
-                      type: string
-                      example: Rossi
-                    email:
-                      type: string
-                      format: email
-                      example: mario.rossi@email.com
-                    role:
-                      type: string
-                      enum:
-                        - base
-                        - admin
-                      example: admin
+                  $ref: "#/components/schemas/user"
         400: #bad request
-          description: Richeista mal formata.
+          description: Richiesta mal formata.
         401: #unautorized
-          description: Accesso non autorizzato alla risorsa.
+          description: Accesso non autorizzato alla risorsa..
     post:
       summary: Crea un nuovo utente.
       description: Aggiunge un nuovo utente al database
@@ -54,41 +56,17 @@ paths:
         content:
           application/json:
             schema:
-              type: object
-              properties:
-                name:
-                  type: string
-                  example: Mario
-                surname:
-                  type: string
-                  example: Rossi
-                email:
-                  type: string
-                  format: email
-                  example: mario.rossi@email.com
-                role:
-                  type: string
-                  enum:
-                    - base
-                    - admin
-              required:
-                - name
-                - surname
-                - email
-                - role
+              $ref: "#/components/schemas/user"
       responses:
         204: # no-content
           description: Utente creato
         400: # bad request
-          description: Richiesta mal formata
+          description: Richiesta mal formata.
         401: # unauthorized
-          description: Accesso non autorizzato alla risorsa.
-
-  #/users/{id}: TODO
-
+          description: Accesso non autorizzato alla risorsa..
   /events:
     get:
-      summary: Restituisce la lista degli eventi
+      summary: Restituisce la lista degli eventi.
       parameters:
         - in: query
           name: startDate
@@ -104,47 +82,19 @@ paths:
             format: local_date
             example: "2024-08-17T14:07:30"
           required: false
-
       responses:
         200: #success
           description: Risorsa JSON contenente lista di eventi.
           content:
             application/json:
               schema:
-                type: object
-                properties:
-                  title:
-                    type: string
-                    example: Festival dell'economia
-                  startDate:
-                    type: string
-                    format: date
-                    example: "2024-08-17T14:07:30"
-                  endDate:
-                    type: string
-                    format: date
-                    example: "2024-08-20T14:07:30"
-                  coordinates:
-                    type: object
-                    properties:
-                      lat:
-                        type: number
-                        example: 46.06652452690293
-                      lon:
-                        type: number
-                        example: 11.122683615718385
-                  zones:
-                    type: array
-                    items:
-                      type: number
-                      example: 43
-                    description: Contiene gli id delle zone coinvolte nell'evento
-
+                type: array
+                items:
+                  $ref: "#/components/schemas/zone"
         400: # bad request
           description: Richiesta mal formata.
-
         401: #unauthorized
-          description: Accesso non autorizzato alla risorsa.
+          description: Accesso non autorizzato alla risorsa..
     post:
       summary: Crea un evento.
       requestBody:
@@ -152,55 +102,41 @@ paths:
         content:
           application/json:
             schema:
-              type: object
-              properties:
-                title:
-                  type: string
-                  example: Festival dell'economia
-                startDate:
-                  type: string
-                  format: local_date
-                  example: "2024-08-17T14:07:30"
-                endDate:
-                  type: string
-                  format: local_date
-                  example: "2024-08-20T14:07:30"
-                coordinates:
-                  type: object
-                  properties:
-                    lat:
-                      type: number
-                      example: 46.06652452690293
-                    lon:
-                      type: number
-                      example: 11.122683615718385
-                zones:
-                  type: array
-                  items:
-                    type: number
-                    example: 43
-                  description: Array di interi, sono gli identificativi delle zone in cui l'evento ha luogo.
-
-              required:
-                - name
-                - startDate
-                - endDate
-                - coordinates
-                - zones
+              $ref: "#/components/schemas/event"
       responses:
         204: #no content
-          description: Evento inserito
+          description: Evento inserito.
         400: #bad request
-          description: Richiesta mal formata
+          description: Richiesta mal formata.
         401: #unauthorized
-          description: Accesso non autorizzato alla risorsa.
-
-    #put TODO
-    #delete TODO
-  #/events/{id} TODO
+          description: Accesso non autorizzato alla risorsa..
+  /events/{id}:
+    get:
+      summary: Restituisce le informazioni di un evento specifico.
+      description: Ottiene i dettagli di un singolo evento dato il suo ID.
+      parameters:
+        - name: id
+          in: path
+          required: true
+          description: ID dell'evento da cercare.
+          schema:
+            type: string
+      responses:
+        "200":
+          description: Informazioni dell'evento restituite con successo.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/event"
+        "400": #bad request
+          description: Richiesta mal formata.
+        "401": #unauthorized
+          description: Accesso non autorizzato alla risorsa..
+        "404": # not found
+          description: Evento non trovato.
   /zones:
     get:
-      summary: Restituisce la lista delle zone
+      summary: Restituisce la lista delle zone.
       description: Ottiene un elenco di tutte le zone disponibili.
       responses:
         "200":
@@ -208,52 +144,13 @@ paths:
           content:
             application/json:
               schema:
-                type: array
-                items:
-                  type: object
-                  properties:
-                    id:
-                      type: string
-                      description: ID della zona.
-                    name:
-                      type: string
-                      description: Nome della zona.
-                    description:
-                      type: string
-                      description: Descrizione della zona.
-                    coordinates:
-                      type: object
-                      properties:
-                        lat:
-                          type: number
-                          example: 46.06652452690293
-                        lon:
-                          type: number
-                          example: 11.122683615718385
-                      description: Coordinate della zona.
-
-                    latestData:
-                      type: object
-                      properties:
-                        density:
-                          type: number
-                          description: Densità ultima misurazione
-                          example: 8
-                        date:
-                          type: string
-                          format: date
-                          description: Data ultima misurazione
-                          example: "2024-08-17T14:07:30"
+                $ref: "#/components/schemas/zone"
         "400": #bad request
-          description: Richiesta mal formata
+          description: Richiesta mal formata.
         "401": #unauthorized
-          description: Accesso non autorizzato alla risorsa.
+          description: Accesso non autorizzato alla risorsa..
         "500": # internal server error
           description: Errore del server.
-    #post TODO
-    #put TODO
-    #delete TODO
-
   /zones/{id}:
     get:
       summary: Restituisce le informazioni di una zona specifica
@@ -271,82 +168,64 @@ paths:
           content:
             application/json:
               schema:
-                type: object
-                properties:
-                  id:
-                    type: string
-                    description: ID della zona.
-                  name:
-                    type: string
-                    description: Nome della zona.
-                  description:
-                    type: string
-                    description: Descrizione della zona.
-                  coordinates:
-                    type: object
-                    properties:
-                      lat:
-                        type: number
-                        example: 46.06652452690293
-                      lon:
-                        type: number
-                        example: 11.122683615718385
-                    description: Coordinate della zona.
-                  latestData:
-                    type: object
-                    properties:
-                      density:
-                        type: number
-                        description: Densità ultima misurazione
-                        example: 8
-                      date:
-                        type: string
-                        format: date
-                        description: Data ultima misurazione
-                        example: "2024-08-17T14:07:30"
+                $ref: "#/components/schemas/zone"
         "400": #bad request
-          description: Richiesta mal formata
+          description: Richiesta mal formata.
         "401": #unauthorized
-          description: Accesso non autorizzato alla risorsa.
+          description: Accesso non autorizzato alla risorsa..
         "404": # not found
           description: Zona non trovata.
-
 components:
   schemas:
     user:
       type: object
       required:
+        - id
         - name
         - surname
         - email
         - role
       properties:
+        id:
+          type: integer
+          description: Numero identificativo dell'utente.
+          example: 896544
         name:
           type: string
           description: Nome dell'utente.
+          example: Mario
         surname:
           type: string
           description: Cognome dell'utente.
+          example: Rossi
         email:
           type: string
           description: Email istituzionale dell'utente.
+          example: mario.rossi@domain.it
         role:
           type: string
           enum:
             - admin
             - base
           description: Ruolo dell'utente nella piattaforma.
+          example: admin
     event:
       type: object
       required:
+        - id
         - title
         - startDate
         - endDate
         - coordinates
       properties:
+        id:
+          type: integer
+          description: Codice identificativo evento.
+          example: 10332
         title:
           type: string
           description: Titolo dell'evento registrato.
+          example: "Festival dell'economia"
         startDate:
           type: string
           format: date-time
@@ -361,20 +240,23 @@ components:
             lat:
               type: number
               description: Latitudine dell'evento (punto centrale).
+              example: 46.0672
             lon:
               type: number
               description: Longitudine dell'evento (punto centrale).
+              example: 11.1210
         zones:
           type: array
           description: Array di interi, sono gli id delle zone in cui l'evento ha luogo.
           items:
             type: integer
+          example: [1, 2]
     zone:
       type: object
       required:
         - id
         - name
-        - coordinates
+        - pivots
       properties:
         id:
           type: string
