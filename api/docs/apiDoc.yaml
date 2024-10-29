@@ -2,8 +2,8 @@
 # -- FATTO get /users
 # -- FATTO post
 # -- FATTO get /users/{id}
-# put: update dei dati
-# delete: eliminazione utente
+# -- FATTO put: update dei dati
+# -- FATTO delete: eliminazione utente
 # -- FATTO get /events
 # -- FATTO post
 # -- FATTO get /events/{id}
@@ -143,6 +143,25 @@ paths:
                     type: string
                     description: Dettagli sull'errore riscontrato.
                     example: Gli schemi delle risorse non coincidono.
+        401: # unauthorized
+          description: Accesso non autorizzato alla risorsa.
+        404: # not found
+          description: Utente non trovato.
+    delete:
+      summary: Elimina un utente specifico.
+      description: Rimuove un utente dato il suo ID.
+      parameters:
+        - name: id
+          in: path
+          required: true
+          description: ID dell'utente da eliminare.
+          schema:
+            type: integer
+      responses:
+        204: # No Content
+          description: Utente eliminato con successo.
+        400: # bad request
+          description: Richiesta non valida.
         401: # unauthorized
           description: Accesso non autorizzato alla risorsa.
         404: # not found
