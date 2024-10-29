@@ -1,9 +1,9 @@
 # Cosa bisogna fare?
 # -- FATTO get /users
 # -- FATTO post
-# get /users/{id}
-# put
-# delete
+# -- FATTO get /users/{id}
+# put: update dei dati
+# delete: eliminazione utente
 # -- FATTO get /events
 # -- FATTO post
 # -- FATTO get /events/{id}
@@ -109,6 +109,44 @@ paths:
           description: Accesso non autorizzato alla risorsa.
         404: # not found
           description: Evento non trovato.
+    put:
+      summary: Aggiorna le informazioni di un utente specifico.
+      description: Aggiorna i dettagli dell'utente dato il suo ID.
+      parameters:
+        - name: id
+          in: path
+          required: true
+          description: ID dell'utente da aggiornare.
+          schema:
+            type: integer
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/user"
+      responses:
+        200: # success
+          description: Utente aggiornato con successo.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/user"
+        400: # bad request
+          description: Richiesta non valida.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  error:
+                    type: string
+                    description: Dettagli sull'errore riscontrato.
+                    example: Gli schemi delle risorse non coincidono.
+        401: # unauthorized
+          description: Accesso non autorizzato alla risorsa.
+        404: # not found
+          description: Utente non trovato.
   /events:
     get:
       summary: Restituisce la lista degli eventi.
