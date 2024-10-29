@@ -1,11 +1,11 @@
 # Cosa bisogna fare?
 # -- FATTO get /users
 # -- FATTO post
-# -- FATTO get /users/{id}
+# get /users/{id}
 # put
 # delete
 # -- FATTO get /events
-# post
+# -- FATTO post
 # -- FATTO get /events/{id}
 # put
 # delete
@@ -34,7 +34,17 @@ paths:
   /users:
     get:
       summary: Restituisce la lista degli utenti.
-      description: Restituisce la lista degli utenti presenti sulla piattaforma
+      description: Restituisce la lista degli utenti presenti sulla piattaforma.
+      parameters:
+        - name: role
+          in: query
+          required: false
+          description: Ruolo degli utenti da cercare.
+          schema:
+            type: string
+            enum:
+              - admin
+              - base
       responses:
         200: # success
           description: Risorsa JSON contenente lista degli utenti.
@@ -44,10 +54,10 @@ paths:
                 type: array
                 items:
                   $ref: "#/components/schemas/user"
-        400: #bad request
-          description: Richiesta mal formata.
-        401: #unautorized
-          description: Accesso non autorizzato alla risorsa..
+        400: # bad request
+          description: Richiesta non valida.
+        401: #unauthorized
+          description: Accesso non autorizzato alla risorsa.
     post:
       summary: Crea un nuovo utente.
       description: Aggiunge un nuovo utente al database
@@ -58,12 +68,47 @@ paths:
             schema:
               $ref: "#/components/schemas/user"
       responses:
-        204: # no-content
-          description: Utente creato
+        201: # resp: utente creato
+          description: Utente creato.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/user"
         400: # bad request
-          description: Richiesta mal formata.
+          description: Richiesta non valida.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  error:
+                    type: string
+                    description: Descrizione dell'errore.
+                    example: Il campo 'name' è richiesto.
         401: # unauthorized
-          description: Accesso non autorizzato alla risorsa..
+          description: Accesso non autorizzato alla risorsa.
+  /users/{id}:
+    get:
+      summary: Restituisce le informazioni di un utente specifico.
+      parameters:
+        - in: query
+          name: id
+          schema:
+            type: integer
+          required: true
+      responses:
+        200: # success
+          description: Informazioni dell'evento restitutite con successo.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/user"
+        400: #bad request
+          description: Richiesta non valida.
+        401: #unauthorized
+          description: Accesso non autorizzato alla risorsa.
+        404: # not found
+          description: Evento non trovato.
   /events:
     get:
       summary: Restituisce la lista degli eventi.
@@ -92,11 +137,12 @@ paths:
                 items:
                   $ref: "#/components/schemas/zone"
         400: # bad request
-          description: Richiesta mal formata.
+          description: Richiesta non valida.
         401: #unauthorized
-          description: Accesso non autorizzato alla risorsa..
+          description: Accesso non autorizzato alla risorsa.
     post:
-      summary: Crea un evento.
+      summary: Crea un nuovo evento.
+      description: Aggiunge un nuovo evento al database.
       requestBody:
         required: true
         content:
@@ -104,12 +150,25 @@ paths:
             schema:
               $ref: "#/components/schemas/event"
       responses:
-        204: #no content
-          description: Evento inserito.
-        400: #bad request
-          description: Richiesta mal formata.
-        401: #unauthorized
-          description: Accesso non autorizzato alla risorsa..
+        201: # resp: evento creato
+          description: Evento creato con successo.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/event"
+        400: # bad request
+          description: Richiesta non valida.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  error:
+                    type: string
+                    description: Descrizione dell'errore.
+                    example: "Il campo 'name' è richiesto."
+        401: # unauthorized
+          description: Accesso non autorizzato alla risorsa.
   /events/{id}:
     get:
       summary: Restituisce le informazioni di un evento specifico.
@@ -122,35 +181,33 @@ paths:
           schema:
             type: string
       responses:
-        "200":
+        200:
           description: Informazioni dell'evento restituite con successo.
           content:
             application/json:
               schema:
                 $ref: "#/components/schemas/event"
-        "400": #bad request
-          description: Richiesta mal formata.
-        "401": #unauthorized
-          description: Accesso non autorizzato alla risorsa..
-        "404": # not found
+        400: #bad request
+          description: Richiesta non valida.
+        401: #unauthorized
+          description: Accesso non autorizzato alla risorsa.
+        404: # not found
           description: Evento non trovato.
   /zones:
     get:
       summary: Restituisce la lista delle zone.
       description: Ottiene un elenco di tutte le zone disponibili.
       responses:
-        "200":
+        200:
           description: Risorsa JSON contenente lista di zone.
           content:
             application/json:
               schema:
                 $ref: "#/components/schemas/zone"
-        "400": #bad request
-          description: Richiesta mal formata.
-        "401": #unauthorized
-          description: Accesso non autorizzato alla risorsa..
-        "500": # internal server error
-          description: Errore del server.
+        400: #bad request
+          description: Richiesta non valida.
+        401: #unauthorized
+          description: Accesso non autorizzato alla risorsa.
   /zones/{id}:
     get:
       summary: Restituisce le informazioni di una zona specifica
@@ -163,18 +220,19 @@ paths:
           schema:
             type: string
       responses:
-        "200":
+        200:
           description: Informazioni della zona restituite con successo.
           content:
             application/json:
               schema:
                 $ref: "#/components/schemas/zone"
-        "400": #bad request
-          description: Richiesta mal formata.
-        "401": #unauthorized
-          description: Accesso non autorizzato alla risorsa..
-        "404": # not found
+        400: #bad request
+          description: Richiesta non valida.
+        401: #unauthorized
+          description: Accesso non autorizzato alla risorsa.
+        404: # not found
           description: Zona non trovata.
+
 components:
   schemas:
     user:
