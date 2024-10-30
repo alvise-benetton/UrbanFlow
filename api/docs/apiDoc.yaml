@@ -22,17 +22,25 @@ info:
   title: UrbanFlow API
   description: Docs ufficiali per le API utilizzati nel progetto UrbanFlow.
   version: 0.0.1
-
 servers:
   - url: http://api.example.com/v1
     description: Optional server description, e.g. Main (production) server
   - url: http://staging-api.example.com
     description: Optional server description, e.g. Internal staging server for testing
+tags:
+  - name: User
+    description: Endpoints relativi a un oggetto utente.
+  - name: Event
+    description: Endpoints relativi a un oggetto evento.
+  - name: Zone
+    description: Endpoints relativi a un oggetto zona.
 
 # per i JWT come facciamo? ALV: Boh non so cosa siano
 paths:
   /users:
     get:
+      tags:
+        - User
       summary: Restituisce la lista degli utenti.
       description: Restituisce la lista degli utenti presenti sulla piattaforma.
       parameters:
@@ -59,6 +67,8 @@ paths:
         401: #unauthorized
           description: Accesso non autorizzato alla risorsa.
     post:
+      tags:
+        - User
       summary: Crea un nuovo utente.
       description: Aggiunge un nuovo utente al database
       requestBody:
@@ -89,10 +99,12 @@ paths:
           description: Accesso non autorizzato alla risorsa.
   /users/{id}:
     get:
+      tags:
+        - User
       summary: Restituisce le informazioni di un utente specifico.
       parameters:
-        - in: query
-          name: id
+        - name: id
+          in: path
           schema:
             type: integer
           required: true
@@ -110,6 +122,8 @@ paths:
         404: # not found
           description: Evento non trovato.
     put:
+      tags:
+        - User
       summary: Aggiorna le informazioni di un utente specifico.
       description: Aggiorna i dettagli dell'utente dato il suo ID.
       parameters:
@@ -148,6 +162,8 @@ paths:
         404: # not found
           description: Utente non trovato.
     delete:
+      tags:
+        - User
       summary: Elimina un utente specifico.
       description: Rimuove un utente dato il suo ID.
       parameters:
@@ -168,6 +184,8 @@ paths:
           description: Utente non trovato.
   /events:
     get:
+      tags:
+        - Event
       summary: Restituisce la lista degli eventi.
       parameters:
         - in: query
@@ -198,6 +216,8 @@ paths:
         401: #unauthorized
           description: Accesso non autorizzato alla risorsa.
     post:
+      tags:
+        - Event
       summary: Crea un nuovo evento.
       description: Aggiunge un nuovo evento al database.
       requestBody:
@@ -228,6 +248,8 @@ paths:
           description: Accesso non autorizzato alla risorsa.
   /events/{id}:
     get:
+      tags:
+        - Event
       summary: Restituisce le informazioni di un evento specifico.
       description: Ottiene i dettagli di un singolo evento dato il suo ID.
       parameters:
@@ -252,6 +274,8 @@ paths:
           description: Evento non trovato.
   /zones:
     get:
+      tags:
+        - Zone
       summary: Restituisce la lista delle zone.
       description: Ottiene un elenco di tutte le zone disponibili.
       responses:
@@ -267,6 +291,8 @@ paths:
           description: Accesso non autorizzato alla risorsa.
   /zones/{id}:
     get:
+      tags:
+        - Zone
       summary: Restituisce le informazioni di una zona specifica
       description: Ottiene i dettagli di una singola zona dato il suo ID.
       parameters:
