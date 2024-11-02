@@ -319,53 +319,23 @@ paths:
           description: Accesso non autorizzato alla risorsa.
         404: # not found
           description: Zona non trovata.
-  /auth:
-    get:
-      tags:
-        - User
-      summary: Restituisce la lista degli utenti.
-      description: Restituisce la lista degli utenti presenti sulla piattaforma.
-      parameters:
-        - name: role
-          in: query
-          required: false
-          description: Ruolo degli utenti da cercare, se non specificato restituisce tutti gli utenti.
-          schema:
-            type: string
-            enum:
-              - admin
-              - base
-      responses:
-        200: # success
-          description: Risorsa JSON contenente lista degli utenti.
-          content:
-            application/json:
-              schema:
-                type: array
-                items:
-                  $ref: "#/components/schemas/user"
-        400: # bad request
-          description: Richiesta non valida.
-        401: #unauthorized
-          description: Accesso non autorizzato alla risorsa.
+  /auth/login:
     post:
-      tags:
-        - User
-      summary: Crea un nuovo utente.
-      description: Aggiunge un nuovo utente al database
+      summary: Effettua l'accesso 
+      description: Fornendo email e password corretti viene restituito un token di sessione 
       requestBody:
         required: true
         content:
           application/json:
             schema:
-              $ref: "#/components/schemas/user"
+              $ref: "#/components/schemas/auth"
       responses:
-        201: # resp: utente creato
-          description: Utente creato.
+        200: # success
+          description: login effettutato.
           content:
             application/json:
               schema:
-                $ref: "#/components/schemas/user"
+                $ref: "#/components/schemas/authResponse"
         400: # bad request
           description: Richiesta non valida.
           content:
@@ -376,10 +346,19 @@ paths:
                   error:
                     type: string
                     description: Descrizione dell'errore.
-                    example: Il campo 'name' è richiesto.
+                    example: Formato del campo 'email' non valido.
         401: # unauthorized
-          description: Accesso non autorizzato alla risorsa.
-
+          description: Non autorizzato.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  error:
+                    type: string
+                    description: Descrizione dell'errore.
+                    example: Credeniziali non valide
+        # 500
 
 components:
   schemas:
@@ -490,4 +469,27 @@ components:
               type: string
               format: date-time
               description: Data dell'ultima rilevazione.
+    auth:
+      type: object
+      required:
+        - email
+        - password
+      properties:
+        email:
+          type: string
+          format: email
+          example: mario.rossi@email.com
+        password:
+          type: string
+          example: very_safe_password
+    authResponse:
+      type: object
+      properties:
+        JWT:
+          type: string
+          example: 7WK5T79u5mIzjIXXi2oI9Fglmgivv7RAJ7izyj9tUyQ
+      # penso che abbia senso inserire solo il jwt in questo caso no?
+          
+
+        
 

@@ -4,21 +4,24 @@ const app = express();
 const PORT = 3000;
 
 require('dotenv').config()
+//console.log(process.env)
 const mongoose = require('mongoose');
 
+// server ancora da creare
 app.locals.db = mongoose.connect(process.env.DB_URL, {useNewUrlParser: true, useUnifiedTopology: true})
 .then ( () => {
     
-    console.log("Connected to Database");
-    
+    console.log("Connesso al database");
+    // avvio server
     app.listen(PORT, () => {
-        console.log(`Server listening on port ${PORT}`);
+        console.log(`Server in ascolto su http://localhost:${PORT}`);
     });
     
 });
 
 // importo rotte
 const userRoutes = require('./routers/user.route');
+const authRoutes = require('./routers/auth.route')
 
 // Definisco il body in JSON (middleware)
 app.use(express.json());
@@ -37,9 +40,20 @@ app.get('/', (req, res) => {
 app.use('/api/users', userRoutes);
 //app.use('/api/events',eventRoutes);
 //app.use('/api/zones',zoneRoutes);
-//app.use('/api/auth',authRoutes);
+app.use('/api/auth',authRoutes);
 
-// Avvio del server
+/* // Avvio del server
 app.listen(PORT, () => {
   console.log(`Server in esecuzione su http://localhost:${PORT}`);
+}); */
+
+
+process.on('uncaughtException', (err) => {
+  console.error('Unhandled exception:', err);
+  process.exit(1); // Chiude il processo
+});
+
+process.on('SIGINT', () => {
+  console.log('Caught interrupt signal');
+  process.exit(); // Chiude il processo in caso di interruzione manuale (Ctrl + C)
 });
