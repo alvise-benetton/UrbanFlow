@@ -1,7 +1,9 @@
 const express = require('express');
+const bcrypt = require('bcryptjs');
 const router = express.Router();
 const jwt = require('jsonwebtoken'); // used to create, sign, and verify tokens
-const Auth = require('../models/auth.model')
+const Auth = require('../models/auth.model');
+const User = require('../models/user.model');
 
 async function login(req,res) {
     
@@ -43,7 +45,31 @@ async function login(req,res) {
 }
 
 async function register(req,res){
-    throw "Non implementata";
+    const {email, password} = req.body;
+
+    try {
+        //verifica se esiste
+        let user = await User.findOne({email});
+        if (user) {
+            return res.status(200).json({msg: 'utente gia presernte'})
+        }
+
+        //crea nuovo
+        user = new User({email, password});
+
+        const salt = await bcrypt.genSalt(10);
+        user.password = await bcrypt.hash(password, salt);
+        await user.save();
+
+        //creazione del token
+        const payload = { user: { id: user.id } };
+        const token = jwt.sign(payload, process.env.JWT_SECRET, { expiresIn: '1h' });
+    
+        res.json({ token });
+    } catch (err) {
+        console.error(err.message);
+        res.status(500).send('Errore del server');
+    }
 }
 
 
