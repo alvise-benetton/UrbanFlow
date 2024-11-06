@@ -20,7 +20,7 @@ const UserSchema = new mongoose.Schema({
     },
     ruolo: {
         type: String,
-        required: true
+        required: true,
     },
     createdAt: {
         type: Date,

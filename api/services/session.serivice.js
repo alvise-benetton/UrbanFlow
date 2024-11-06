@@ -1,11 +1,9 @@
-const express = require('express');
 const bcrypt = require('bcryptjs');
-const router = express.Router();
 const jwt = require('jsonwebtoken'); // used to create, sign, and verify tokens
-const Auth = require('../models/auth.model');
-const User = require('../models/user.model');
+const session = require('../models/session.model');
+const users = require('../models/user.model');
 
-async function login(req,res) {
+async function createSession(req,res) {
     
     try{
         // controllo che la richiesta contenga esattamente email e password
@@ -28,12 +26,19 @@ async function login(req,res) {
         if (!passwordMatch) {
             return res.status(401).json({ success: false, message: 'Credenziali non valide'});
         }
-
+        
         const token = jwt.sign(
             { id: user.id, email: user.email },
             process.env.SUPER_SECRET,
             { expiresIn: '1h' } // scadenza
         );
+
+        // salvo il JWT nel database
+        const s = new session({
+            userId: user._id,
+            token: token
+        });
+        await s.save();
 
         return res.status(200).json({
             JWT: token
@@ -43,34 +48,10 @@ async function login(req,res) {
         return res.status(500).json({error: 'Internal Server Error. '+ error });
     }
 }
-
-async function register(req,res){
-    const {email, password} = req.body;
-
-    try {
-        //verifica se esiste
-        let user = await User.findOne({email});
-        if (user) {
-            return res.status(200).json({msg: 'utente gia presernte'})
-        }
-
-        //crea nuovo
-        user = new User({email, password});
-
-        const salt = await bcrypt.genSalt(10);
-        user.password = await bcrypt.hash(password, salt);
-        await user.save();
-
-        //creazione del token
-        const payload = { user: { id: user.id } };
-        const token = jwt.sign(payload, process.env.JWT_SECRET, { expiresIn: '1h' });
-    
-        res.json({ token });
-    } catch (err) {
-        console.error(err.message);
-        res.status(500).send('Errore del server');
-    }
+// da mettere in post user
+async function deleteSession(req,res) {
+    throw "non implementato";
 }
 
 
-module.exports = {login,register};
+module.exports = {createSession,deleteSession};
