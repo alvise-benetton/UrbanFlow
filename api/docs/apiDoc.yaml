@@ -321,6 +321,8 @@ paths:
           description: Zona non trovata.
   /auth/login:
     post:
+      tags:
+        - Authentication
       summary: Effettua l'accesso 
       description: Fornendo email e password corretti viene restituito un token di sessione 
       requestBody:
@@ -359,7 +361,6 @@ paths:
                     description: Descrizione dell'errore.
                     example: Credeniziali non valide
         # 500
-
 components:
   schemas:
     user:
