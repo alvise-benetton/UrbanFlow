@@ -14,7 +14,9 @@
 # -- FATTO put
 
 # TODO:
-# - Da capire se lasciare le coordinate nell'evento o se mantenere solo le zone
+# - Formato errori codice 500
+# - Documentazione eventi
+# - Controlla accesso risorsa
 
 # Per le resources usare lo schema definito sotto (con $ref:, vedi linea 45 per esempio)
 # I dati di esempio son da definire nella parte components
