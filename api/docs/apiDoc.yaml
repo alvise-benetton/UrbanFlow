@@ -7,12 +7,11 @@
 # -- FATTO get /events
 # -- FATTO post
 # -- FATTO get /events/{id}
-# put
-# delete
+# -- FATTO put
+# -- FATTO delete
 # -- FATTO get /zone
 # -- FATTO get /zones/{id}
-# get /cameras
-# get /cameras/{id}
+# -- FATTO put
 
 # TODO:
 # - Da capire se lasciare le coordinate nell'evento o se mantenere solo le zone
@@ -104,7 +103,7 @@ paths:
     get:
       tags:
         - User
-      summary: Restituisce le informazioni di un utente specifico.
+      summary: Restituisce utente specifico.
       parameters:
         - name: id
           in: path
@@ -128,7 +127,7 @@ paths:
     put:
       tags:
         - User
-      summary: Aggiorna le informazioni di un utente specifico.
+      summary: Aggiorna un utente esistente.
       description: Aggiorna i dettagli dell'utente dato il suo ID.
       parameters:
         - name: id
@@ -168,7 +167,7 @@ paths:
     delete:
       tags:
         - User
-      summary: Elimina un utente specifico.
+      summary: Elimina un utente esistente.
       description: Rimuove un utente dato il suo ID.
       parameters:
         - name: id
@@ -254,7 +253,7 @@ paths:
     get:
       tags:
         - Event
-      summary: Restituisce le informazioni di un evento specifico.
+      summary: Restituisce un evento specifico.
       description: Ottiene i dettagli di un singolo evento dato il suo ID.
       parameters:
         - name: id
@@ -276,6 +275,51 @@ paths:
           description: Accesso non autorizzato alla risorsa.
         404: # not found
           description: Evento non trovato.
+    put:
+      tags:
+        - Event
+      summary: Aggiorna un evento esistente.
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/event"
+      responses:
+        "200":
+          description: Evento aggiornato con successo
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/event"
+        "400":
+          description: Richiesta non valida
+        "404":
+          description: Evento non trovato
+
+    delete:
+      tags:
+        - Event
+      summary: Elimina un evento esistente.
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        "204":
+          description: Evento eliminato con successo
+        "400":
+          description: Richiesta non valida
+        "404":
+          description: Evento non trovato
   /zones:
     get:
       tags:
@@ -297,7 +341,7 @@ paths:
     get:
       tags:
         - Zone
-      summary: Restituisce le informazioni di una zona specifica
+      summary: Restituisce una zona esistente.
       description: Ottiene i dettagli di una singola zona dato il suo ID.
       parameters:
         - name: id
@@ -319,12 +363,39 @@ paths:
           description: Accesso non autorizzato alla risorsa.
         404: # not found
           description: Zona non trovata.
+    put:
+      tags:
+        - Zone
+      summary: Aggiorna una zona esistente.
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/zone"
+      responses:
+        "200":
+          description: Zona aggiornata con successo
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/zone"
+        "400":
+          description: Richiesta non valida
+        "404":
+          description: Zona non trovata
   /auth/login:
     post:
       tags:
         - Authentication
-      summary: Effettua l'accesso 
-      description: Fornendo email e password corretti viene restituito un token di sessione 
+      summary: Effettua l'accesso
+      description: Fornendo email e password corretti viene restituito un token di sessione
       requestBody:
         required: true
         content:
@@ -403,12 +474,12 @@ components:
         - title
         - startDate
         - endDate
-        - coordinates
       properties:
         id:
           type: integer
           description: Codice identificativo evento.
           example: 10332
+          readOnly: true
         title:
           type: string
           description: Titolo dell'evento registrato.
@@ -421,17 +492,6 @@ components:
           type: string
           format: date-time
           description: Data di fine dell'evento (oggetto data convertito in stringa).
-        coordinates:
-          type: object
-          properties:
-            lat:
-              type: number
-              description: Latitudine dell'evento (punto centrale).
-              example: 46.0672
-            lon:
-              type: number
-              description: Longitudine dell'evento (punto centrale).
-              example: 11.1210
         zones:
           type: array
           description: Array di interi, sono gli id delle zone in cui l'evento ha luogo.
@@ -444,13 +504,16 @@ components:
         - id
         - name
         - pivots
+        - threshold
       properties:
         id:
           type: string
           description: Identificativo della zona.
+          readOnly: true
         name:
           type: string
           description: Nome della zona.
+          readOnly: true
         coordinates:
           type: array
           description: Array di coppie latitudine-longitudine per identificare i vertici del poligono rappresentante una zona.
@@ -460,6 +523,7 @@ components:
               type: number
             minItems: 2
             maxItems: 2
+          readOnly: true
         latestData:
           type: object
           properties:
@@ -470,6 +534,12 @@ components:
               type: string
               format: date-time
               description: Data dell'ultima rilevazione.
+          readOnly: true
+        threshold:
+          type: integer
+          default: 0
+          example: 250
+          description: Limite oltre il quale segnalare un'affluenza impevista. Se 0, significa che non c'è nessun limite.
     auth:
       type: object
       required:
@@ -490,7 +560,3 @@ components:
           type: string
           example: 7WK5T79u5mIzjIXXi2oI9Fglmgivv7RAJ7izyj9tUyQ
       # penso che abbia senso inserire solo il jwt in questo caso no?
-          
-
-        
-
