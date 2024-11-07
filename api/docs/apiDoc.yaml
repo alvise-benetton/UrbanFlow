@@ -12,11 +12,13 @@
 # -- FATTO get /zone
 # -- FATTO get /zones/{id}
 # -- FATTO put
+# -- FATTO Formato errori codice 500 + ref altri errori
+# -- FATTO inserire securety
+# -- FATTO modificato auth in session
 
 # TODO:
-# - Formato errori codice 500
-# - Documentazione eventi
-# - Controlla accesso risorsa
+# - Documentazione eventi ??
+# - Controlla accesso risorsa ~ok
 
 # Per le resources usare lo schema definito sotto (con $ref:, vedi linea 45 per esempio)
 # I dati di esempio son da definire nella parte components
@@ -47,6 +49,8 @@ paths:
         - User
       summary: Restituisce la lista degli utenti.
       description: Restituisce la lista degli utenti presenti sulla piattaforma.
+      security:
+        - authToken: []
       parameters:
         - name: role
           in: query
@@ -68,13 +72,35 @@ paths:
                   $ref: "#/components/schemas/user"
         400: # bad request
           description: Richiesta non valida.
-        401: #unauthorized
+          content: 
+            application/json:
+              schema: 
+                $ref: "#/components/schemas/error"
+        401: # unauthorized
+          description: Non autenticato.
+          content: 
+            application/json:
+              schema: 
+                $ref: "#/components/schemas/error"
+        403:
           description: Accesso non autorizzato alla risorsa.
+          content: 
+            application/json:
+              schema: 
+                $ref: "#/components/schemas/error"
+        500:
+          description: Errore interno al server.
+          content: 
+            application/json:
+              schema: 
+                $ref: "#/components/schemas/error"
     post:
       tags:
         - User
       summary: Crea un nuovo utente.
       description: Aggiunge un nuovo utente al database
+      security:
+        - authToken: []
       requestBody:
         required: true
         content:
@@ -90,22 +116,35 @@ paths:
                 $ref: "#/components/schemas/user"
         400: # bad request
           description: Richiesta non valida.
-          content:
+          content: 
             application/json:
-              schema:
-                type: object
-                properties:
-                  error:
-                    type: string
-                    description: Descrizione dell'errore.
-                    example: Il campo 'name' è richiesto.
+              schema: 
+                $ref: "#/components/schemas/error"
         401: # unauthorized
+          description: Non autenticato.
+          content: 
+            application/json:
+              schema: 
+                $ref: "#/components/schemas/error"
+        403:
           description: Accesso non autorizzato alla risorsa.
+          content: 
+            application/json:
+              schema: 
+                $ref: "#/components/schemas/error"
+        500:
+          description: Errore interno al server.
+          content: 
+            application/json:
+              schema: 
+                $ref: "#/components/schemas/error"
   /users/{id}:
     get:
       tags:
         - User
       summary: Restituisce utente specifico.
+      security:
+        - authToken: []
       parameters:
         - name: id
           in: path
@@ -122,15 +161,41 @@ paths:
                 $ref: "#/components/schemas/user"
         400: #bad request
           description: Richiesta non valida.
-        401: #unauthorized
+          content: 
+            application/json:
+              schema: 
+                $ref: "#/components/schemas/error"
+        401: # unauthorized
+          description: Non autenticato.
+          content: 
+            application/json:
+              schema: 
+                $ref: "#/components/schemas/error"
+        403:
           description: Accesso non autorizzato alla risorsa.
+          content: 
+            application/json:
+              schema: 
+                $ref: "#/components/schemas/error"
         404: # not found
           description: Evento non trovato.
+          content: 
+            application/json:
+              schema: 
+                $ref: "#/components/schemas/error"
+        500:
+          description: Errore interno al server.
+          content: 
+            application/json:
+              schema: 
+                $ref: "#/components/schemas/error"
     put:
       tags:
         - User
       summary: Aggiorna un utente esistente.
       description: Aggiorna i dettagli dell'utente dato il suo ID.
+      security:
+        - authToken: []
       parameters:
         - name: id
           in: path
@@ -153,24 +218,41 @@ paths:
                 $ref: "#/components/schemas/user"
         400: # bad request
           description: Richiesta non valida.
-          content:
+          content: 
             application/json:
-              schema:
-                type: object
-                properties:
-                  error:
-                    type: string
-                    description: Dettagli sull'errore riscontrato.
-                    example: Gli schemi delle risorse non coincidono.
+              schema: 
+                $ref: "#/components/schemas/error"
         401: # unauthorized
+          description: Non autenticato.
+          content: 
+            application/json:
+              schema: 
+                $ref: "#/components/schemas/error"
+        403:
           description: Accesso non autorizzato alla risorsa.
+          content: 
+            application/json:
+              schema: 
+                $ref: "#/components/schemas/error"
         404: # not found
           description: Utente non trovato.
+          content: 
+            application/json:
+              schema: 
+                $ref: "#/components/schemas/error"
+        500:
+          description: Errore interno al server.
+          content: 
+            application/json:
+              schema: 
+                $ref: "#/components/schemas/error"
     delete:
       tags:
         - User
       summary: Elimina un utente esistente.
       description: Rimuove un utente dato il suo ID.
+      security:
+        - authToken: []
       parameters:
         - name: id
           in: path
@@ -184,14 +266,28 @@ paths:
         400: # bad request
           description: Richiesta non valida.
         401: # unauthorized
+          description: Non autenticato.
+          content: 
+            application/json:
+              schema: 
+                $ref: "#/components/schemas/error"
+        403:
           description: Accesso non autorizzato alla risorsa.
         404: # not found
           description: Utente non trovato.
+        500:
+          description: Errore interno al server.
+          content: 
+            application/json:
+              schema: 
+                $ref: "#/components/schemas/error"
   /events:
     get:
       tags:
         - Event
       summary: Restituisce la lista degli eventi.
+      security:
+        - authToken: []
       parameters:
         - in: query
           name: startDate
@@ -218,13 +314,31 @@ paths:
                   $ref: "#/components/schemas/zone"
         400: # bad request
           description: Richiesta non valida.
-        401: #unauthorized
+        401: # unauthorized
+          description: Non autenticato.
+          content: 
+            application/json:
+              schema: 
+                $ref: "#/components/schemas/error"
+        403:
           description: Accesso non autorizzato alla risorsa.
+          content: 
+            application/json:
+              schema: 
+                $ref: "#/components/schemas/error"
+        500:
+          description: Errore interno al server.
+          content: 
+            application/json:
+              schema: 
+                $ref: "#/components/schemas/error"
     post:
       tags:
         - Event
       summary: Crea un nuovo evento.
       description: Aggiunge un nuovo evento al database.
+      security:
+        - authToken: []
       requestBody:
         required: true
         content:
@@ -240,23 +354,36 @@ paths:
                 $ref: "#/components/schemas/event"
         400: # bad request
           description: Richiesta non valida.
-          content:
+          content: 
             application/json:
-              schema:
-                type: object
-                properties:
-                  error:
-                    type: string
-                    description: Descrizione dell'errore.
-                    example: "Il campo 'name' è richiesto."
+              schema: 
+                $ref: "#/components/schemas/error"
         401: # unauthorized
+          description: Non autenticato
+          content: 
+            application/json:
+              schema: 
+                $ref: "#/components/schemas/error"
+        403:
           description: Accesso non autorizzato alla risorsa.
+          content: 
+            application/json:
+              schema: 
+                $ref: "#/components/schemas/error"
+        500:
+          description: Errore interno al server.
+          content: 
+            application/json:
+              schema: 
+                $ref: "#/components/schemas/error"
   /events/{id}:
     get:
       tags:
         - Event
       summary: Restituisce un evento specifico.
       description: Ottiene i dettagli di un singolo evento dato il suo ID.
+      security:
+        - authToken: []
       parameters:
         - name: id
           in: path
@@ -273,14 +400,40 @@ paths:
                 $ref: "#/components/schemas/event"
         400: #bad request
           description: Richiesta non valida.
-        401: #unauthorized
+          content: 
+            application/json:
+              schema: 
+                $ref: "#/components/schemas/error"
+        401: # unauthorized
+          description: Non autenticato
+          content: 
+            application/json:
+              schema: 
+                $ref: "#/components/schemas/error"
+        403:
           description: Accesso non autorizzato alla risorsa.
+          content: 
+            application/json:
+              schema: 
+                $ref: "#/components/schemas/error"
         404: # not found
           description: Evento non trovato.
+          content: 
+            application/json:
+              schema: 
+                $ref: "#/components/schemas/error"
+        500:
+          description: Errore interno al server.
+          content: 
+            application/json:
+              schema: 
+                $ref: "#/components/schemas/error"
     put:
       tags:
         - Event
       summary: Aggiorna un evento esistente.
+      security:
+        - authToken: []
       parameters:
         - name: id
           in: path
@@ -294,21 +447,49 @@ paths:
             schema:
               $ref: "#/components/schemas/event"
       responses:
-        "200":
+        200:
           description: Evento aggiornato con successo
           content:
             application/json:
               schema:
                 $ref: "#/components/schemas/event"
-        "400":
+        400:
           description: Richiesta non valida
-        "404":
+          content: 
+            application/json:
+              schema: 
+                $ref: "#/components/schemas/error"
+        401: # unauthorized
+          description: Non autenticato
+          content: 
+            application/json:
+              schema: 
+                $ref: "#/components/schemas/error"
+        403:
+          description: Accesso non autorizzato alla risorsa.
+          content: 
+            application/json:
+              schema: 
+                $ref: "#/components/schemas/error"
+        404:
           description: Evento non trovato
+          content: 
+            application/json:
+              schema: 
+                $ref: "#/components/schemas/error"
+        500:
+          description: Errore interno al server.
+          content: 
+            application/json:
+              schema: 
+                $ref: "#/components/schemas/error"
 
     delete:
       tags:
         - Event
       summary: Elimina un evento esistente.
+      security:
+        - authToken: []
       parameters:
         - name: id
           in: path
@@ -316,18 +497,46 @@ paths:
           schema:
             type: string
       responses:
-        "204":
+        204:
           description: Evento eliminato con successo
-        "400":
+        400:
           description: Richiesta non valida
-        "404":
+          content: 
+            application/json:
+              schema: 
+                $ref: "#/components/schemas/error"
+        401: # unauthorized
+          description: Non autenticato
+          content: 
+            application/json:
+              schema: 
+                $ref: "#/components/schemas/error"
+        403:
+          description: Accesso non autorizzato alla risorsa.
+          content: 
+            application/json:
+              schema: 
+                $ref: "#/components/schemas/error"
+        404:
           description: Evento non trovato
+          content: 
+            application/json:
+              schema: 
+                $ref: "#/components/schemas/error"
+        500:
+          description: Errore interno al server.
+          content: 
+            application/json:
+              schema: 
+                $ref: "#/components/schemas/error"
   /zones:
     get:
       tags:
         - Zone
       summary: Restituisce la lista delle zone.
       description: Ottiene un elenco di tutte le zone disponibili.
+      security:
+        - authToken: []
       responses:
         200:
           description: Risorsa JSON contenente lista di zone.
@@ -337,14 +546,36 @@ paths:
                 $ref: "#/components/schemas/zone"
         400: #bad request
           description: Richiesta non valida.
-        401: #unauthorized
+          content: 
+            application/json:
+              schema: 
+                $ref: "#/components/schemas/error"
+        401: # unauthorized
+          description: Non autenticato
+          content: 
+            application/json:
+              schema: 
+                $ref: "#/components/schemas/error"
+        403:
           description: Accesso non autorizzato alla risorsa.
+          content: 
+            application/json:
+              schema: 
+                $ref: "#/components/schemas/error"
+        500:
+          description: Errore interno al server.
+          content: 
+            application/json:
+              schema: 
+                $ref: "#/components/schemas/error"
   /zones/{id}:
     get:
       tags:
         - Zone
       summary: Restituisce una zona esistente.
       description: Ottiene i dettagli di una singola zona dato il suo ID.
+      security:
+        - authToken: []
       parameters:
         - name: id
           in: path
@@ -361,14 +592,40 @@ paths:
                 $ref: "#/components/schemas/zone"
         400: #bad request
           description: Richiesta non valida.
-        401: #unauthorized
+          content: 
+            application/json:
+              schema: 
+                $ref: "#/components/schemas/error"
+        401: # unauthorized
+          description: Non autenticato
+          content: 
+            application/json:
+              schema: 
+                $ref: "#/components/schemas/error"
+        403:
           description: Accesso non autorizzato alla risorsa.
+          content: 
+            application/json:
+              schema: 
+                $ref: "#/components/schemas/error"
         404: # not found
           description: Zona non trovata.
+          content: 
+            application/json:
+              schema: 
+                $ref: "#/components/schemas/error"
+        500:
+          description: Errore interno al server.
+          content: 
+            application/json:
+              schema: 
+                $ref: "#/components/schemas/error"
     put:
       tags:
         - Zone
       summary: Aggiorna una zona esistente.
+      security:
+        - authToken: []
       parameters:
         - name: id
           in: path
@@ -382,21 +639,47 @@ paths:
             schema:
               $ref: "#/components/schemas/zone"
       responses:
-        "200":
+        200:
           description: Zona aggiornata con successo
           content:
             application/json:
               schema:
                 $ref: "#/components/schemas/zone"
-        "400":
+        400:
           description: Richiesta non valida
-        "404":
+          content: 
+            application/json:
+              schema: 
+                $ref: "#/components/schemas/error"
+        401: # unauthorized
+          description: Non autenticato
+          content: 
+            application/json:
+              schema: 
+                $ref: "#/components/schemas/error"
+        403:
+          description: Accesso non autorizzato alla risorsa.
+          content: 
+            application/json:
+              schema: 
+                $ref: "#/components/schemas/error"
+        404:
           description: Zona non trovata
-  /auth/login:
+          content: 
+            application/json:
+              schema: 
+                $ref: "#/components/schemas/error"
+        500:
+          description: Errore interno al server.
+          content: 
+            application/json:
+              schema: 
+                $ref: "#/components/schemas/error"
+  /session:
     post:
       tags:
-        - Authentication
-      summary: Effettua l'accesso
+        - Session
+      summary: Crea una nuova sessione
       description: Fornendo email e password corretti viene restituito un token di sessione
       requestBody:
         required: true
@@ -405,36 +688,88 @@ paths:
             schema:
               $ref: "#/components/schemas/auth"
       responses:
-        200: # success
-          description: login effettutato.
+        201: # created
+          description: sessione creata.
           content:
             application/json:
               schema:
                 $ref: "#/components/schemas/authResponse"
         400: # bad request
           description: Richiesta non valida.
-          content:
+          content: 
             application/json:
-              schema:
-                type: object
-                properties:
-                  error:
-                    type: string
-                    description: Descrizione dell'errore.
-                    example: Formato del campo 'email' non valido.
+              schema: 
+                $ref: "#/components/schemas/error"
         401: # unauthorized
           description: Non autorizzato.
+          content: 
+            application/json:
+              schema: 
+                $ref: "#/components/schemas/error"
+        403:
+          description: Accesso non autorizzato alla risorsa.
+          content: 
+            application/json:
+              schema: 
+                $ref: "#/components/schemas/error"
+        500:
+          description: Errore interno al server.
+          content: 
+            application/json:
+              schema: 
+                $ref: "#/components/schemas/error"
+    # TODO da finire!
+    delete:
+      tags:
+        - Session
+      summary: Elimina sessione
+      description: non so ancora come si faccia
+      security:
+        - authToken: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/auth"
+      responses:
+        200: # success
+          description: sessione creata.
           content:
             application/json:
               schema:
-                type: object
-                properties:
-                  error:
-                    type: string
-                    description: Descrizione dell'errore.
-                    example: Credeniziali non valide
-        # 500
+                $ref: "#/components/schemas/authResponse"
+        400: # bad request
+          description: Richiesta non valida.
+          content: 
+            application/json:
+              schema: 
+                $ref: "#/components/schemas/error"
+        401: # unauthorized
+          description: Non autorizzato.
+          content: 
+            application/json:
+              schema: 
+                $ref: "#/components/schemas/error"
+        403:
+          description: Accesso non autorizzato alla risorsa.
+          content: 
+            application/json:
+              schema: 
+                $ref: "#/components/schemas/error"
+        500:
+          description: Errore interno al server.
+          content: 
+            application/json:
+              schema: 
+                $ref: "#/components/schemas/error"
+
 components:
+  securitySchemes:
+      authToken:
+        type: http
+        scheme: bearer
+        description: hdvwahfi
   schemas:
     user:
       type: object
@@ -557,8 +892,19 @@ components:
           example: very_safe_password
     authResponse:
       type: object
-      properties:
+      properties: 
         JWT:
           type: string
           example: 7WK5T79u5mIzjIXXi2oI9Fglmgivv7RAJ7izyj9tUyQ
       # penso che abbia senso inserire solo il jwt in questo caso no?
+    error:
+      type: object
+      properties: 
+        error:
+          type: string
+          example: Errore!
+          description: Descrizione dell'errore
+
+
+
+  
