@@ -42,9 +42,9 @@ async function createSession(req,res) {
     }
 }
 
-async function deleteSession(req,res) { // i token JWT non sono revocabili, al logout bisogna inserirli in una blacklist e poi eliminarli a scadenza ( che palle )
+async function deleteSession(req,res) { // i token JWT non sono revocabili, al logout bisogna inserirli in una blacklist e poi eliminarli a scadenza
     try {
-        let token = req.body.token || req.headers['x-access-token'];
+        let token = req.headers['x-access-token'];
 
         if (!token) {
             return res.status(400).json({ error: "Token mancante" });

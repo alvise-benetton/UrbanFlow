@@ -4,8 +4,8 @@ const blacklist = new Set(); // Blacklist dei token
 
 	const tokenChecker = function(req, res, next) {
 		
-		// check header or url parameters or post parameters for token
-		let token = req.body.token || req.headers['x-access-token'];
+		// check header
+		let token = req.headers['x-access-token'];
 		
 		// if there is no token
 		if (!token || blacklist.has(token)){
