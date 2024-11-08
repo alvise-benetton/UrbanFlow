@@ -723,22 +723,12 @@ paths:
       tags:
         - Session
       summary: Elimina sessione
-      description: non so ancora come si faccia
+      description: Fornendo il token JWT, posso eliminare la sessione
       security:
         - authToken: []
-      requestBody:
-        required: true
-        content:
-          application/json:
-            schema:
-              $ref: "#/components/schemas/auth"
       responses:
-        200: # success
-          description: sessione creata.
-          content:
-            application/json:
-              schema:
-                $ref: "#/components/schemas/authResponse"
+        204: # success
+          description: La sessione è stata eliminata correttamente.
         400: # bad request
           description: Richiesta non valida.
           content: 
