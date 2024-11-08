@@ -1,32 +1,30 @@
 const jwt = require('jsonwebtoken'); // used to create, sign, and verify tokens
 
-const tokenChecker = function(req, res, next) {
-	
-	// check header or url parameters or post parameters for token
-	var token = req.body.token || req.query.token || req.headers['x-access-token'];
+const blacklist = new Set(); // Blacklist dei token
 
-	// if there is no token
-	if (!token) {
-		return res.status(401).send({ 
-			success: false,
-			message: 'No token provided.'
-		});
-	}
-
-	// decode token, verifies secret and checks exp
-	jwt.verify(token, process.env.JWT_SECRET, function(err, decoded) {			
-		if (err) {
-			return res.status(403).send({
-				success: false,
-				message: 'Failed to authenticate token.'
-			});		
-		} else {
-			// if everything is good, save to request for use in other routes
-			req.user = decoded;
-			next();
+	const tokenChecker = function(req, res, next) {
+		
+		// check header or url parameters or post parameters for token
+		let token = req.body.token || req.headers['x-access-token'];
+		
+		// if there is no token
+		if (!token || blacklist.has(token)){
+			return res.status(401).json({ error: 'Nessun token'});
 		}
-	});
-	
-};
 
-module.exports = tokenChecker
+		// decode token, verifies secret and checks exp
+		jwt.verify(token, process.env.JWT_SECRET, function(err, decoded) {			
+			if (err) {
+				return res.status(403).json({
+					error: 'Autenticazione fallita'
+				});		
+			} else {
+				// if everything is good, save to request for use in other routes
+				req.user = decoded;
+				next();
+			}
+		});
+		
+	};
+
+module.exports = {tokenChecker,blacklist}

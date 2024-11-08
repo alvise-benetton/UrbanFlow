@@ -18,10 +18,15 @@ async function createUser(req,res){
   const {email, password,nome,cognome,ruolo} = req.body;
 
   try {
+    // check prametri
+    if(!(email && password && nome && cognome && ruolo)){
+        return res.status(400).json({error: 'Bad request'});
+    }
+
       //verifica se esiste
       let user = await User.findOne({email});
       if (user) {
-          return res.status(400).json({error: 'utente gia presernte'})
+          return res.status(400).json({error: 'Utente gia presernte'})
       }
       //crea nuovo
       user = new User({email, password,nome,cognome,ruolo});

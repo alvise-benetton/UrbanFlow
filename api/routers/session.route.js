@@ -1,9 +1,10 @@
-sessionService = require("../services/session.serivice");
-
 const express = require('express');
+const tokenChecker = require("../middleware/tokenChecker");
+const sessionService = require("../services/session.serivice");
 const router = express.Router();
 
 router.post('/',sessionService.createSession);
-router.delete('/',sessionService.deleteSession);
+router.delete('/',tokenChecker,sessionService.deleteSession);
+
 
 module.exports = router;
