@@ -1,5 +1,5 @@
 const express = require('express');
-const tokenChecker = require("../middleware/tokenChecker");
+const tokenChecker = require("../middleware/tokenChecker").tokenChecker;
 const sessionService = require("../services/session.serivice");
 const router = express.Router();
 
