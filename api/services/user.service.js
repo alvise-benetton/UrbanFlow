@@ -4,14 +4,27 @@ const express = require('express');
 const bcrypt = require('bcryptjs');
 const router = express.Router();
 
-async function getUser(req,res) {
-    // richiesta al DB
-    const users = [
-        { id: 1, name: 'Mario Rossi' },
-        { id: 2, name: 'Luigi Verdi' }
-      ];
+async function getUsers(req, res) {
+  try {
+    // Recupera la lista di tutti gli utenti (solo le email)
+    const users = await User.find({}, '-createdAt -password -__v');
     res.json(users);
-    
+  } catch (err) {
+    console.error(err.message);
+    res.status(500).send('Errore del server');
+  }
+}
+
+async function getUserById(req, res) {
+  const userId = req.params.id;
+  try {
+    // Recupera la lista di tutti gli utenti (solo le email)
+    const users = await User.findById(userId, '-createdAt -password -__v');
+    res.json(users);
+  } catch (err) {
+    console.error(err.message);
+    res.status(500).send('Errore del server');
+  }
 }
 
 async function createUser(req,res){
@@ -41,5 +54,49 @@ async function createUser(req,res){
   }
 }
 
+async function updateUser(req, res) {
+  try {
+    const userId = req.params.id;  
+    const updates = req.body;      
 
-module.exports = {getUser,createUser} 
+    const updatedUser = await User.findByIdAndUpdate(
+      userId,
+      updates,
+      { new: true, runValidators: true } 
+      /*
+      [options.new=false] «Boolean» if true, return the modified document rather than the original
+      [options.runValidators] «Boolean» if true, runs update validators on this command. 
+      Update validators validate the update operation against the model's schema
+      */
+    ).select('-password -createdAt -__v');
+
+    if (!updatedUser) {
+      return res.status(404).json({ message: 'Utente non trovato' });
+    }
+
+    res.json({data: updatedUser });
+  } catch (err) {
+    console.error(err.message);
+    res.status(500).send('Errore del server');
+  }
+}
+
+async function deleteUser(req, res) {
+  try {
+    const userId = req.params.id; // Estrai l'ID dell'utente dalla route
+
+    // Trova l'utente tramite l'ID e lo elimina
+    const deletedUser = await User.findByIdAndDelete(userId);
+
+    if (!deletedUser) {
+      return res.status(404).json({ message: 'Utente non trovato' });
+    }
+
+    res.json({ message: 'Utente eliminato con successo' });
+  } catch (err) {
+    console.error(err.message);
+    res.status(500).send('Errore del server');
+  }
+}
+
+module.exports = {getUsers, getUserById, createUser, updateUser, deleteUser} 

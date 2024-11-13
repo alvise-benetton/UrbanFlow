@@ -18,7 +18,7 @@ app.use(logger);
 
 // rotte utenti
 app.use('/api/session',sessionRoutes);
-app.use(tokenChecker); // Le rotte sottostanti richiedono autenticazione
+//app.use(); // Le rotte sottostanti richiedono autenticazione
 app.use('/api/users', userRoutes);
 //app.use('/api/events',eventRoutes);
 //app.use('/api/zones',zoneRoutes);
