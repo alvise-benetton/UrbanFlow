@@ -2,6 +2,7 @@ const express = require('express');
 const db = require('./services/db.services');
 const sessionRoutes = require('./routers/session.route');
 const userRoutes = require('./routers/user.route');
+const eventRoutes = require('./routers/event.route');
 const logger = require('./middleware/logger');
 const tokenChecker = require('./middleware/tokenChecker').tokenChecker;
 require('dotenv').config();
@@ -18,11 +19,13 @@ app.use(logger);
 
 // rotte utenti
 app.use('/api/session',sessionRoutes);
-//app.use(); // Le rotte sottostanti richiedono autenticazione
-app.use('/api/users', userRoutes);
-//app.use('/api/events',eventRoutes);
+// app.use('/api/users', tokenChecker, userRoutes);
+// app.use('/api/events', tokenChecker, eventRoutes);
 //app.use('/api/zones',zoneRoutes);
 
+//test
+app.use('/api/users', userRoutes);
+app.use('/api/events', eventRoutes);
 
 // Avvio del server
 const PORT = process.env.PORT;

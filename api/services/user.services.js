@@ -1,4 +1,3 @@
-
 const User = require('../models/user.model');
 const express = require('express');
 const bcrypt = require('bcryptjs');
@@ -7,7 +6,7 @@ const router = express.Router();
 async function getUsers(req, res) {
   try {
     // Recupera la lista di tutti gli utenti (solo le email)
-    const users = await User.find({}, '-createdAt -password -__v');
+    const users = await User.find({}, '-createdAt -updatedAt -password -__v');
     res.json(users);
   } catch (err) {
     console.error(err.message);
@@ -19,7 +18,7 @@ async function getUserById(req, res) {
   const userId = req.params.id;
   try {
     // Recupera la lista di tutti gli utenti (solo le email)
-    const users = await User.findById(userId, '-createdAt -password -__v');
+    const users = await User.findById(userId, '-createdAt -updatedAt -password -__v');
     res.json(users);
   } catch (err) {
     console.error(err.message);
@@ -28,11 +27,11 @@ async function getUserById(req, res) {
 }
 
 async function createUser(req,res){
-  const {email, password,nome,cognome,ruolo} = req.body;
+  const {email, password,name,surname,ruolo} = req.body;
 
   try {
     // check prametri
-    if(!(email && password && nome && cognome && ruolo)){
+    if(!(email && password && name && surname && ruolo)){
         return res.status(400).json({error: 'Bad request'});
     }
 
@@ -42,12 +41,12 @@ async function createUser(req,res){
           return res.status(400).json({error: 'Utente gia presernte'})
       }
       //crea nuovo
-      user = new User({email, password,nome,cognome,ruolo});
+      user = new User({email, password,name,surname,ruolo});
 
       const salt = await bcrypt.genSalt(10);
       user.password = await bcrypt.hash(password, salt);
       await user.save();  
-      res.status(201).json({ email,nome,cognome,ruolo }); // È giusto inivare i dati in rest, o ci sono altri modi?
+      res.status(201).json({ email,name,surname,ruolo }); // È giusto inivare i dati in rest, o ci sono altri modi?
   } catch (err) {
       console.log(err);
       res.status(500).json({error:'Errore del server'});
@@ -68,7 +67,7 @@ async function updateUser(req, res) {
       [options.runValidators] «Boolean» if true, runs update validators on this command. 
       Update validators validate the update operation against the model's schema
       */
-    ).select('-password -createdAt -__v');
+    ).select('-password -createdAt -updatedAt -__v');
 
     if (!updatedUser) {
       return res.status(404).json({ message: 'Utente non trovato' });
