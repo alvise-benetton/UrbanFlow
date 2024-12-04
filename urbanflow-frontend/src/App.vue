@@ -1,54 +1,51 @@
+<script setup>
+import { ref } from "vue";
+import Map from "./components/generalComponents/Map.vue";
+import SectionsBar from "./components/generalComponents/SectionsBar.vue";
+import MapSearchBar from "./components/generalComponents/MapSearchBar.vue";
+import MapFilterList from "./components/generalComponents/MapFilterList.vue";
+import UserButtons from "./components/generalComponents/UserButtons.vue";
+import EventsList from "./components/generalComponents/EventsList.vue";
+
+const activeArea = ref("Main");
+const appAreas = ref(["User", "Main"]);
+
+const activeSection = ref("Mappa");
+</script>
+
 <template>
-  <div id="total">
-    <Navbar></Navbar>
+  <section
+    v-if="activeArea === 'Main'"
+    id="rootBox"
+    class="fixed top-5 flex justify-evenly w-full"
+  >
+    <SectionsBar v-model="activeSection" class="shadow-md"></SectionsBar>
+  </section>
+  <section v-if="activeArea === 'Main'" id="mapBox" class="relative">
     <Map></Map>
-  </div>
+  </section>
+  <section
+    v-if="activeArea === 'Main'"
+    id="rightSideBox"
+    class="fixed top-5 right-5 flex flex-col items-end gap-5"
+  >
+    <MapSearchBar v-model="activeSection" class="shadow-md"></MapSearchBar>
+    <MapFilterList
+      v-if="activeSection == 'Mappa'"
+      class="boxFadeIn shadow-md"
+    ></MapFilterList>
+    <EventsList
+      v-else-if="activeSection == 'Eventi'"
+      class="boxFadeIn shadow-md"
+    ></EventsList>
+  </section>
+  <section
+    id="leftSideBox"
+    v-if="activeSection != 'User'"
+    class="fixed top-5 left-5 flex gap-5"
+  >
+    <UserButtons></UserButtons>
+  </section>
 </template>
 
-<script setup>
-
-import { onMounted } from 'vue'
-import Map from './components/Map.vue' 
-
-  onMounted(() => { // eseguito quando il component è correttamente caricato
-    
-    var map = L.map('map').setView([46.0701026717189, 11.122361662558886], 13);
-      L.tileLayer('https://tile.openstreetmap.org/{z}/{x}/{y}.png', {
-          maxZoom: 19,
-          attribution: '&copy; <a href="http://www.openstreetmap.org/copyright">OpenStreetMap</a>',
-          zoom: 17,
-          zoomControl: false, // Disabilita i controlli di default
-      }).addTo(map);
-      
-    L.control.zoom({
-      position: 'bottomright', // Posizione dei controlli zoom 
-      //zoomControl : false
-    }).addTo(map);
-      
-  })
-
-</script>
-
-<script>
-import Navbar from './components/NavBar.vue'; // Importa il componente Navbar
-
-export default {
-  components: {
-    Navbar,
-  },
-};
-
-</script>
-
-<style scoped>
-    
-  #total{
-    position: absolute;
-    width: 100vw;
-    height: 100vh;
-    top: 0;
-    left: 0;
-  }
-</style>
-
-
+<style scoped></style>
