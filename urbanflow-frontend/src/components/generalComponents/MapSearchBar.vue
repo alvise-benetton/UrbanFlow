@@ -22,7 +22,7 @@ watch(model, (newValue) => {
 <style scoped>
 .searchinput {
   flex: 0 0 auto;
-  min-width: 230px;
+  min-width: 20vw;
 }
 .input {
   outline: none !important;
