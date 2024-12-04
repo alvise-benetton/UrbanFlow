@@ -22,17 +22,14 @@ onMounted(mapInit);
 <template>
   <div class="relative flex">
     <div id="map"></div>
-    <ZoomPane
-      v-model="zoomLevel"
-      class="absolute bottom-[calc(-100vh+30px)] right-5"
-    ></ZoomPane>
+    <ZoomPane v-model="zoomLevel" class="fixed bottom-6 left-6"></ZoomPane>
   </div>
 </template>
 <style>
 #map {
   position: fixed;
-  width: 100%;
-  height: 100%;
+  width: 100vw;
+  height: 100vh;
   z-index: -100;
   filter: brightness(0.85);
 }
