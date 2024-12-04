@@ -1,6 +1,7 @@
 <script setup>
 import { onMounted, ref, watch } from "vue";
 import ZoomPane from "../mapComponents/ZoomPane.vue";
+import GradientPane from "../mapComponents/GradientPane.vue";
 const mapRef = ref(null);
 const mapInit = () => {
   const map = L.map("map", {
@@ -22,7 +23,9 @@ onMounted(mapInit);
 <template>
   <div class="relative flex">
     <div id="map"></div>
-    <ZoomPane v-model="zoomLevel" class="fixed bottom-6 left-6"></ZoomPane>
+    <div class="flex gap-5 fixed bottom-5 left-5">
+      <ZoomPane v-model="zoomLevel"></ZoomPane>
+    </div>
   </div>
 </template>
 <style>
