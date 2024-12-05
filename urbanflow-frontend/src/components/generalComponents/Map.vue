@@ -1,7 +1,6 @@
 <script setup>
 import { onMounted, ref, watch } from "vue";
 import ZoomPane from "../mapComponents/ZoomPane.vue";
-import GradientPane from "../mapComponents/GradientPane.vue";
 const mapRef = ref(null);
 const mapInit = () => {
   const map = L.map("map", {
