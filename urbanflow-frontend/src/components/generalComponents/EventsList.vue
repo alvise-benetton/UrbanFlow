@@ -1,27 +1,41 @@
 <script setup>
-import { ref } from "vue";
+import { computed } from "vue";
 const eventsData = defineModel("events");
+const currentEvents = computed(() => {
+  const now = new Date();
+  return eventsData.value.filter((ev) => {
+    const startDate = new Date(ev.startDate);
+    const endDate = new Date(ev.endDate);
+    return startDate <= now && endDate >= now;
+  });
+});
+const otherEvents = computed(() => {
+  const now = new Date();
+  return eventsData.value.filter((ev) => {
+    const startDate = new Date(ev.startDate);
+    const endDate = new Date(ev.endDate);
+    return startDate > now || endDate < now;
+  });
+});
 </script>
 <template>
   <div class="flex flex-col gap-5 rounded-box p-5 bg-base-200 w-full">
-    <!-- <div class="flex items-end gap-3">
-      <button class="btn btn-square btn-sm btn-neutral">
-        <PlusIcon class="size-5"></PlusIcon>
-      </button>
-      <button class="btn btn-square btn-sm btn-neutral">
-        <CalendarDateRangeIcon class="size-5"></CalendarDateRangeIcon>
-      </button>
-      <button class="btn btn-square btn-sm btn-neutral">
-        <ArrowUpOnSquareIcon class="size-5"></ArrowUpOnSquareIcon>
-      </button>
-    </div> -->
-    <div v-if="eventsData.length > 0" class="flex flex-col gap-3">
+    <div v-if="currentEvents.length > 0" class="flex flex-col gap-3">
       <small>Eventi in corso:</small>
       <a
-        v-for="ev in eventsData"
-        class="pt-3 pb-3 pl-5 pr-5 bg-base-100 rounded-lg hover:shadow-md transition-all"
+        v-for="currentEvents in currentEvents"
+        class="pt-3 pb-3 pl-5 pr-5 bg-base-100 rounded-lg"
       >
-        {{ ev.title }}
+        {{ currentEvents.title }}
+      </a>
+    </div>
+    <div v-if="otherEvents.length > 0" class="flex flex-col gap-3">
+      <small>Prossimi eventi:</small>
+      <a
+        v-for="otherEvent in otherEvents"
+        class="pt-3 pb-3 pl-5 pr-5 bg-base-100 rounded-lg"
+      >
+        {{ otherEvent.title }}
       </a>
     </div>
   </div>
