@@ -4,7 +4,8 @@ import {
   MapPinIcon,
   PlusIcon,
 } from "@heroicons/vue/24/solid";
-import { computed } from "vue";
+import { computed, ref, watch } from "vue";
+import EventDialog from "./EventDialog.vue";
 const eventsData = defineModel("events");
 const currentEvents = computed(() => {
   const now = new Date();
@@ -22,9 +23,21 @@ const otherEvents = computed(() => {
     return startDate > now || endDate < now;
   });
 });
+const singleEvent = ref(null);
+watch(singleEvent, (newValue, _) => {
+  if (newValue === null) {
+    document.getElementById("searchBar").classList.remove("hidden");
+  } else {
+    document.getElementById("searchBar").classList.add("hidden");
+  }
+});
 </script>
 <template>
-  <div class="flex flex-col gap-5 rounded-box p-5 bg-base-200 w-full">
+  <div
+    id="eventsList"
+    v-if="singleEvent === null"
+    class="boxFadeIn flex flex-col gap-5 rounded-box p-5 bg-base-200 min-w-[25vw]"
+  >
     <div class="flex justify-between">
       <div class="flex gap-2">
         <button class="btn btn-square bg-base-100">
@@ -35,7 +48,7 @@ const otherEvents = computed(() => {
         </button>
       </div>
       <div>
-        <button class="btn btn-circle btn-primary">
+        <button class="btn btn-square btn-primary">
           <PlusIcon class="size-5"></PlusIcon>
         </button>
       </div>
@@ -44,20 +57,23 @@ const otherEvents = computed(() => {
     <div v-if="currentEvents.length > 0" class="flex flex-col gap-3">
       <small>In corso:</small>
       <a
-        v-for="currentEvents in currentEvents"
-        class="pt-3 pb-3 pl-5 pr-5 bg-base-100 rounded-lg"
+        v-for="currentEvent in currentEvents"
+        @click="singleEvent = currentEvent"
+        class="btn pt-3 pb-3 pl-5 pr-5 bg-base-100 rounded-lg flex justify-between"
       >
-        {{ currentEvents.title }}
+        <span class="text-base">{{ currentEvent.title }}</span>
       </a>
     </div>
     <div v-if="otherEvents.length > 0" class="flex flex-col gap-3">
       <small>Altri:</small>
       <a
         v-for="otherEvent in otherEvents"
-        class="pt-3 pb-3 pl-5 pr-5 bg-base-100 rounded-lg"
+        @click="singleEvent = otherEvent"
+        class="btn pt-3 pb-3 pl-5 pr-5 bg-base-100 rounded-lg flex justify-between"
       >
-        {{ otherEvent.title }}
+        <span class="text-base">{{ otherEvent.title }}</span>
       </a>
     </div>
   </div>
+  <EventDialog v-else v-model:event="singleEvent"></EventDialog>
 </template>

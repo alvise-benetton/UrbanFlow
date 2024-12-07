@@ -14,7 +14,7 @@ watch(model, (newValue) => {
 });
 </script>
 <template>
-  <label class="input flex items-center">
+  <label class="input flex items-center" id="searchBar">
     <input type="text" class="grow searchinput" :placeholder="'Cerca ' + txt" />
     <MagnifyingGlassIcon class="size-5 text-base-0" />
   </label>

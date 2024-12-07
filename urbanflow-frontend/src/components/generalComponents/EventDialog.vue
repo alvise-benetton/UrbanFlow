@@ -1,0 +1,59 @@
+<script setup>
+import {
+  ClockIcon,
+  MapPinIcon,
+  PencilSquareIcon,
+  XMarkIcon,
+} from "@heroicons/vue/24/solid";
+import { computed } from "vue";
+import ChartSmallMirror from "./ChartSmallMirror.vue";
+
+const event = defineModel("event");
+const isCurrent = computed(() => {
+  const now = new Date();
+  const startDate = new Date(event.startDate);
+  const endDate = new Date(event.endDate);
+  return startDate <= now && endDate >= now;
+});
+const dateString = (date) => {
+  const d = new Date(date);
+  return d.toLocaleDateString();
+};
+</script>
+<template>
+  <div
+    class="boxFadeIn flex flex-col gap-5 rounded-box p-5 bg-base-200 min-w-[25vw]"
+  >
+    <div class="flex justify-end gap-2">
+      <button class="btn btn-square bg-base-100">
+        <PencilSquareIcon class="size-5"></PencilSquareIcon>
+      </button>
+      <button class="btn btn-square bg-base-100" @click="event = null">
+        <XMarkIcon class="size-5"></XMarkIcon>
+      </button>
+    </div>
+    <hr />
+    <div class="flex flex-col gap-4">
+      <span class="font-bold">{{ event.title }}</span>
+      <div class="flex items-center gap-3">
+        <MapPinIcon class="size-4"></MapPinIcon>
+        <span>{{ event.zones }}</span>
+      </div>
+      <div class="flex items-center gap-3">
+        <ClockIcon class="size-4"></ClockIcon>
+        <div class="flex flex-col">
+          <div>
+            <span>Dalle </span
+            ><span class="text-primary">{{ dateString(event.startDate) }}</span>
+          </div>
+          <div>
+            <span>alle </span
+            ><span class="text-primary">{{ dateString(event.endDate) }}</span>
+          </div>
+        </div>
+      </div>
+      <ChartSmallMirror></ChartSmallMirror>
+    </div>
+    <button class="btn btn-error w-full text-white">Elimina evento</button>
+  </div>
+</template>
