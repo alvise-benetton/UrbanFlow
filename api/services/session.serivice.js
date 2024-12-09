@@ -28,8 +28,8 @@ async function createSession(req,res) {
             return res.status(401).json({ error: 'Credenziali non valide'});
         }
         const token = await jwt.sign(
-            { id: user.id, email: user.email },
-            process.env.JWT_SECRET,
+            { id: user.id, email: user.email, role: user.role},
+            process.env.SUPER_SECRET,
             { expiresIn: '1h' } // scadenza
         );
 

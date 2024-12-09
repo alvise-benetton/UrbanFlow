@@ -20,14 +20,11 @@ app.use(logger);
 
 // rotte utenti
 app.use('/api/session',sessionRoutes);
-// app.use('/api/users', tokenChecker, userRoutes);
-// app.use('/api/events', tokenChecker, eventRoutes);
-// app.use('/api/zones',tokenChecker, zoneRoutes);
+app.use('/api/users', tokenChecker, userRoutes);
+app.use('/api/events', tokenChecker, eventRoutes);
+app.use('/api/zones',tokenChecker, zoneRoutes);
 
-//test
-app.use('/api/users', userRoutes);
-app.use('/api/events', eventRoutes);
-app.use('/api/zones',zoneRoutes);
+
 
 // Avvio del server
 const PORT = process.env.PORT;
