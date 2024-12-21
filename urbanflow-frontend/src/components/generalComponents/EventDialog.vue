@@ -5,8 +5,12 @@ import {
   PencilSquareIcon,
   XMarkIcon,
 } from "@heroicons/vue/24/solid";
-import { computed } from "vue";
+import { ref, computed } from "vue";
 import ChartSmallMirror from "./ChartSmallMirror.vue";
+import ZonesPicker from "./ZonesPicker.vue";
+import DatePicker from "./DatePicker.vue";
+
+const isInEdit = ref(false);
 
 const event = defineModel("event");
 const isCurrent = computed(() => {
@@ -22,38 +26,35 @@ const dateString = (date) => {
 </script>
 <template>
   <div
-    class="boxFadeIn flex flex-col gap-5 rounded-box p-5 bg-base-200 min-w-[25vw]"
+    class="boxFadeIn flex flex-col gap-5 rounded-box p-5 bg-base-200 min-w-[25vw] eventDialog"
   >
     <div class="flex justify-end gap-2">
-      <button class="btn btn-square bg-base-100">
-        <PencilSquareIcon class="size-5"></PencilSquareIcon>
-      </button>
       <button class="btn btn-square bg-base-100" @click="event = null">
         <XMarkIcon class="size-5"></XMarkIcon>
       </button>
     </div>
     <hr />
     <div class="flex flex-col gap-4">
-      <span class="font-bold">{{ event.title }}</span>
+      <span class="font-bold text-lg">{{ event.title }}</span>
       <div class="flex items-center gap-3">
         <MapPinIcon class="size-4"></MapPinIcon>
-        <span>{{ event.zones }}</span>
+        <ZonesPicker
+          v-model:zones="event.zones"
+          v-model:event="event"
+        ></ZonesPicker>
       </div>
       <div class="flex items-center gap-3">
         <ClockIcon class="size-4"></ClockIcon>
-        <div class="flex flex-col">
-          <div>
-            <span>Dalle </span
-            ><span class="text-primary">{{ dateString(event.startDate) }}</span>
-          </div>
-          <div>
-            <span>alle </span
-            ><span class="text-primary">{{ dateString(event.endDate) }}</span>
-          </div>
-        </div>
+        <DatePicker v-model:event="event"></DatePicker>
       </div>
-      <ChartSmallMirror></ChartSmallMirror>
+      <ChartSmallMirror v-if="!isInEdit"></ChartSmallMirror>
     </div>
     <button class="btn btn-error w-full text-white">Elimina evento</button>
   </div>
 </template>
+<style>
+.eventDialog {
+  max-height: calc(100vh - 1.25rem * 2);
+  overflow: scroll;
+}
+</style>
