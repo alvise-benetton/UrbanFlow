@@ -19,29 +19,22 @@ const isCurrent = computed(() => {
   const endDate = new Date(event.endDate);
   return startDate <= now && endDate >= now;
 });
-const dateString = (date) => {
-  const d = new Date(date);
-  return d.toLocaleDateString();
-};
 </script>
 <template>
   <div
     class="boxFadeIn flex flex-col gap-5 rounded-box p-5 bg-base-200 min-w-[25vw] eventDialog"
   >
-    <div class="flex justify-end gap-2">
-      <button class="btn btn-square bg-base-100" @click="event = null">
-        <XMarkIcon class="size-5"></XMarkIcon>
-      </button>
-    </div>
-    <hr />
+    <button
+      class="btn btn-square bg-base-100 absolute right-5"
+      @click="event = null"
+    >
+      <XMarkIcon class="size-5"></XMarkIcon>
+    </button>
     <div class="flex flex-col gap-4">
       <span class="font-bold text-lg">{{ event.title }}</span>
       <div class="flex items-center gap-3">
         <MapPinIcon class="size-4"></MapPinIcon>
-        <ZonesPicker
-          v-model:zones="event.zones"
-          v-model:event="event"
-        ></ZonesPicker>
+        <ZonesPicker v-model:event="event"></ZonesPicker>
       </div>
       <div class="flex items-center gap-3">
         <ClockIcon class="size-4"></ClockIcon>
