@@ -1,57 +1,55 @@
 <script setup>
+import { MapPinIcon } from "@heroicons/vue/20/solid";
 import { PlusIcon } from "@heroicons/vue/24/solid";
 import { ref } from "vue";
 const zones = ref([1, 2, 3, 4, 5]); // Bisogna mettere tutte le zone
 const event = defineModel("event");
+const isEditing = defineModel("isEditing");
 const setZones = event.value.zones;
 const zonesModal = ref(null);
 const changed = ref(false);
 </script>
 <template>
-  <div class="flex flex-wrap gap-1 items-center">
-    <div
-      v-for="zone in setZones"
-      class="bg-gray-200 rounded-box pt-2 pb-2 pl-3 pr-3 cursor-pointer"
-    >
-      <span>Zona {{ zone }}</span>
+  <div class="flex flex-col gap-2">
+    <div class="flex flex-row gap-1 items-center">
+      <MapPinIcon class="size-4"></MapPinIcon>
+      <small>Dove ha luogo l'evento?</small>
     </div>
-    <button
-      class="btn btn-circle btn-sm bg-gray-200 border-none"
-      @click="zonesModal.showModal()"
-    >
-      <PlusIcon class="size-5"></PlusIcon>
-    </button>
+    <div class="flex flex-row flex-wrap gap-1.5 overflow-scroll">
+      <div v-for="zone in setZones" class="customItem bg-base-200">
+        <span>Zona {{ zone }}</span>
+      </div>
+      <button
+        class="btn btn-sm btn-square btn-primary btn-outline"
+        v-if="isEditing"
+        @click="zonesModal.showModal()"
+      >
+        <PlusIcon class="size-4"></PlusIcon>
+      </button>
+    </div>
   </div>
-  <dialog class="modal" id="zonesModal" ref="zonesModal">
-    <div class="modal-box w-80">
-      <h3 class="text-lg font-bold">{{ event.title }}</h3>
-      <p class="py-4">In quali zone ha luogo l'evento?</p>
-      <div class="flex flex-wrap gap-2">
+  <dialog id="zonesModal" class="modal" ref="zonesModal">
+    <div class="modal-box flex flex-col gap-5 w-fit">
+      <p>In quali zone della citàà ha luogo l'evento?</p>
+      <div class="flex flex-row flex-wrap gap-2">
         <input
           v-for="zone in zones"
-          :aria-label="'Zona ' + zone"
-          class="btn rounded-box"
           type="checkbox"
+          class="btn"
+          :aria-label="'Zona ' + zone"
           :checked="setZones.includes(zone)"
-          @change="
-            () => {
-              if (setZones.includes(zone)) {
-                setZones.splice(setZones.indexOf(zone), 1);
-              } else {
-                setZones.push(zone);
-              }
-              setZones.sort((a, b) => a - b);
-              changed = true;
-            }
-          "
         />
       </div>
       <div class="modal-action">
         <form method="dialog">
-          <button class="btn" v-if="!changed">Chiudi</button>
-          <button class="btn" v-else>Conferma</button>
+          <button class="btn">Conferma</button>
         </form>
       </div>
     </div>
   </dialog>
 </template>
+<style scoped>
+.customItem {
+  @apply btn-sm rounded-md flex flex-row justify-center items-center gap-2;
+}
+</style>

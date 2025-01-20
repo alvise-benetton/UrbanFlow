@@ -1,19 +1,49 @@
 <script setup>
+import { ClockIcon } from "@heroicons/vue/20/solid";
 const event = defineModel("event");
+const isEditing = defineModel("isEditing");
 </script>
+
 <template>
-  <div class="flex gap-2 items-center">
-    <p>Da</p>
-    <input
-      type="datetime-local"
-      class="bg-gray-200 border-none rounded-box pt-2 pb-2 pl-3 pr-3 cursor-pointer"
-      :value="new Date(event.startDate).toISOString().slice(0, 16)"
-    />
-    <p>a</p>
-    <input
-      type="datetime-local"
-      class="bg-gray-200 border-none rounded-box pt-2 pb-2 pl-3 pr-3 cursor-pointer"
-      :value="new Date(event.endDate).toISOString().slice(0, 16)"
-    />
+  <div class="flex flex-col gap-2">
+    <div class="flex flex-row gap-1 items-center">
+      <ClockIcon class="size-4"></ClockIcon>
+      <small>Quando è previsto l'evento?</small>
+    </div>
+    <div class="flex flex-row gap-2 w-fit">
+      <div class="customItem">
+        <div class="customItem bg-base-200 rounded-md !btn-sm">
+          <small>Inizio:</small>
+        </div>
+        <div class="customItem bg-base-200 rounded-md !btn-sm">
+          <small>Fine:</small>
+        </div>
+      </div>
+      <div class="customItem">
+        <input
+          type="datetime-local"
+          class="btn-sm rounded-md"
+          :class="{
+            'bg-base-200 pointer-events-none': !isEditing,
+            'btn btn-primary btn-outline': isEditing,
+          }"
+          :value="event.startDate"
+        />
+        <input
+          type="datetime-local"
+          class="btn-sm rounded-md"
+          :class="{
+            'bg-base-200 pointer-events-none': !isEditing,
+            'btn btn-primary btn-outline': isEditing,
+          }"
+          :value="event.endDate"
+        />
+      </div>
+    </div>
   </div>
 </template>
+<style scoped>
+.customItem {
+  @apply flex flex-col justify-center gap-2 p-0;
+}
+</style>

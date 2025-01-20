@@ -3,7 +3,7 @@ import {
   CalendarDateRangeIcon,
   MapPinIcon,
   PlusIcon,
-} from "@heroicons/vue/24/solid";
+} from "@heroicons/vue/20/solid";
 import { computed, ref, watch } from "vue";
 import EventDialog from "./EventDialog.vue";
 const eventsData = defineModel("events");
@@ -24,13 +24,25 @@ const otherEvents = computed(() => {
   });
 });
 const singleEvent = ref(null);
+const isEditing = ref(false);
+const isNewEvent = ref(false);
 watch(singleEvent, (newValue, _) => {
+  isEditing.value = false;
+  isNewEvent.value = false;
   if (newValue === null) {
     document.getElementById("searchBar").classList.remove("hidden");
   } else {
     document.getElementById("searchBar").classList.add("hidden");
   }
 });
+const createEvent = () => {
+  singleEvent.value = {
+    title: "",
+    zones: [],
+    startDate: new Date(),
+    endDate: new Date(),
+  };
+};
 </script>
 <template>
   <div
@@ -40,16 +52,16 @@ watch(singleEvent, (newValue, _) => {
   >
     <div class="flex justify-between">
       <div class="flex gap-2">
-        <button class="btn btn-square bg-base-100">
-          <CalendarDateRangeIcon class="size-5"></CalendarDateRangeIcon>
+        <button class="btn btn-square btn-sm bg-base-100">
+          <CalendarDateRangeIcon class="size-4"></CalendarDateRangeIcon>
         </button>
-        <button class="btn btn-square bg-base-100">
-          <MapPinIcon class="size-5"></MapPinIcon>
+        <button class="btn btn-square btn-sm bg-base-100">
+          <MapPinIcon class="size-4"></MapPinIcon>
         </button>
       </div>
       <div>
-        <button class="btn btn-square btn-primary">
-          <PlusIcon class="size-5"></PlusIcon>
+        <button class="btn btn-square btn-sm btn-primary" @click="createEvent">
+          <PlusIcon class="size-4"></PlusIcon>
         </button>
       </div>
     </div>
@@ -75,5 +87,10 @@ watch(singleEvent, (newValue, _) => {
       </a>
     </div>
   </div>
-  <EventDialog v-else v-model:event="singleEvent"></EventDialog>
+  <EventDialog
+    v-else
+    v-model:event="singleEvent"
+    v-model:isEditing="isEditing"
+    v-model:isNewEvent="isNewEvent"
+  ></EventDialog>
 </template>

@@ -3,6 +3,7 @@ import { onMounted, ref } from "vue";
 import { Chart } from "chart.js/auto";
 import { chartData, chartOptions } from "../../assets/chartSetup.js";
 const chart = ref(null);
+const eventID = defineModel("eventID");
 onMounted(() => {
   const ctx = chart.value.getContext("2d");
   new Chart(ctx, {
@@ -25,9 +26,9 @@ onMounted(() => {
 </script>
 <template>
   <div class="flex flex-col bg-base-300 rounded-box gap-0 overflow-hidden">
-    <canvas ref="chart" class="min-h-[20vh] pt-10"></canvas>
+    <canvas ref="chart" class="pt-10"></canvas>
     <div class="data flex items-center justify-between p-5">
-      <button class="btn">Mostra dati storici</button>
+      <button class="btn btn-sm">Mostra dati storici</button>
       <span class="font-bold">765</span>
     </div>
   </div>
