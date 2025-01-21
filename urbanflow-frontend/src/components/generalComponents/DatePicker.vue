@@ -1,9 +1,12 @@
+s
 <script setup>
+import { defineExpose, defineModel, ref } from "vue";
 import { ClockIcon } from "@heroicons/vue/20/solid";
 const event = defineModel("event");
 const isEditing = defineModel("isEditing");
+const isValid = ref(true);
+defineExpose({ isValid });
 </script>
-
 <template>
   <div class="flex flex-col gap-2">
     <div class="flex flex-row gap-1 items-center">
@@ -21,15 +24,20 @@ const isEditing = defineModel("isEditing");
       </div>
       <div class="customItem">
         <input
+          @change="event.startDate = $event.target.value"
           type="datetime-local"
           class="btn-sm rounded-md"
           :class="{
             'bg-base-200 pointer-events-none': !isEditing,
             'btn btn-primary btn-outline': isEditing,
+            'btn-error animate-pulse':
+              new Date(event.startDate) > new Date(event.endDate),
           }"
           :value="event.startDate"
+          :max="event.endDate"
         />
         <input
+          @change="event.endDate = $event.target.value"
           type="datetime-local"
           class="btn-sm rounded-md"
           :class="{
@@ -37,6 +45,7 @@ const isEditing = defineModel("isEditing");
             'btn btn-primary btn-outline': isEditing,
           }"
           :value="event.endDate"
+          :min="event.startDate"
         />
       </div>
     </div>

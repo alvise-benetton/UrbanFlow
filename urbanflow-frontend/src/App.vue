@@ -41,7 +41,6 @@ const activeSection = ref("Mappa");
     ></MapFilterList>
     <EventsList
       v-else-if="activeSection == 'Eventi'"
-      class="boxFadeIn shadow-md"
       v-model:events="eventsData"
     ></EventsList>
   </section>

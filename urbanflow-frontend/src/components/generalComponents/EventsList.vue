@@ -46,9 +46,8 @@ const createEvent = () => {
 </script>
 <template>
   <div
-    id="eventsList"
     v-if="singleEvent === null"
-    class="boxFadeIn flex flex-col gap-5 rounded-box p-5 bg-base-200 min-w-[25vw]"
+    class="flex flex-col gap-5 rounded-box p-5 bg-base-200 min-w-[25vw] shadow-md"
   >
     <div class="flex justify-between">
       <div class="flex gap-2">
@@ -87,10 +86,5 @@ const createEvent = () => {
       </a>
     </div>
   </div>
-  <EventDialog
-    v-else
-    v-model:event="singleEvent"
-    v-model:isEditing="isEditing"
-    v-model:isNewEvent="isNewEvent"
-  ></EventDialog>
+  <EventDialog v-else v-model:event="singleEvent"></EventDialog>
 </template>
