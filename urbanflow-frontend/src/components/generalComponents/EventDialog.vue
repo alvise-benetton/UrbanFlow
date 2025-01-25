@@ -1,6 +1,6 @@
 <script setup>
 import { PencilIcon, XMarkIcon } from "@heroicons/vue/20/solid";
-import { ref, computed, onBeforeMount, reactive } from "vue";
+import { ref, computed, onBeforeMount, reactive, onMounted } from "vue";
 import ZonesPicker from "./ZonesPicker.vue";
 import DatePicker from "./DatePicker.vue";
 import ChartSmallMirror from "./ChartSmallMirror.vue";
@@ -17,7 +17,6 @@ const isCurrent = computed(() => {
   const endDate = new Date(localEvent.endDate);
   return startDate <= now && endDate >= now;
 });
-const datePicker = ref(null);
 const abortChanges = () => {
   if (isNewEvent.value) {
     event.value = null;
@@ -31,8 +30,13 @@ const saveChanges = () => {
     JSON.stringify(event.value) == JSON.stringify(localEvent.value)
   ) {
     event.value = null;
+  } else {
+    event.value.title = localEvent.value.title;
+    event.value.zones = localEvent.value.zones;
+    event.value.startDate = localEvent.value.startDate;
+    event.value.endDate = localEvent.value.endDate;
+    isEditing.value = false;
   }
-  isEditing.value = false;
 };
 const deleteEvent = () => {
   event.value = null;
@@ -81,14 +85,30 @@ onBeforeMount(() => {
       <!-- Salva modifiche -->
       <button
         class="btn btn-sm btn-primary"
-        :disabled="JSON.stringify(event) == JSON.stringify(localEvent)"
+        :disabled="
+          JSON.stringify(event) == JSON.stringify(localEvent) ||
+          localEvent.title == ''
+        "
         @click="saveChanges()"
       >
         Salva
       </button>
     </div>
     <!-- Titolo evento -->
-    <h2 class="font-bold card-title">{{ localEvent.title }}</h2>
+    <div>
+      <span
+        v-if="!isEditing && !isNewEvent"
+        class="titleSpan font-bold card-title w-full"
+        >{{ localEvent.title }}
+      </span>
+      <input
+        v-else
+        type="text"
+        v-model="localEvent.title"
+        class="font-bold card-title pb-2 border-b-2 border-primary text-primary text-wrap outline-none w-full"
+        placeholder="Aggiungi un titolo..."
+      />
+    </div>
     <!-- Zone evento -->
     <ZonesPicker
       v-model:event="localEvent"
@@ -96,7 +116,6 @@ onBeforeMount(() => {
     ></ZonesPicker>
     <!-- Data evento -->
     <DatePicker
-      ref="datePicker"
       v-model:event="localEvent"
       v-model:isEditing="isEditing"
     ></DatePicker>

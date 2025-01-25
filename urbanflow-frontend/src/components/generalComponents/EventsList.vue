@@ -84,23 +84,23 @@ const createEvent = () => {
 
     <div v-if="currentEvents.length > 0" class="flex flex-col gap-3">
       <small>In corso:</small>
-      <a
-        v-for="currentEvent in currentEvents"
-        @click="singleEvent = currentEvent"
-        class="btn pt-3 pb-3 pl-5 pr-5 bg-base-100 rounded-lg flex justify-between"
+      <button
+        v-for="currentEvent in otherEvents"
+        @click="singleEvent = otherEvent"
+        class="btn bg-base-100"
       >
-        <span class="text-base">{{ currentEvent.title }}</span>
-      </a>
+        <span class="text-left w-full">{{ currentEvent.title }}</span>
+      </button>
     </div>
     <div v-if="otherEvents.length > 0" class="flex flex-col gap-3">
       <small>Altri:</small>
-      <a
+      <button
         v-for="otherEvent in otherEvents"
         @click="singleEvent = otherEvent"
-        class="btn pt-3 pb-3 pl-5 pr-5 bg-base-100 rounded-lg flex justify-between"
+        class="btn bg-base-100"
       >
-        <span class="text-base">{{ otherEvent.title }}</span>
-      </a>
+        <span class="text-left w-full">{{ otherEvent.title }}</span>
+      </button>
     </div>
     <div v-if="filteredEventsData.length == 0">
       <p class="text-gray-400 w-full text-center">Nessun evento trovato</p>
