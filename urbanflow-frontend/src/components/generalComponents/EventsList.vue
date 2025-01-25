@@ -11,9 +11,12 @@ const filteredEventsData = computed(() => {
   if (searchTerm.value == "") {
     return eventsData.value;
   } else {
-    return eventsData.value.filter((ev) =>
-      ev.title.toLowerCase().includes(searchTerm.value.toLowerCase())
-    );
+    return eventsData.value.filter((ev) => {
+      let words = searchTerm.value.toLowerCase().trim().split(" ");
+      return words.every((word) => {
+        return ev.title.toLowerCase().includes(word);
+      });
+    });
   }
 });
 const searchTerm = defineModel("searchTerm");
@@ -57,9 +60,11 @@ const createEvent = () => {
 <template>
   <div
     v-if="singleEvent === null"
-    class="flex flex-col gap-5 rounded-box p-5 bg-base-200 min-w-[25vw] shadow-md"
+    class="eventListDialog flex flex-col gap-5 rounded-box p-5 bg-base-200 shadow-md"
   >
-    <div class="flex justify-between">
+    <div
+      class="flex justify-between sticky top-0 bg-base-200 border-b border-base-300 pb-5"
+    >
       <!-- Filtri -->
       <div class="flex gap-2">
         <button class="btn btn-square btn-sm bg-base-100">
@@ -76,7 +81,7 @@ const createEvent = () => {
         </button>
       </div>
     </div>
-    <hr class="rounded-full border-gray-300" />
+
     <div v-if="currentEvents.length > 0" class="flex flex-col gap-3">
       <small>In corso:</small>
       <a
@@ -97,6 +102,18 @@ const createEvent = () => {
         <span class="text-base">{{ otherEvent.title }}</span>
       </a>
     </div>
+    <div v-if="filteredEventsData.length == 0">
+      <p class="text-gray-400 w-full text-center">Nessun evento trovato</p>
+    </div>
   </div>
   <EventDialog v-else v-model:event="singleEvent"></EventDialog>
 </template>
+<style scoped>
+.eventListDialog {
+  min-width: 250pt;
+  width: 25vw;
+  max-width: 30vw;
+  max-height: calc(100vh - 1.25rem * 2);
+  overflow: scroll;
+}
+</style>

@@ -2,7 +2,7 @@
 import { ref, watch } from "vue";
 import { MagnifyingGlassIcon } from "@heroicons/vue/24/solid";
 const appSection = defineModel("appSection");
-const searchTerm = defineModel("searchTerm", { default: null });
+const searchTerm = defineModel("searchTerm");
 const txt = ref("un evento o una zona");
 watch(appSection, (newValue) => {
   if (newValue == "Eventi") {

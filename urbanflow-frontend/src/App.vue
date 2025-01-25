@@ -16,7 +16,7 @@ const activeArea = ref("Main");
 const appAreas = ref(["User", "Main"]);
 const appSection = ref("Mappa");
 
-const searchTerm = ref(null);
+const searchTerm = ref("");
 </script>
 
 <template>

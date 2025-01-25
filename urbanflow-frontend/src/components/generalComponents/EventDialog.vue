@@ -54,7 +54,7 @@ onBeforeMount(() => {
       <span class="text-red-500">LIVE</span>
     </div>
     <div
-      class="flex flex-row justify-end gap-2"
+      class="flex flex-row justify-end gap-2 bg-base-100"
       v-if="!isEditing && !isNewEvent"
     >
       <!-- Modifica evento -->
