@@ -1,9 +1,10 @@
 <script setup>
 import { ref, watch } from "vue";
 import { MagnifyingGlassIcon } from "@heroicons/vue/24/solid";
-const model = defineModel();
+const appSection = defineModel("appSection");
+const searchTerm = defineModel("searchTerm", { default: null });
 const txt = ref("un evento o una zona");
-watch(model, (newValue) => {
+watch(appSection, (newValue) => {
   if (newValue == "Eventi") {
     txt.value = "un evento";
   } else if (newValue == "Zone") {
@@ -15,7 +16,12 @@ watch(model, (newValue) => {
 </script>
 <template>
   <label class="input flex items-center" id="searchBar">
-    <input type="text" class="grow searchinput" :placeholder="'Cerca ' + txt" />
+    <input
+      type="text"
+      class="grow searchinput"
+      :placeholder="'Cerca ' + txt"
+      v-model="searchTerm"
+    />
     <MagnifyingGlassIcon class="size-5 text-base-0" />
   </label>
 </template>

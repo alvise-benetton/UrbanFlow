@@ -7,9 +7,19 @@ import {
 import { computed, ref, watch } from "vue";
 import EventDialog from "./EventDialog.vue";
 const eventsData = defineModel("events");
+const filteredEventsData = computed(() => {
+  if (searchTerm.value == "") {
+    return eventsData.value;
+  } else {
+    return eventsData.value.filter((ev) =>
+      ev.title.toLowerCase().includes(searchTerm.value.toLowerCase())
+    );
+  }
+});
+const searchTerm = defineModel("searchTerm");
 const currentEvents = computed(() => {
   const now = new Date();
-  return eventsData.value.filter((ev) => {
+  return filteredEventsData.value.filter((ev) => {
     const startDate = new Date(ev.startDate);
     const endDate = new Date(ev.endDate);
     return startDate <= now && endDate >= now;
@@ -17,7 +27,7 @@ const currentEvents = computed(() => {
 });
 const otherEvents = computed(() => {
   const now = new Date();
-  return eventsData.value.filter((ev) => {
+  return filteredEventsData.value.filter((ev) => {
     const startDate = new Date(ev.startDate);
     const endDate = new Date(ev.endDate);
     return startDate > now || endDate < now;
@@ -50,6 +60,7 @@ const createEvent = () => {
     class="flex flex-col gap-5 rounded-box p-5 bg-base-200 min-w-[25vw] shadow-md"
   >
     <div class="flex justify-between">
+      <!-- Filtri -->
       <div class="flex gap-2">
         <button class="btn btn-square btn-sm bg-base-100">
           <CalendarDateRangeIcon class="size-4"></CalendarDateRangeIcon>
@@ -58,6 +69,7 @@ const createEvent = () => {
           <MapPinIcon class="size-4"></MapPinIcon>
         </button>
       </div>
+      <!-- Crea evento -->
       <div>
         <button class="btn btn-square btn-sm btn-primary" @click="createEvent">
           <PlusIcon class="size-4"></PlusIcon>

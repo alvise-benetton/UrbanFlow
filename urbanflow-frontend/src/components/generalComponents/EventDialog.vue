@@ -118,7 +118,9 @@ onBeforeMount(() => {
       </div>
       <form class="flex flex-row gap-2 w-full modal-action" method="dialog">
         <button class="btn btn-primary flex-grow">Annulla</button>
-        <button class="btn btn-error text-white flex-grow">Elimina</button>
+        <button class="btn btn-error text-white flex-grow" @click="deleteEvent">
+          Elimina
+        </button>
       </form>
     </div>
   </dialog>
