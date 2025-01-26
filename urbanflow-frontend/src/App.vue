@@ -14,8 +14,9 @@ import events from "./demoData/events.json";
 const eventsData = ref(events);
 const activeArea = ref("Main");
 const appAreas = ref(["User", "Main"]);
+const appSection = ref("Mappa");
 
-const activeSection = ref("Mappa");
+const searchTerm = ref("");
 </script>
 
 <template>
@@ -24,7 +25,7 @@ const activeSection = ref("Mappa");
     id="rootBox"
     class="fixed top-5 flex justify-evenly w-full"
   >
-    <SectionsBar v-model="activeSection" class="shadow-md"></SectionsBar>
+    <SectionsBar v-model="appSection" class="shadow-md"></SectionsBar>
   </section>
   <section v-if="activeArea === 'Main'" id="mapBox" class="relative">
     <Map v-model:events="eventsData"></Map>
@@ -34,20 +35,24 @@ const activeSection = ref("Mappa");
     id="rightSideBox"
     class="fixed top-5 right-5 flex flex-col items-end gap-5"
   >
-    <MapSearchBar v-model="activeSection" class="shadow-md"></MapSearchBar>
+    <MapSearchBar
+      v-model:appSection="appSection"
+      v-model:searchTerm="searchTerm"
+      class="shadow-md"
+    ></MapSearchBar>
     <MapFilterList
-      v-if="activeSection == 'Mappa'"
+      v-if="appSection == 'Mappa'"
       class="boxFadeIn shadow-md"
     ></MapFilterList>
     <EventsList
-      v-else-if="activeSection == 'Eventi'"
-      class="boxFadeIn shadow-md"
+      v-else-if="appSection == 'Eventi'"
       v-model:events="eventsData"
+      v-model:searchTerm="searchTerm"
     ></EventsList>
   </section>
   <section
     id="leftSideBox"
-    v-if="activeSection != 'User'"
+    v-if="appSection != 'User'"
     class="fixed top-5 left-5 flex gap-5"
   >
     <UserButtons></UserButtons>
