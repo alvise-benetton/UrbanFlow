@@ -309,7 +309,7 @@ paths:
               schema:
                 type: array
                 items:
-                  $ref: "#/components/schemas/zone"
+                  $ref: "#/components/schemas/event"
         400:
           description: Richiesta non valida.
         401:
@@ -690,7 +690,7 @@ paths:
               $ref: "#/components/schemas/auth"
       responses:
         201:
-          description: sessione creata.
+          description: Sessione creata.
           content:
             application/json:
               schema:
