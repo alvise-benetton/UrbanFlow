@@ -6,6 +6,7 @@ import {
   PlusIcon,
 } from "@heroicons/vue/20/solid";
 import { computed, reactive, ref, watch } from "vue";
+import ZoneDialog from "./ZoneDialog.vue";
 const inFocus = reactive({
   zones: true,
   alerts: false,
@@ -65,6 +66,7 @@ const changeFocusedList = (z, a) => {
       </button>
     </div>
   </div>
+  <ZoneDialog></ZoneDialog>
 </template>
 <style scoped>
 .dialog {
