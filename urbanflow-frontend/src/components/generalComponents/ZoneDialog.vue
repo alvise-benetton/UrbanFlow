@@ -21,6 +21,18 @@ const zone = reactive({
     date: "2024-08-17T14:07:30",
   },
   threshold: 200,
+  events: [
+    {
+      _id: "60d0fe4f5311236168a109cc",
+      title: "Festival dell'economia",
+      isCurrent: true,
+    },
+    {
+      _id: "60d0fe4f5311236168a109cc",
+      title: "Autumnus",
+      isCurrent: false,
+    },
+  ],
 });
 const localZone = reactive(JSON.parse(JSON.stringify(zone)));
 const isEditing = ref(false);
@@ -123,8 +135,11 @@ const thresholdDialog = ref(null);
     </div>
     <!-- Card allerta -->
     <div
-      v-if="alert.active"
+      v-if="alert.active && !isNewEvent"
       class="bg-red-500 text-white rounded-box p-5 flex flex-col gap-4"
+      :class="{
+        unfocus: isEditing,
+      }"
     >
       <ExclamationTriangleIcon class="size-10"></ExclamationTriangleIcon>
       <p>
@@ -140,6 +155,26 @@ const thresholdDialog = ref(null);
       <button class="btn border-none bg-red-700 hover:bg-red-800 text-white">
         Segnala
       </button>
+    </div>
+    <!-- Lista eventi -->
+    <div
+      class="flex flex-col gap-2 p-3 bg-base-200 rounded-box items-center"
+      :class="{
+        unfocus: isEditing,
+      }"
+    >
+      <a
+        v-for="event in localZone.events"
+        class="btn btn-sm bg-base-100 justify-between w-full"
+      >
+        <span> {{ event.title }}</span>
+        <div v-if="event.isCurrent" class="indicator relative">
+          <div class="indicator absolute top-0 left-0 animate-ping"></div>
+        </div>
+      </a>
+      <small v-if="localZone.events.length <= 0" class="text-gray-500">
+        Nessun evento è previsto nella zona
+      </small>
     </div>
   </div>
   <dialog class="modal" ref="thresholdDialog">
@@ -168,5 +203,11 @@ const thresholdDialog = ref(null);
   max-width: 30vw;
   max-height: calc(100vh - 1.25rem * 2);
   overflow: scroll;
+}
+.indicator {
+  @apply w-2 h-2 bg-primary rounded-full;
+}
+.unfocus {
+  @apply opacity-30 pointer-events-none;
 }
 </style>
