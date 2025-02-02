@@ -6,10 +6,11 @@ const eventRoutes = require('./routers/event.route');
 const zoneRoutes = require('./routers/zone.route');
 const logger = require('./middleware/logger');
 const tokenChecker = require('./middleware/tokenChecker').tokenChecker;
+const cors = require('cors');
 require('dotenv').config();
 
 const app = express();
-
+app.use(cors());
 // Connessione al database
 db.connect();
 
