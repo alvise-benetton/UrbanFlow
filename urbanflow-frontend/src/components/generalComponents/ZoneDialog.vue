@@ -5,62 +5,38 @@ import {
   QuestionMarkCircleIcon,
   XMarkIcon,
 } from "@heroicons/vue/20/solid";
-import { reactive, ref, watch } from "vue";
-
-const zone = reactive({
-  _id: "60d0fe4f5311236168a109cc",
-  name: "Piazza Duomo",
-  coordinates: [
-    [45.46427, 9.18951],
-    [45.46427, 9.19051],
-    [45.46527, 9.19051],
-    [45.46527, 9.18951],
-  ],
-  latestData: {
-    density: 270,
-    date: "2024-08-17T14:07:30",
-  },
-  threshold: 200,
-  events: [
-    {
-      _id: "60d0fe4f5311236168a109cc",
-      title: "Festival dell'economia",
-      isCurrent: true,
-    },
-    {
-      _id: "60d0fe4f5311236168a109cc",
-      title: "Autumnus",
-      isCurrent: false,
-    },
-  ],
-});
-const localZone = reactive(JSON.parse(JSON.stringify(zone)));
+import { ref } from "vue";
+const zone = defineModel("zone");
+const localZone = ref(JSON.parse(JSON.stringify(zone.value)));
 const isEditing = ref(false);
 const isNewEvent = ref(false);
-const alert = reactive({
-  active: zone.threshold && zone.latestData.density > zone.threshold,
-  hasEvents: false,
-  day: new Date(zone.latestData.date).toLocaleDateString(),
-  hour: new Date(zone.latestData.date).toLocaleTimeString(),
-  density: zone.latestData.density,
-  increment_pcent: Math.round(
-    ((zone.latestData.density - zone.threshold) / zone.threshold) * 100
+const alert = ref({
+  active:
+    zone.value.threshold &&
+    zone.value.latestData.density > zone.value.threshold,
+  hasEvents: zone.value.events.length > 0,
+  day: new Date(zone.value.latestData.date).toLocaleDateString(),
+  hour: new Date(zone.value.latestData.date).toLocaleTimeString(),
+  density: zone.value.latestData.density,
+  increment_pcent: Math.floor(
+    ((zone.value.latestData.density - zone.value.threshold) /
+      zone.value.threshold) *
+      100
   ),
-});
-watch(zone, () => {
-  alert.active = zone.threshold && zone.latestData.density > zone.threshold;
-  alert.increment_pcent = Math.round(
-    ((zone.latestData.density - zone.threshold) / zone.threshold) * 100
-  );
 });
 const abortChanges = () => {
   isEditing.value = false;
-  localZone.threshold = zone.threshold;
+  localZone.value.threshold = zone.value.threshold;
 };
 const saveChanges = () => {
+  zone.value.threshold = localZone.value.threshold;
+  alert.value.active = zone.value.latestData.density > zone.value.threshold;
+  alert.value.increment_pcent = Math.floor(
+    ((zone.value.latestData.density - zone.value.threshold) /
+      zone.value.threshold) *
+      100
+  );
   isEditing.value = false;
-  zone.threshold = localZone.threshold;
-  console.log("Salvato: ", zone.threshold);
 };
 const thresholdInput = ref(null);
 const thresholdDialog = ref(null);
@@ -72,7 +48,7 @@ const thresholdDialog = ref(null);
       v-if="!isEditing && !isNewEvent"
     >
       <!-- Chiudi card zona -->
-      <button class="btn btn-square btn-sm" @click="event = null">
+      <button class="btn btn-square btn-sm" @click="zone = null">
         <XMarkIcon class="size-4"></XMarkIcon>
       </button>
     </div>
@@ -104,6 +80,7 @@ const thresholdDialog = ref(null);
       <input
         ref="thresholdInput"
         type="number"
+        pattern="[1-9][0-9]*"
         class="btn-sm bg-transparent w-full outline-none border-[1px] rounded-md"
         :value="localZone.threshold"
         :class="{
@@ -116,7 +93,7 @@ const thresholdDialog = ref(null);
             let v = $event.target.value.toString();
             v = v
               .split('')
-              .filter((c) => c.match(/[0-9]/))
+              .filter((c, i) => (c.match(/[0-9]/) && i == 0 ? c != '0' : true))
               .join('');
             $event.target.value = v == '' ? null : parseInt(v);
             localZone.threshold = v == '' ? null : parseInt(v);
@@ -140,7 +117,7 @@ const thresholdDialog = ref(null);
     </div>
     <!-- Card allerta -->
     <div
-      v-if="alert.active && !isNewEvent"
+      v-if="alert.active"
       class="bg-red-500 text-white rounded-box p-5 flex flex-col gap-4"
       :class="{
         unfocus: isEditing,
@@ -149,7 +126,8 @@ const thresholdDialog = ref(null);
       <ExclamationTriangleIcon class="size-10"></ExclamationTriangleIcon>
       <p>
         Alle {{ alert.hour }} del {{ alert.day }} il numero di pedoni rilevati
-        in {{ zone.name }} è stato superiore al limite impostato.
+        in {{ localZone.name }} è stato superiore al limite impostato di
+        {{ zone.threshold }}.
       </p>
       <div class="flex flex-row justify-between">
         <span class="stat-value"
