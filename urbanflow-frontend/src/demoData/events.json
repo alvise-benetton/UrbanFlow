@@ -1,23 +1,23 @@
 [
   {
-    "id": 10332,
+    "_id": 10332,
     "title": "Festival dell'economia",
-    "startDate": "2024-06-01T09:00:00Z",
-    "endDate": "2024-06-01T18:00:00Z",
+    "startDate": "2024-06-01T09:00",
+    "endDate": "2024-12-12T18:00",
     "zones": [1, 2]
   },
   {
-    "id": 10333,
+    "_id": 10333,
     "title": "Conferenza sulla tecnologia",
-    "startDate": "2024-06-05T10:00:00Z",
-    "endDate": "2024-06-05T17:00:00Z",
+    "startDate": "2024-06-05T10:00",
+    "endDate": "2024-06-05T17:00",
     "zones": [3, 4]
   },
   {
-    "id": 10334,
+    "_id": 10334,
     "title": "Mostra d'arte contemporanea",
-    "startDate": "2024-06-10T08:00:00Z",
-    "endDate": "2024-06-12T20:00:00Z",
+    "startDate": "2024-06-10T08:00",
+    "endDate": "2024-06-12T20:00",
     "zones": [5]
   }
 ]

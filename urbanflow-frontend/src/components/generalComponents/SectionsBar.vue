@@ -5,6 +5,7 @@ const sectionsList = ref(["Zone", "Mappa", "Eventi"]);
 const setActive = (section) => {
   model.value = section;
   window.location.hash = section;
+  document.getElementById("searchBar").classList.remove("hidden");
 };
 </script>
 <template>
