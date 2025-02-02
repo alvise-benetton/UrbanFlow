@@ -8,6 +8,7 @@ import MapSearchBar from "./components/generalComponents/MapSearchBar.vue";
 import MapFilterList from "./components/generalComponents/MapFilterList.vue";
 import UserButtons from "./components/generalComponents/UserButtons.vue";
 import EventsList from "./components/generalComponents/EventsList.vue";
+import ZonesAlertsList from "./components/generalComponents/ZonesAlertsList.vue";
 // Dati (da sostituire con fetch)
 import events from "./demoData/events.json";
 
@@ -49,6 +50,7 @@ const searchTerm = ref("");
       v-model:events="eventsData"
       v-model:searchTerm="searchTerm"
     ></EventsList>
+    <ZonesAlertsList></ZonesAlertsList>
   </section>
   <section
     id="leftSideBox"
