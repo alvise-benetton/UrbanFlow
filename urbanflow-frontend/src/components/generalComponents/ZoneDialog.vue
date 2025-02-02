@@ -38,7 +38,7 @@ const localZone = reactive(JSON.parse(JSON.stringify(zone)));
 const isEditing = ref(false);
 const isNewEvent = ref(false);
 const alert = reactive({
-  active: zone.latestData.density > zone.threshold,
+  active: zone.threshold && zone.latestData.density > zone.threshold,
   hasEvents: false,
   day: new Date(zone.latestData.date).toLocaleDateString(),
   hour: new Date(zone.latestData.date).toLocaleTimeString(),
@@ -48,7 +48,7 @@ const alert = reactive({
   ),
 });
 watch(zone, () => {
-  alert.active = zone.latestData.density > zone.threshold;
+  alert.active = zone.threshold && zone.latestData.density > zone.threshold;
   alert.increment_pcent = Math.round(
     ((zone.latestData.density - zone.threshold) / zone.threshold) * 100
   );
@@ -60,7 +60,9 @@ const abortChanges = () => {
 const saveChanges = () => {
   isEditing.value = false;
   zone.threshold = localZone.threshold;
+  console.log("Salvato: ", zone.threshold);
 };
+const thresholdInput = ref(null);
 const thresholdDialog = ref(null);
 </script>
 <template>
@@ -100,6 +102,7 @@ const thresholdDialog = ref(null);
         <span>Limite:</span>
       </div>
       <input
+        ref="thresholdInput"
         type="number"
         class="btn-sm bg-transparent w-full outline-none border-[1px] rounded-md"
         :value="localZone.threshold"
@@ -115,7 +118,6 @@ const thresholdDialog = ref(null);
               .split('')
               .filter((c) => c.match(/[0-9]/))
               .join('');
-            console.log(v);
             $event.target.value = v == '' ? null : parseInt(v);
             localZone.threshold = v == '' ? null : parseInt(v);
           }
@@ -127,6 +129,9 @@ const thresholdDialog = ref(null);
         @click="
           () => {
             isEditing = true;
+            $nextTick(() => {
+              thresholdInput.focus();
+            });
           }
         "
       >
