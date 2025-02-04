@@ -1,15 +1,47 @@
 <script setup>
-import {
-  CalendarDateRangeIcon,
-  ExclamationTriangleIcon,
-  MapPinIcon,
-  PlusIcon,
-} from "@heroicons/vue/20/solid";
-import { computed, reactive, ref, watch } from "vue";
+import { ExclamationTriangleIcon } from "@heroicons/vue/20/solid";
+import { reactive, ref, watch } from "vue";
 import ZoneDialog from "./ZoneDialog.vue";
 const inFocus = reactive({
   zones: true,
   alerts: false,
+});
+const zonesList = reactive([
+  {
+    _id: "60d0fe4f5311236168a109cc",
+    name: "Piazza Duomo",
+    coordinates: [
+      [45.46427, 9.18951],
+      [45.46427, 9.19051],
+      [45.46527, 9.19051],
+      [45.46527, 9.18951],
+    ],
+    latestData: {
+      density: 270,
+      date: "2024-08-17T14:07:30",
+    },
+    threshold: 200,
+    events: [
+      {
+        _id: "60d0fe4f5311236168a109cc",
+        title: "Festival dell'economia",
+        isCurrent: true,
+      },
+      {
+        _id: "60d0fe4f5311236168a109cc",
+        title: "Autumnus",
+        isCurrent: false,
+      },
+    ],
+  },
+]);
+const singleZone = ref(null);
+watch(singleZone, (newValue, _) => {
+  // if (newValue === null) {
+  //   document.getElementById("searchBar").classList.remove("hidden");
+  // } else {
+  //   document.getElementById("searchBar").classList.add("hidden");
+  // }
 });
 const changeFocusedList = (z, a) => {
   inFocus.zones = z;
@@ -17,7 +49,10 @@ const changeFocusedList = (z, a) => {
 };
 </script>
 <template>
-  <div class="dialog flex flex-col gap-5 rounded-box p-5 bg-base-200 shadow-md">
+  <div
+    class="dialog flex flex-col gap-5 rounded-box p-5 bg-base-200 shadow-md"
+    v-if="singleZone === null"
+  >
     <!-- Selettore Zone-Allerte -->
     <ul
       class="menu menu-horizontal bg-base-100 rounded-xl flex gap-1 w-fit m-auto"
@@ -31,11 +66,18 @@ const changeFocusedList = (z, a) => {
     </ul>
     <!-- Lista zone -->
     <div v-if="inFocus.zones" class="flex flex-col">
-      <button class="btn bg-base-100 w-full flex justify-between">
-        <span>Piazza del duomo</span>
+      <button
+        class="btn bg-base-100 w-full flex justify-between"
+        v-for="zone in zonesList"
+        @click="singleZone = zone"
+      >
+        <span>{{ zone.name }}</span>
         <div class="flex gap-2">
-          <div class="badge">66</div>
-          <div class="badge badge-error text-white">
+          <div class="badge">{{ zone.latestData.density }}</div>
+          <div
+            class="badge badge-error text-white"
+            v-if="zone.threshold && zone.latestData.density > zone.threshold"
+          >
             <ExclamationTriangleIcon class="size-4"></ExclamationTriangleIcon>
           </div>
         </div>
@@ -66,7 +108,7 @@ const changeFocusedList = (z, a) => {
       </button>
     </div>
   </div>
-  <ZoneDialog></ZoneDialog>
+  <ZoneDialog v-else v-model:zone="singleZone"></ZoneDialog>
 </template>
 <style scoped>
 .dialog {
