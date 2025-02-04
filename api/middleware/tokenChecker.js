@@ -13,7 +13,7 @@ const blacklist = new Set(); // Blacklist dei token
 		}
 
 		// decode token, verifies secret and checks exp
-		jwt.verify(token, process.env.JWT_SECRET, function(err, decoded) {			
+		jwt.verify(token, process.env.SUPER_SECRET, function(err, decoded) {			
 			if (err) {
 				return res.status(403).json({
 					error: 'Autenticazione fallita'

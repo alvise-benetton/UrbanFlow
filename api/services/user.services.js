@@ -27,11 +27,11 @@ async function getUserById(req, res) {
 }
 
 async function createUser(req,res){
-  const {email, password,name,surname,ruolo} = req.body;
+  const {email, password,name,surname,role} = req.body;
 
   try {
     // check prametri
-    if(!(email && password && name && surname && ruolo)){
+    if(!(email && password && name && surname && role)){
         return res.status(400).json({error: 'Bad request'});
     }
 
@@ -41,12 +41,12 @@ async function createUser(req,res){
           return res.status(400).json({error: 'Utente gia presernte'})
       }
       //crea nuovo
-      user = new User({email, password,name,surname,ruolo});
+      user = new User({email, password,name,surname,role});
 
       const salt = await bcrypt.genSalt(10);
       user.password = await bcrypt.hash(password, salt);
       await user.save();  
-      res.status(201).json({ email,name,surname,ruolo }); // È giusto inivare i dati in rest, o ci sono altri modi?
+      res.status(201).json({ email,name,surname,role }); // È giusto inivare i dati in rest, o ci sono altri modi?
   } catch (err) {
       console.log(err);
       res.status(500).json({error:'Errore del server'});

@@ -1,4 +1,5 @@
 const mongoose = require('mongoose');
+const bcrypt = require('bcrypt');
 const User = require('./models/user.model');
 const Event = require('./models/event.model');
 const Zone = require('./models/zone.model');
@@ -7,33 +8,30 @@ require('dotenv').config();
 
 db.connect();
 
-
-// Dati di esempio per il modello User
 const usersData = [
   {
     name: 'Mario',
     surname: 'Rossi',
     email: 'mario.rossi@example.com',
-    password: 'hashed_password_mario', // Usa bcrypt per hashare le password se necessario
-    ruolo: 'admin',
+    password: 'password_mario', 
+    role: 'admin',
   },
   {
     name: 'Luca',
     surname: 'Bianchi',
     email: 'luca.bianchi@example.com',
-    password: 'hashed_password_luca',
-    ruolo: 'user',
+    password: 'password_luca',
+    role: 'user',
   },
   {
     name: 'Giulia',
     surname: 'Verdi',
     email: 'giulia.verdi@example.com',
-    password: 'hashed_password_giulia',
-    ruolo: 'editor',
+    password: 'password_giulia',
+    role: 'admin',
   },
 ];
 
-// Dati di esempio per il modello Event
 const eventsData = [
   {
     title: "Festival dell'economia",
@@ -53,48 +51,38 @@ const eventsData = [
     endDate: "2024-12-05T16:00:00.000Z",
     zones: [2],
   },
+];
+
+const zonesData = [
   {
-    title: 'Workshop di design',
-    startDate: "2024-12-05T14:00:00.000Z",
-    endDate: "2024-12-05T16:00:00.000Z",
-    zones: [2],
+    name: 'Zona Nord',
+    zone: [10, 20],
+    latestData: {
+      density: 50,
+      date: new Date(),
+    },
+    threshold: 200,
+  },
+  {
+    name: 'Zona Sud',
+    zone: [30, 40],
+    latestData: {
+      density: 80,
+      date: new Date(),
+    },
+    threshold: 250,
+  },
+  {
+    name: 'Zona Est',
+    zone: [15, 25],
+    latestData: {
+      density: 100,
+      date: new Date(),
+    },
+    threshold: 300,
   },
 ];
 
-// Dati di esempio per il modello Zone
-const zonesData = [
-    {
-      name: 'Zona Nord',
-      zone: [10, 20],
-      latestData: {
-        density: 50,
-        date: new Date(),
-      },
-      threshold: 200,
-    },
-    {
-      name: 'Zona Sud',
-      zone: [30, 40],
-      latestData: {
-        density: 80,
-        date: new Date(),
-      },
-      threshold: 250,
-    },
-    {
-      name: 'Zona Est',
-      zone: [15, 25],
-      latestData: {
-        density: 100,
-        date: new Date(),
-      },
-      threshold: 300,
-    },
-  ];
-  
-
-
-// Funzione per popolare il database
 async function seedDatabase() {
   try {
     // Cancella i dati esistenti
@@ -103,9 +91,14 @@ async function seedDatabase() {
     await Zone.deleteMany({});
     console.log('Database svuotato');
 
-    // Inserisce i nuovi dati
-    await User.insertMany(usersData);
-    console.log('Dati utenti inseriti');
+    // Inserisci utenti con password criptate
+    for (const userData of usersData) {
+      const salt = await bcrypt.genSalt(10);
+      userData.password = await bcrypt.hash(userData.password, salt);
+      const user = new User(userData);
+      await user.save();
+    }
+    console.log('Dati utenti inseriti con password criptate');
 
     await Event.insertMany(eventsData);
     console.log('Dati eventi inseriti');
@@ -113,7 +106,6 @@ async function seedDatabase() {
     await Zone.insertMany(zonesData);
     console.log('Dati zone inseriti');
 
- 
     console.log('Popolamento del database completato');
     mongoose.connection.close();
   } catch (err) {
@@ -122,5 +114,4 @@ async function seedDatabase() {
   }
 }
 
-// Esegui la funzione
 seedDatabase();
