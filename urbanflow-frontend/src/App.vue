@@ -5,6 +5,11 @@
 </template>
 
 <script>
+
+  listaZone = [];
+  listaEventi = [];
+  
+
 export default {
   name: "App"
 };
