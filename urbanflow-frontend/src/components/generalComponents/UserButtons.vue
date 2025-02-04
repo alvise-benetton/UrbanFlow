@@ -1,5 +1,23 @@
 <script setup>
 import { UserIcon } from "@heroicons/vue/24/solid";
+
+function logout(){
+
+  fetch("http://localhost:3000/api/session",{
+    method:"DELETE",
+    headers:{"x-access-token":localStorage.getItem("JWT")}
+  }).then((resp)=>{
+    if(!resp.ok){
+      throw new Error("Errore durante il logut");
+    }
+    return resp.json();
+  }).then(()=>{
+    this.$router.push('/login');
+    localStorage.removeItem("JWT");
+  });
+
+}
+
 </script>
 <template>
   <div class="flex gap-5">
@@ -9,7 +27,7 @@ import { UserIcon } from "@heroicons/vue/24/solid";
         Il mio account
       </summary>
       <ul class="menu dropdown-content gap-2">
-        <li><a class="btn btn-error text-white w-fit shadow-md">Logout</a></li>
+        <li><button class="btn btn-error text-white w-fit shadow-md" @click="logout">Logout</button></li>
         <li><a class="btn w-fit shadow-md">Area riservata</a></li>
       </ul>
     </details>
