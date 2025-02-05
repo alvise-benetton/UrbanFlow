@@ -2,8 +2,11 @@
 import { onMounted, ref, watch } from "vue";
 import ZoomPane from "../mapComponents/ZoomPane.vue";
 import eventBus from "../utility/eventBus";
+import listHandler from "../utility/listHandler";
+
 const mapRef = ref(null);
 const zoneLayer = ref(null);
+
 const mapInit = () => {
   const map = L.map("map", {
     zoomControl: false,
@@ -14,50 +17,75 @@ const mapInit = () => {
     "https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}{r}.png"
   ).addTo(map);
   mapRef.value = map;
-  addZones(map);
+  //addZones(map);
   filterHandler()
+  zoneLayer.value = L.layerGroup();
+  listHandler.updateZones().then((lista)=>{addZones(map,lista)});
+  //
+  /* watch(listHandler.listaZone, ()=>{
+    addZones(map)
+  }) */
+  
 };
 // gestione dello zoom
 const zoomLevel = ref(15);
 watch(zoomLevel, () => {
   mapRef.value.setZoom(zoomLevel.value);
 });
+
+
+
 // colora le zone al passare del mouse
 function mouseHandler(e) {
   const layer = e.target;
-  layer.setStyle({
+
+  if(e.type === "mouseover"){
+    layer.setStyle({
       color: 'red',
       fillColor: 'red'
-  });
+    });
+  }
+  if(e.type === "mouseout"){
+    layer.setStyle({
+      color: 'blue',
+      fillColor: 'blue'
+    });
+  } 
 }
 // gestisce il click delle zone
 function clickHandler(layer){
-  console.log(layer.feature.properties.nome);
+  console.log("click",layer);
 }
 
 // aggiunge le zone inserite le file geoJSON
-async function addZones(map) {
-    const response = await fetch("/map.geojson");
-    const data = await response.json();
-    zoneLayer.value = L.geoJson(data, {
+function addZones(map,lista) { 
+
+    lista.forEach((zona)=>{
+
+      let p = L.polygon(zona.coordinates,{
       style: {
           color: 'blue',
           fillColor: 'blue',
           fillOpacity: 0.15
-      },
-      onEachFeature: function (feature, layer) {
-          layer.on({
-              mouseover: mouseHandler,
-              mouseout: ()=>zoneLayer.value.resetStyle(),
-              click: ()=>{clickHandler(layer)}
-          });
-      }
-    }).addTo(map);
+      }});
+    
+      p.on({
+        mouseover: mouseHandler,
+        mouseout: mouseHandler,
+        click: (zona)=>{clickHandler(zona.target.id)}
+      });
+
+      p.id = zona._id  ;
+
+      p.addTo(zoneLayer.value);
+    
+    });
+
+    map.addLayer(zoneLayer.value);
+    
+    
 }
 function filterHandler(){
-  // Ascolta i cambiamenti ai filtri
- /*  eventBus.filters.value = []; // Inizializza i filtri
-  eventBus.filters.value = eventBus.filters.value; // Forza il reattivo */
   watch(() => eventBus.filters.value.length,()=>{filterUpdate(eventBus.filters.value)});
 }
 function filterUpdate(activeFilters){

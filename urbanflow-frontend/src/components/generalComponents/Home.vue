@@ -1,6 +1,6 @@
 <script setup>
 // Packages
-import { ref } from "vue";
+import { inject, ref } from "vue";
 // Componenti
 import Map from "./Map.vue";
 import SectionsBar from "./SectionsBar.vue";
@@ -12,13 +12,13 @@ import ZonesAlertsList from "./ZonesAlertsList.vue";
 // Dati (da sostituire con fetch)
 import events from "../../demoData/events.json";
 
-
 const eventsData = ref(events);
 const activeArea = ref("Main");
 const appAreas = ref(["User", "Main"]);
 const appSection = ref("Mappa");
 
 const searchTerm = ref("");
+
 </script>
 
 <template>
