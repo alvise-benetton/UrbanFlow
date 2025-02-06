@@ -676,6 +676,57 @@ paths:
             application/json:
               schema:
                 $ref: "#/components/schemas/error"
+  /cameraData:
+    get:
+      tags:
+        - CameraData
+      summary: Restituisce le ultime misurazioni delle zone.
+      security:
+        - authToken: []
+      responses:
+        200:
+          description: Risorsa JSON contenente lista misurazioni delle ultime misurazioni.
+          content:
+            application/json:
+              schema: 
+                type: object
+                properties:
+                  latest:
+                    type: array
+                    items:
+                      $ref: "#/components/schemas/cameraData"
+
+                  historical:
+                    type: array
+                    items:
+                      $ref: "#/components/schemas/cameraData"
+
+
+        400:
+          description: Richiesta non valida.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/error"
+        401:
+          description: Non autenticato
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/error"
+        403:
+          description: Accesso non autorizzato alla risorsa.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/error"
+        500:
+          description: Errore interno al server.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/error"
+  
   /session:
     post:
       tags:
@@ -862,24 +913,33 @@ components:
               [45.46527, 9.18951],
             ]
           readOnly: true
-        latestData:
-          type: object
-          properties:
-            density:
-              type: number
-              description: Densità registrata nella zona.
-              example: 150
-            date:
-              type: string
-              format: date-time
-              description: Data dell'ultima rilevazione.
-              example: "2024-08-17T14:07:30"
-          readOnly: true
         threshold:
           type: integer
           default: 0
           example: 250
           description: Limite oltre il quale segnalare un'affluenza imprevista. Se 0, significa che non c'è nessun limite.
+    
+    cameraData:
+      type: object
+      required:
+        - zone
+        - density
+        - date
+      properties:
+        zone:
+          type: number
+          description: ID della zona
+          example: 3
+        density:
+          type: number
+          description: Densità registrata nella zona.
+          example: 120
+        date:
+          type: string
+          format: date-time
+          description: Data dell'ultima rilevazione.
+          example: "2024-08-17T14:07:30"
+    
     auth:
       type: object
       required:

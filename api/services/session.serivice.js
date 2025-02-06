@@ -13,7 +13,6 @@ async function createSession(req,res) {
         if (!email || !password) {
             return res.status(400).json({ error: "'email' e 'password' sono campi obbligatori"});
         }
-
         let user = await users.findOne({
             email: req.body.email
         }).exec();
@@ -32,7 +31,6 @@ async function createSession(req,res) {
             process.env.SUPER_SECRET,
             { expiresIn: '1h' } // scadenza
         );
-
         return res.status(200).json({
             JWT: token
         });

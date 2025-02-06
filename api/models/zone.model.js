@@ -16,10 +16,10 @@ const ZoneSchema = new mongoose.Schema({
     required: true,
     unique: true
   },
-  latestData: {
+ /*  latestData: {
     type: LatestDataSchema,
     required: true,
-  },
+  }, */
   threshold: {
     type: Number,
     required: true,
