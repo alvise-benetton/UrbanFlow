@@ -1,12 +1,15 @@
 <script setup>
 import { ExclamationTriangleIcon } from "@heroicons/vue/20/solid";
-import { reactive, ref, watch } from "vue";
+import { computed, reactive, ref, watch } from "vue";
 import ZoneDialog from "./ZoneDialog.vue";
+//import eventBus from "@/components/utility/eventBus";
+import { useZoneStore } from "@/stores/zoneStore";
+
 const inFocus = reactive({
   zones: true,
   alerts: false,
 });
-const zonesList = reactive([
+/* const zonesList = reactive([
   {
     _id: "60d0fe4f5311236168a109cc",
     name: "Piazza Duomo",
@@ -34,7 +37,11 @@ const zonesList = reactive([
       },
     ],
   },
-]);
+]); */
+
+const zoneStore = useZoneStore();
+const zonesList = computed(() => zoneStore.listaZone);
+
 const singleZone = ref(null);
 watch(singleZone, (newValue, _) => {
   // if (newValue === null) {
@@ -47,16 +54,12 @@ const changeFocusedList = (z, a) => {
   inFocus.zones = z;
   inFocus.alerts = a;
 };
+
 </script>
 <template>
-  <div
-    class="dialog flex flex-col gap-5 rounded-box p-5 bg-base-200 shadow-md"
-    v-if="singleZone === null"
-  >
+  <div class="dialog flex flex-col gap-5 rounded-box p-5 bg-base-200 shadow-md" v-if="singleZone === null">
     <!-- Selettore Zone-Allerte -->
-    <ul
-      class="menu menu-horizontal bg-base-100 rounded-xl flex gap-1 w-fit m-auto"
-    >
+    <ul class="menu menu-horizontal bg-base-100 rounded-xl flex gap-1 w-fit m-auto" >
       <li @click="changeFocusedList(true, false)">
         <a class="text-gray-400" :class="{ active: inFocus.zones }">Zone</a>
       </li>
@@ -65,22 +68,19 @@ const changeFocusedList = (z, a) => {
       </li>
     </ul>
     <!-- Lista zone -->
-    <div v-if="inFocus.zones" class="flex flex-col">
+    <div v-if="inFocus.zones && zonesList.length > 0" class="flex flex-col">
       <button
         class="btn bg-base-100 w-full flex justify-between"
         v-for="zone in zonesList"
-        @click="singleZone = zone"
-      >
+        @click="singleZone = zone">
+
         <span>{{ zone.name }}</span>
-        <div class="flex gap-2">
+        <!-- <div class="flex gap-2">
           <div class="badge">{{ zone.latestData.density }}</div>
-          <div
-            class="badge badge-error text-white"
-            v-if="zone.threshold && zone.latestData.density > zone.threshold"
-          >
+          <div class="badge badge-error text-white" v-if="zone.threshold && zone.latestData.density > zone.threshold">
             <ExclamationTriangleIcon class="size-4"></ExclamationTriangleIcon>
           </div>
-        </div>
+        </div> -->
       </button>
     </div>
     <!-- Lista allerte -->

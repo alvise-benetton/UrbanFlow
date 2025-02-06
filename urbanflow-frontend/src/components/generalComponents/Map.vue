@@ -2,7 +2,10 @@
 import { onMounted, ref, watch } from "vue";
 import ZoomPane from "../mapComponents/ZoomPane.vue";
 import eventBus from "../utility/eventBus";
-import listHandler from "../utility/listHandler";
+import { useZoneStore } from '@/stores/zoneStore';
+
+
+
 
 const mapRef = ref(null);
 const zoneLayer = ref(null);
@@ -20,7 +23,13 @@ const mapInit = () => {
   //addZones(map);
   filterHandler()
   zoneLayer.value = L.layerGroup();
-  listHandler.updateZones().then((lista)=>{addZones(map,lista)});
+
+  const zoneStore = useZoneStore();
+
+  zoneStore.updateZones().then(()=>{addZones(map,zoneStore.listaZone)});
+
+
+  //listHandler.updateZones().then((lista)=>{addZones(map,lista)});
   //
   /* watch(listHandler.listaZone, ()=>{
     addZones(map)
@@ -86,7 +95,7 @@ function addZones(map,lista) {
     
 }
 function filterHandler(){
-  watch(() => eventBus.filters.value.length,()=>{filterUpdate(eventBus.filters.value)});
+  watch(() => eventBus.filters.filters.value.length,()=>{filterUpdate(eventBus.filters.filters.value)});
 }
 function filterUpdate(activeFilters){
 
