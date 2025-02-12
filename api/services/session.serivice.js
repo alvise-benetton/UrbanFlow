@@ -65,7 +65,12 @@ function deleteExpiredToken() {
     });
 }
 
-setInterval(deleteExpiredToken, 60 * 20 * 1000); // ogni 20 minuti eliminino i token in blacklist scaduti.
+if (process.env.NODE_ENV !== 'test') {
+    // Esegui setInterval solo se NON sei in modalità test
+    setInterval(deleteExpiredToken, 60 * 20 * 1000); // ogni 20 minuti eliminano i token in blacklist scaduti
+}
+
+
 
 
 module.exports = {createSession,deleteSession};

@@ -15,7 +15,8 @@ require('dotenv').config();
 const app = express();
 app.use(cors());
 // Connessione al database
-db.connect();
+//db.connect();
+
 
 // Middleware per il parsing JSON
 app.use(express.json());
@@ -31,6 +32,6 @@ app.use('/api/cameraData',tokenChecker,cameraDataRoutes);
 
 //cameraDataSchema.insertMany([{zone:"67a2181b3a63ef1e94127315",data:[{density:"150",timestamp:"1738830014"}]}]);
 
-// Avvio del server
-const PORT = process.env.PORT;
-app.listen(PORT, () => console.log(`Server avviato sulla porta ${PORT}`));
+module.exports = app;
+
+
