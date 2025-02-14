@@ -15,7 +15,9 @@ require('dotenv').config();
 const app = express();
 app.use(cors());
 // Connessione al database
-//db.connect();
+if (process.env.NODE_ENV !== 'test') {
+    db.connect();
+}
 
 
 // Middleware per il parsing JSON

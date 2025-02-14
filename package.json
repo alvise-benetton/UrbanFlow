@@ -4,7 +4,7 @@
   "description": "### Sezione 1",
   "main": "index.js",
   "scripts": {
-    "start": "node app.js",
+    "start": "node ./api/server",
     "test": "cross-env NODE_ENV=test jest --verbose"
   },
   "author": "",
