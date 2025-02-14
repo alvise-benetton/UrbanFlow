@@ -249,115 +249,116 @@ describe('POST /api/events', () => {
     });
 });
 
+
 describe('PUT /api/events/:id', () => {
     it('dovrebbe restituire 200 e aggiornare un evento esistente', async () => {
-      
-      
-      const eventUpdate = await Event.create({
-        title: 'Test Event',
-        startDate: '2025-02-11',
-        endDate: '2025-02-12',
-        zones: [8, 9]
+
+
+        const eventUpdate = await Event.create({
+            title: 'Test Event',
+            startDate: '2025-02-11',
+            endDate: '2025-02-12',
+            zones: [8, 9]
+        });
+
+        const updates = { title: 'updated title', zones: [3, 4] };
+
+        const response = await request(app)
+            .put(`/api/events/${eventUpdate._id}`)
+            .set('x-access-token', tokenAdmin)
+            .send(updates)
+            .expect(200);
+
+        expect(response.body.data).toMatchObject(updates);
     });
-  
-      const updates = { title: 'updated title', zones: [3, 4]};
-  
-      const response = await request(app)
-        .put(`/api/events/${eventUpdate._id}`)
-        .set('x-access-token', tokenAdmin)
-        .send(updates)
-        .expect(200);
-  
-      expect(response.body.data).toMatchObject(updates);
-    });
-  
+
     it('dovrebbe restituire 404 se l\'evento non esiste', async () => {
-         const nonExistentId = new mongoose.Types.ObjectId();
-  
-      const response = await request(app)
-        .put(`/api/events/${nonExistentId}`)
-        .set('x-access-token', tokenAdmin)
-        .send({ title: 'Test' })
-        .expect(404);
-  
-      expect(response.body.message).toBe('Evento non trovato');
+        const nonExistentId = new mongoose.Types.ObjectId();
+
+        const response = await request(app)
+            .put(`/api/events/${nonExistentId}`)
+            .set('x-access-token', tokenAdmin)
+            .send({ title: 'Test' })
+            .expect(404);
+
+        expect(response.body.message).toBe('Evento non trovato');
     });
-  
+
     it('dovrebbe restituire 500 in caso di errore del server', async () => {
-      const spy = jest.spyOn(Event, 'findByIdAndUpdate').mockImplementation(() => ({
-        select: jest.fn().mockRejectedValue(new Error('Errore del server'))
-      }));
-  
-      const eventTest = await Event.create({
-        title: 'Error Event',
-        startDate: '2025-02-11',
-        endDate: '2025-02-12',
-        zones: [8, 9]
-    });
-  
-      const response = await request(app)
-        .put(`/api/events/${eventTest._id}`)
-        .set('x-access-token', tokenAdmin)
-        .send({ name: 'Test' })
-        .expect(500);
-  
-      expect(response.text).toBe('Errore del server');
-  
-      spy.mockRestore();
+        const spy = jest.spyOn(Event, 'findByIdAndUpdate').mockImplementation(() => ({
+            select: jest.fn().mockRejectedValue(new Error('Errore del server'))
+        }));
+
+        const eventTest = await Event.create({
+            title: 'Error Event',
+            startDate: '2025-02-11',
+            endDate: '2025-02-12',
+            zones: [8, 9]
+        });
+
+        const response = await request(app)
+            .put(`/api/events/${eventTest._id}`)
+            .set('x-access-token', tokenAdmin)
+            .send({ name: 'Test' })
+            .expect(500);
+
+        expect(response.text).toBe('Errore del server');
+
+        spy.mockRestore();
     });
 });
 
 
 describe('DELETE /api/events/:id', () => {
     it('dovrebbe restituire 200 e confermare l\'eliminazione dell\'evento', async () => {
-       
+
         const eventToDel = await Event.create({
             title: 'Test Event to delete',
             startDate: '2025-02-11',
             endDate: '2025-02-12',
             zones: [8, 9]
         });
-  
-      const response = await request(app)
-        .delete(`/api/events/${eventToDel._id}`)
-        .set('x-access-token', tokenAdmin)
-        .expect(200);
-  
-      expect(response.body.message).toBe('Evento eliminato con successo');
-  
-      const deletedUser = await User.findById(eventToDel._id);
-      expect(deletedUser).toBeNull();
+
+        const response = await request(app)
+            .delete(`/api/events/${eventToDel._id}`)
+            .set('x-access-token', tokenAdmin)
+            .expect(200);
+
+        expect(response.body.message).toBe('Evento eliminato con successo');
+
+        const deletedUser = await User.findById(eventToDel._id);
+        expect(deletedUser).toBeNull();
     });
-  
+
     it('dovrebbe restituire 404 se l\'evento non esiste', async () => {
-      const nonExistentId = new mongoose.Types.ObjectId();
-  
-      const response = await request(app)
-        .delete(`/api/events/${nonExistentId}`)
-        .set('x-access-token', tokenAdmin)
-        .expect(404);
-  
-      expect(response.body.message).toBe('Evento non trovato');
+        const nonExistentId = new mongoose.Types.ObjectId();
+
+        const response = await request(app)
+            .delete(`/api/events/${nonExistentId}`)
+            .set('x-access-token', tokenAdmin)
+            .expect(404);
+
+        expect(response.body.message).toBe('Evento non trovato');
     });
-  
+
     it('dovrebbe restituire 500 in caso di errore del server', async () => {
-   
-      const spy = jest.spyOn(Event, 'findByIdAndDelete').mockRejectedValue(new Error('Errore del server'));
-  
-      const eventError = await Event.create({
-        title: 'Error Event',
-        startDate: '2025-02-11',
-        endDate: '2025-02-12',
-        zones: [8, 9]
+
+        const spy = jest.spyOn(Event, 'findByIdAndDelete').mockRejectedValue(new Error('Errore del server'));
+
+        const eventError = await Event.create({
+            title: 'Error Event',
+            startDate: '2025-02-11',
+            endDate: '2025-02-12',
+            zones: [8, 9]
+        });
+
+        const response = await request(app)
+            .delete(`/api/events/${eventError._id}`)
+            .set('x-access-token', tokenAdmin)
+            .expect(500);
+
+        expect(response.text).toBe('Errore del server');
+
+        spy.mockRestore();
     });
-  
-      const response = await request(app)
-        .delete(`/api/events/${eventError._id}`)
-        .set('x-access-token', tokenAdmin)
-        .expect(500);
-  
-      expect(response.text).toBe('Errore del server');
-  
-      spy.mockRestore();
-    });
-  });
+});

@@ -89,8 +89,8 @@ describe('GET /api/users', () => {
 
   });
 
-  
-  
+
+
   it('dovrebbe restituire 401 se non viene fornito il token', async () => {
     const response = await request(app)
       .get('/api/users')
@@ -137,7 +137,7 @@ describe('GET /api/users', () => {
 
 describe('GET /api/users/:id', () => {
   it('dovrebbe restituire 200 e un utente quando viene fornito un ID valido', async () => {
-    
+
     const user = await User.create(userAdmin);
 
     // token JWT valido per il test.
@@ -169,8 +169,8 @@ describe('GET /api/users/:id', () => {
 
     expect(response.body.error).toBeDefined();
   });
-  
-  
+
+
 
   it('dovrebbe restituire 403 se il token non è corretto', async () => {
     // token JWT valido per il test.
@@ -205,7 +205,7 @@ describe('GET /api/users/:id', () => {
 describe('POST /api/users', () => {
   it('dovrebbe restituire 201 e creare un nuovo utente quando i dati sono corretti', async () => {
     const user = await User.create(userAdmin);
-    
+
 
     // token JWT valido per il test admin.
     adminTokenPayload = { id: user.id, email: user.email, role: user.role };
@@ -233,7 +233,7 @@ describe('POST /api/users', () => {
   });
 
   it('dovrebbe restituire 400 se i dati sono incompleti', async () => {
-        const response = await request(app)
+    const response = await request(app)
       .post('/api/users')
       .set('x-access-token', tokenAdmin)
       .send({ email: 'incomplete@example.com', password: '1234' }) // Mancano name, surname e role
@@ -282,7 +282,7 @@ describe('POST /api/users', () => {
       .expect(500);
 
     expect(response.body.error).toBe('Errore del server');
-     spy.mockRestore();
+    spy.mockRestore();
   });
 });
 
@@ -291,7 +291,7 @@ describe('POST /api/users', () => {
 describe('PUT /api/users/:id', () => {
   it('dovrebbe restituire 200 e aggiornare un utente esistente', async () => {
     const user = await User.create(userAdmin);
-  
+
     // token JWT valido per il test admin.
     adminTokenPayload = { id: user.id, email: user.email, role: user.role };
     tokenAdmin = jwt.sign(adminTokenPayload, process.env.SUPER_SECRET, { expiresIn: '1h' });
@@ -316,7 +316,7 @@ describe('PUT /api/users/:id', () => {
   });
 
   it('dovrebbe restituire 404 se l\'utente non esiste', async () => {
-       const nonExistentId = new mongoose.Types.ObjectId();
+    const nonExistentId = new mongoose.Types.ObjectId();
 
     const response = await request(app)
       .put(`/api/users/${nonExistentId}`)
@@ -357,7 +357,7 @@ describe('PUT /api/users/:id', () => {
 describe('DELETE /api/users/:id', () => {
   it('dovrebbe restituire 200 e confermare l\'eliminazione dell\'utente', async () => {
     const user = await User.create(userAdmin);
-  
+
     // token JWT valido per il test admin.
     adminTokenPayload = { id: user.id, email: user.email, role: user.role };
     tokenAdmin = jwt.sign(adminTokenPayload, process.env.SUPER_SECRET, { expiresIn: '1h' });
@@ -383,7 +383,7 @@ describe('DELETE /api/users/:id', () => {
 
   it('dovrebbe restituire 404 se l\'utente non esiste', async () => {
     const user = await User.create(userAdmin);
-  
+
     // token JWT valido per il test admin.
     const adminTokenPayload = { id: user.id, email: user.email, role: user.role };
     const tokenAdmin = jwt.sign(adminTokenPayload, process.env.SUPER_SECRET, { expiresIn: '1h' });
@@ -400,7 +400,7 @@ describe('DELETE /api/users/:id', () => {
 
   it('dovrebbe restituire 500 in caso di errore del server', async () => {
     const user = await User.create(userAdmin);
-  
+
     // token JWT valido per il test admin.
     const adminTokenPayload = { id: user.id, email: user.email, role: user.role };
     const tokenAdmin = jwt.sign(adminTokenPayload, process.env.SUPER_SECRET, { expiresIn: '1h' });
