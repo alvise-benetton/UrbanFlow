@@ -5,44 +5,75 @@ import {
   QuestionMarkCircleIcon,
   XMarkIcon,
 } from "@heroicons/vue/20/solid";
-import { ref } from "vue";
-const zone = defineModel("zone");
-const localZone = ref(JSON.parse(JSON.stringify(zone.value)));
+import { computed, inject, ref, watch } from "vue";
+
+const zone = inject("selectedZone");
+const misurazioni = inject("listaMisurazioni");
+const localZone = ref({ ...zone.value }); // Copia iniziale di zone
+const alert = ref({ative:false,increment_pcent:0});
+
+
+const getDensity = ()=>{
+  //console.log(misurazioni.value.find((m)=>m.zone === zone.value._id))
+  return misurazioni.value.find((m)=>m.zone === zone.value._id)?.data[0].density;
+}
+
+alert.value.active = getDensity() > zone.value.threshold;
+alert.value.increment_pcent = Math.floor(
+  ((getDensity() - zone.value.threshold) /
+  zone.value.threshold) *
+    100
+);
+
+watch(zone, (newVal) => {
+  localZone.value = { ...newVal }; // Aggiorna localZone quando zone cambia
+}, { deep: true });
+
+
+
 const isEditing = ref(false);
 const isNewEvent = ref(false);
-const alert = ref({
-  active:
-    zone.value.threshold &&
-    zone.value.latestData.density > zone.value.threshold,
-  hasEvents: zone.value.events.length > 0,
-  day: new Date(zone.value.latestData.date).toLocaleDateString(),
-  hour: new Date(zone.value.latestData.date).toLocaleTimeString(),
-  density: zone.value.latestData.density,
-  increment_pcent: Math.floor(
-    ((zone.value.latestData.density - zone.value.threshold) /
-      zone.value.threshold) *
-      100
-  ),
-});
+
 const abortChanges = () => {
   isEditing.value = false;
   localZone.value.threshold = zone.value.threshold;
 };
-const saveChanges = () => {
-  zone.value.threshold = localZone.value.threshold;
-  alert.value.active = zone.value.latestData.density > zone.value.threshold;
-  alert.value.increment_pcent = Math.floor(
-    ((zone.value.latestData.density - zone.value.threshold) /
+const saveChanges = async () => {
+
+  await fetch(`http://localhost:3000/api/zones/${zone.value._id}`,
+  {
+    headers:{
+      "x-access-token":localStorage.getItem("JWT"),
+      "Content-Type": "application/json"
+      
+    },
+    body: JSON.stringify({threshold: localZone.value.threshold }),
+    method:"PUT"}).then((res)=>{
+    if(!res.ok){
+      throw new Error("errore nel modificare la zona");
+    }
+    return res;
+  }).then(()=>{
+    zone.value.threshold = localZone.value.threshold;
+    alert.value.active = getDensity() > zone.value.threshold;
+    alert.value.increment_pcent = Math.floor(
+      ((getDensity() - zone.value.threshold) /
       zone.value.threshold) *
-      100
-  );
+        100
+    );
+  })
   isEditing.value = false;
 };
+
+
+
 const thresholdInput = ref(null);
 const thresholdDialog = ref(null);
+
+
 </script>
 <template>
-  <div class="dialog flex flex-col bg-base-100 p-5 rounded-box gap-5 shadow-md">
+  <div class="dialog flex flex-col bg-base-100 p-5 rounded-box gap-5 shadow-md" v-if="localZone">
     <div
       class="flex flex-row justify-end gap-2 bg-base-100"
       v-if="!isEditing && !isNewEvent"
@@ -60,7 +91,7 @@ const thresholdDialog = ref(null);
       <!-- Salva modifiche -->
       <button
         class="btn btn-sm btn-primary"
-        :disabled="JSON.stringify(zone) == JSON.stringify(localZone)"
+        :disabled="JSON.stringify(zone) === JSON.stringify(localZone)"
         @click="saveChanges"
       >
         Salva
@@ -77,28 +108,17 @@ const thresholdDialog = ref(null);
         ></QuestionMarkCircleIcon>
         <span>Limite:</span>
       </div>
-      <input
+      <input 
+        v-model="localZone.threshold"
         ref="thresholdInput"
         type="number"
         pattern="[1-9][0-9]*"
         class="btn-sm bg-transparent w-full outline-none border-[1px] rounded-md"
-        :value="localZone.threshold"
         :class="{
           'text-primary border-primary': isEditing,
         }"
         :disabled="!isEditing"
         placeholder="imposta un valore"
-        @input="
-          ($event) => {
-            let v = $event.target.value.toString();
-            v = v
-              .split('')
-              .filter((c, i) => (c.match(/[0-9]/) && i == 0 ? c != '0' : true))
-              .join('');
-            $event.target.value = v == '' ? null : parseInt(v);
-            localZone.threshold = v == '' ? null : parseInt(v);
-          }
-        "
       />
       <button
         v-if="!isEditing"
@@ -117,7 +137,7 @@ const thresholdDialog = ref(null);
     </div>
     <!-- Card allerta -->
     <div
-      v-if="alert.active"
+      v-if="alert && alert.active"
       class="bg-red-500 text-white rounded-box p-5 flex flex-col gap-4"
       :class="{
         unfocus: isEditing,
@@ -155,7 +175,7 @@ const thresholdDialog = ref(null);
           <div class="indicator absolute top-0 left-0 animate-ping"></div>
         </div>
       </a>
-      <small v-if="localZone.events.length <= 0" class="text-gray-500">
+      <small v-if="!localZone.events || localZone.events.length <= 0" class="text-gray-500">
         Nessun evento è previsto nella zona
       </small>
     </div>

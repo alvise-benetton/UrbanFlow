@@ -1,11 +1,10 @@
 <script setup>
-import { onMounted, ref, watch } from "vue";
+import { inject, onMounted, ref, watch } from "vue";
 import ZoomPane from "../mapComponents/ZoomPane.vue";
 import eventBus from "../utility/eventBus";
-import { useZoneStore } from '@/stores/zoneStore';
 
 
-
+const listaZone = inject("listaZone");
 
 const mapRef = ref(null);
 const zoneLayer = ref(null);
@@ -24,9 +23,14 @@ const mapInit = () => {
   filterHandler()
   zoneLayer.value = L.layerGroup();
 
-  const zoneStore = useZoneStore();
+  watch(listaZone,()=>{
+    if(listaZone.value) // in teoria viene fatto solo una volta
+      addZones(mapRef.value,listaZone.value);
+  })
 
-  zoneStore.updateZones().then(()=>{addZones(map,zoneStore.listaZone)});
+  /* const zoneStore = useZoneStore();
+
+  zoneStore.updateZones().then(()=>{addZones(map,zoneStore.listaZone)}); */
 
 
   //listHandler.updateZones().then((lista)=>{addZones(map,lista)});
@@ -63,20 +67,19 @@ function mouseHandler(e) {
 }
 // gestisce il click delle zone
 function clickHandler(layer){
-  console.log("click",layer);
+  
 }
 
-// aggiunge le zone inserite le file geoJSON
 function addZones(map,lista) { 
-
+    //console.log("adada");
+    
     lista.forEach((zona)=>{
 
-      let p = L.polygon(zona.coordinates,{
-      style: {
-          color: 'blue',
-          fillColor: 'blue',
-          fillOpacity: 0.15
-      }});
+      let p = L.polygon(zona.coordinates,
+        {color: 'blue',
+        fillColor: 'blue',
+        fillOpacity: 0.15
+      });
     
       p.on({
         mouseover: mouseHandler,

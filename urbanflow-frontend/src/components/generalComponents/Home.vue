@@ -1,6 +1,6 @@
 <script setup>
 // Packages
-import { inject, ref } from "vue";
+import { computed, inject, ref } from "vue";
 // Componenti
 import Map from "./Map.vue";
 import SectionsBar from "./SectionsBar.vue";
@@ -16,8 +16,9 @@ const eventsData = ref(events);
 const activeArea = ref("Main");
 const appAreas = ref(["User", "Main"]);
 const appSection = ref("Mappa");
-
 const searchTerm = ref("");
+
+
 
 </script>
 

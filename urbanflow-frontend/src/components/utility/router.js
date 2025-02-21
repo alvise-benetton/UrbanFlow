@@ -38,12 +38,11 @@ router.beforeEach((to, from, next) => {
   }
 });
 
-function isTokenValid(token) {
+export function isTokenValid(token) {
     if (!token) return false;
 
     try {
         const decoded = jwtDecode(token);
-        //console.log(decoded);
         const currentTime = Date.now() / 1000;
         return decoded.exp > currentTime;
     } catch (error) {
@@ -53,3 +52,4 @@ function isTokenValid(token) {
 }
 
 export default router;
+
