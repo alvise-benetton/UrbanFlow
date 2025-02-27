@@ -14,7 +14,7 @@ const EventSchema = new mongoose.Schema({
     required: true,
   },
   zones: {
-    type: [Number],
+    type: [String],
     required: true,
   },
 }, { timestamps: true }); // timestamps aggiunge createdAt e updatedAt
