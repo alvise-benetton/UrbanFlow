@@ -9,10 +9,8 @@ import MapFilterList from "./MapFilterList.vue";
 import UserButtons from "./UserButtons.vue";
 import EventsList from "./EventsList.vue";
 import ZonesAlertsList from "./ZonesAlertsList.vue";
-// Dati (da sostituire con fetch)
-import events from "../../demoData/events.json";
 
-const eventsData = ref(events);
+const eventsData = inject("listaEventi");
 const activeArea = ref("Main");
 const appAreas = ref(["User", "Main"]);
 const appSection = ref("Mappa");
@@ -52,7 +50,7 @@ const searchTerm = ref("");
       v-model:events="eventsData"
       v-model:searchTerm="searchTerm"
     ></EventsList>
-    <ZonesAlertsList></ZonesAlertsList>
+    <ZonesAlertsList v-else-if="appSection == 'Zone'"></ZonesAlertsList>
   </section>
   <section
     id="leftSideBox"

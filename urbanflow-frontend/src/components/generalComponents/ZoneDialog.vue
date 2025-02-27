@@ -14,7 +14,6 @@ const alert = ref({ative:false,increment_pcent:0});
 
 
 const getDensity = ()=>{
-  //console.log(misurazioni.value.find((m)=>m.zone === zone.value._id))
   return misurazioni.value.find((m)=>m.zone === zone.value._id)?.data[0].density;
 }
 
@@ -45,7 +44,6 @@ const saveChanges = async () => {
     headers:{
       "x-access-token":localStorage.getItem("JWT"),
       "Content-Type": "application/json"
-      
     },
     body: JSON.stringify({threshold: localZone.value.threshold }),
     method:"PUT"}).then((res)=>{
@@ -65,11 +63,8 @@ const saveChanges = async () => {
   isEditing.value = false;
 };
 
-
-
 const thresholdInput = ref(null);
 const thresholdDialog = ref(null);
-
 
 </script>
 <template>

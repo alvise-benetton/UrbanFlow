@@ -1,8 +1,8 @@
 <script setup>
 import { MapPinIcon, PlusIcon } from "@heroicons/vue/20/solid";
-import { ref } from "vue";
-const zones = ref([1, 2, 3, 4, 5]); // Bisogna mettere tutte le zone
-const event = defineModel("event");
+import { inject, ref } from "vue";
+const zones = inject("listaZone"); 
+const localZones = defineModel("event");
 const isEditing = defineModel("isEditing");
 const zonesModal = ref(null);
 </script>
@@ -13,8 +13,8 @@ const zonesModal = ref(null);
       <small>Dove ha luogo l'evento?</small>
     </div>
     <div class="flex flex-row gap-1.5 flex-wrap">
-      <div v-for="zone in event.zones" class="customItem bg-base-200">
-        <span>Zona {{ zone }}</span>
+      <div v-for="zone in zones.filter((z)=>localZones.includes(z._id))" class="customItem bg-base-200">
+        <span>Zona {{ zone.name }}</span>
       </div>
       <button
         class="btn btn-sm btn-square btn-primary btn-outline"
@@ -33,15 +33,15 @@ const zonesModal = ref(null);
           v-for="zone in zones"
           type="checkbox"
           class="btn btn-sm"
-          :aria-label="'Zona ' + zone"
-          :checked="event.zones.includes(zone)"
+          :aria-label="'Zona ' + zone.name"
+          :checked="localZones.includes(zone)"
           @change="
             () => {
-              if (event.zones.includes(zone)) {
-                event.zones.splice(event.zones.indexOf(zone), 1);
+              if (localZones.includes(zone)) {
+                localZones.splice(localZones.indexOf(zone), 1);
               } else {
-                event.zones.push(zone);
-                event.zones.sort();
+                localZones.push(zone);
+                localZones.sort();
               }
             }
           "

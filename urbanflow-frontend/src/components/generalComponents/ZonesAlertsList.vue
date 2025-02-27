@@ -83,13 +83,6 @@ const changeFocusedList = (z, a) => {
               <ExclamationTriangleIcon class="size-4"></ExclamationTriangleIcon>
             </div>
           </div>
-
-          <!-- <div class="flex gap-2">
-            <div class="badge">{{ getMisurazione(zone._id)[0].data[0].density }}</div>
-            <div class="badge badge-error text-white">
-              <ExclamationTriangleIcon class="size-4"></ExclamationTriangleIcon>
-            </div>
-          </div> -->
         </button>
 
       </div>

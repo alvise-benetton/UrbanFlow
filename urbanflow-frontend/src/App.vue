@@ -17,7 +17,7 @@ export default {
     const utente = ref(null);
 
     // Funzioni API DENTRO lo setup
-    const updateZones = async () => {
+    const loadZones = async () => {
       try {
         const response = await fetch('http://localhost:3000/api/zones', {
           method: 'GET',
@@ -32,7 +32,7 @@ export default {
       }
     };
 
-    const updateCameraData = async () => {
+    const loadCameraData = async () => {
       try {
         const response = await fetch('http://localhost:3000/api/cameraData', {
           method: 'GET',
@@ -46,6 +46,21 @@ export default {
       }
     };
 
+    const loadEvents = async() => {
+      try {
+          const response = await fetch('http://localhost:3000/api/events', {
+          method: 'GET',
+          headers: { 'x-access-token': localStorage.getItem('JWT') },
+        });
+
+        const data = await response.json();
+        listaEventi.value = data;
+        console.log(listaEventi.value);
+      } catch (error) {
+        console.error('Fetch error:', error);
+      }
+    };
+
     // Provide delle variabili
     provide("listaZone", listaZone);
     provide("listaMisurazioni", listaMisurazioni);
@@ -54,9 +69,10 @@ export default {
     // Lifecycle hooks
     onMounted(() => {
       if(isTokenValid(localStorage.getItem("JWT"))) {
-        updateCameraData();
-        updateZones();
-        const intervalId = setInterval(updateCameraData, 5000);
+        loadCameraData();
+        loadZones();
+        loadEvents();
+        const intervalId = setInterval(loadCameraData, 5000);
         onUnmounted(() => clearInterval(intervalId));
       }
     });

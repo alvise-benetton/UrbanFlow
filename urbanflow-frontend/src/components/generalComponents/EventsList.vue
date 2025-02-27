@@ -4,9 +4,38 @@ import {
   MapPinIcon,
   PlusIcon,
 } from "@heroicons/vue/20/solid";
-import { computed, ref, watch } from "vue";
+import { computed, inject, provide, ref, watch } from "vue";
 import EventDialog from "./EventDialog.vue";
-const eventsData = defineModel("events");
+
+const eventsData = inject("listaEventi");
+const currentEvent = ref([]);
+const otherEvent = ref([]);
+eventsData.value.forEach(ev=> {
+  currentEvent.value = [];
+  otherEvent.value = []
+  if(ev.startDate <= Date.now && ev.endDate >= Date.now()){
+    currentEvent.value.push(ev);
+  }else{
+    otherEvent.value.push(ev);
+  }
+});
+
+watch(eventsData,()=>{
+  currentEvent.value = [];
+  otherEvent.value = [];
+  eventsData.value.forEach(ev=> {
+    
+    if(ev.startDate <= Date.now && ev.endDate >= Date.now()){
+      currentEvent.value.push(ev);
+    }else{
+      otherEvent.value.push(ev);
+    }
+
+  });
+
+})
+
+
 const filteredEventsData = computed(() => {
   if (searchTerm.value == "") {
     return eventsData.value;
@@ -20,11 +49,12 @@ const filteredEventsData = computed(() => {
   }
 });
 const searchTerm = defineModel("searchTerm");
+
 const currentEvents = computed(() => {
   const now = new Date();
   return filteredEventsData.value.filter((ev) => {
     const startDate = new Date(ev.startDate);
-    const endDate = new Date(ev.endDate);
+    const endDate = new Date(ev.endDate)
     return startDate <= now && endDate >= now;
   });
 });
@@ -37,6 +67,7 @@ const otherEvents = computed(() => {
   });
 });
 const singleEvent = ref(null);
+provide("singleEvent",singleEvent);
 const isEditing = ref(false);
 const isNewEvent = ref(false);
 watch(singleEvent, (newValue, _) => {
@@ -52,8 +83,8 @@ const createEvent = () => {
   singleEvent.value = {
     title: "",
     zones: [],
-    startDate: new Date(),
-    endDate: new Date(),
+    startDate: null,
+    endDate: null,
   };
 };
 </script>
@@ -85,8 +116,8 @@ const createEvent = () => {
     <div v-if="currentEvents.length > 0" class="flex flex-col gap-3">
       <small>In corso:</small>
       <button
-        v-for="currentEvent in otherEvents"
-        @click="singleEvent = otherEvent"
+        v-for="currentEvent in currentEvents"
+        @click="singleEvent = currentEvents"
         class="btn bg-base-100"
       >
         <span class="text-left w-full">{{ currentEvent.title }}</span>
@@ -106,7 +137,7 @@ const createEvent = () => {
       <p class="text-gray-400 w-full text-center">Nessun evento trovato</p>
     </div>
   </div>
-  <EventDialog v-else v-model:event="singleEvent"></EventDialog>
+  <EventDialog v-else ></EventDialog>
 </template>
 <style scoped>
 .eventListDialog {
