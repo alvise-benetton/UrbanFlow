@@ -10,25 +10,25 @@ import { computed, inject, ref, watch } from "vue";
 const zone = inject("selectedZone");
 const misurazioni = inject("listaMisurazioni");
 const localZone = ref({ ...zone.value }); // Copia iniziale di zone
-const alert = ref({ative:false,increment_pcent:0});
+const alert = ref({ ative: false, increment_pcent: 0 });
 
-
-const getDensity = ()=>{
-  return misurazioni.value.find((m)=>m.zone === zone.value._id)?.data[0].density;
-}
+const getDensity = () => {
+  return misurazioni.value.find((m) => m.zone === zone.value._id)?.data[0]
+    .density;
+};
 
 alert.value.active = getDensity() > zone.value.threshold;
 alert.value.increment_pcent = Math.floor(
-  ((getDensity() - zone.value.threshold) /
-  zone.value.threshold) *
-    100
+  ((getDensity() - zone.value.threshold) / zone.value.threshold) * 100
 );
 
-watch(zone, (newVal) => {
-  localZone.value = { ...newVal }; // Aggiorna localZone quando zone cambia
-}, { deep: true });
-
-
+watch(
+  zone,
+  (newVal) => {
+    localZone.value = { ...newVal }; // Aggiorna localZone quando zone cambia
+  },
+  { deep: true }
+);
 
 const isEditing = ref(false);
 const isNewEvent = ref(false);
@@ -38,37 +38,38 @@ const abortChanges = () => {
   localZone.value.threshold = zone.value.threshold;
 };
 const saveChanges = async () => {
-
-  await fetch(`http://localhost:3000/api/zones/${zone.value._id}`,
-  {
-    headers:{
-      "x-access-token":localStorage.getItem("JWT"),
-      "Content-Type": "application/json"
+  await fetch(`http://localhost:3000/api/zones/${zone.value._id}`, {
+    headers: {
+      "x-access-token": localStorage.getItem("JWT"),
+      "Content-Type": "application/json",
     },
-    body: JSON.stringify({threshold: localZone.value.threshold }),
-    method:"PUT"}).then((res)=>{
-    if(!res.ok){
-      throw new Error("errore nel modificare la zona");
-    }
-    return res;
-  }).then(()=>{
-    zone.value.threshold = localZone.value.threshold;
-    alert.value.active = getDensity() > zone.value.threshold;
-    alert.value.increment_pcent = Math.floor(
-      ((getDensity() - zone.value.threshold) /
-      zone.value.threshold) *
-        100
-    );
+    body: JSON.stringify({ threshold: localZone.value.threshold }),
+    method: "PUT",
   })
+    .then((res) => {
+      if (!res.ok) {
+        throw new Error("errore nel modificare la zona");
+      }
+      return res;
+    })
+    .then(() => {
+      zone.value.threshold = localZone.value.threshold;
+      alert.value.active = getDensity() > zone.value.threshold;
+      alert.value.increment_pcent = Math.floor(
+        ((getDensity() - zone.value.threshold) / zone.value.threshold) * 100
+      );
+    });
   isEditing.value = false;
 };
 
 const thresholdInput = ref(null);
 const thresholdDialog = ref(null);
-
 </script>
 <template>
-  <div class="dialog flex flex-col bg-base-100 p-5 rounded-box gap-5 shadow-md" v-if="localZone">
+  <div
+    class="dialog flex flex-col bg-base-100 p-5 rounded-box gap-5 shadow-md"
+    v-if="localZone"
+  >
     <div
       class="flex flex-row justify-end gap-2 bg-base-100"
       v-if="!isEditing && !isNewEvent"
@@ -103,7 +104,7 @@ const thresholdDialog = ref(null);
         ></QuestionMarkCircleIcon>
         <span>Limite:</span>
       </div>
-      <input 
+      <input
         v-model="localZone.threshold"
         ref="thresholdInput"
         type="number"
@@ -130,6 +131,13 @@ const thresholdDialog = ref(null);
         <PencilIcon class="size-4"></PencilIcon>
       </button>
     </div>
+    <!-- Card dati SENZA allerta -->
+    <p>
+      All'ultima rilevazione, il numero di pedoni rilevati in
+      {{ localZone.name }} è stato di
+      <span class="font-semibold">{{ getDensity() }}</span
+      >.
+    </p>
     <!-- Card allerta -->
     <div
       v-if="alert && alert.active"
@@ -146,7 +154,7 @@ const thresholdDialog = ref(null);
       </p>
       <div class="flex flex-row justify-between">
         <span class="stat-value"
-          >{{ alert.density }}<span class="text-sm">pedoni</span></span
+          >{{ getDensity() }}<span class="text-sm">pedoni</span></span
         >
         <span class="stat-value">+{{ alert.increment_pcent }}%</span>
       </div>
@@ -170,7 +178,10 @@ const thresholdDialog = ref(null);
           <div class="indicator absolute top-0 left-0 animate-ping"></div>
         </div>
       </a>
-      <small v-if="!localZone.events || localZone.events.length <= 0" class="text-gray-500">
+      <small
+        v-if="!localZone.events || localZone.events.length <= 0"
+        class="text-gray-500"
+      >
         Nessun evento è previsto nella zona
       </small>
     </div>
