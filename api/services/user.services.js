@@ -5,14 +5,20 @@ const router = express.Router();
 
 async function getUsers(req, res) {
   try {
-    // Recupera la lista di tutti gli utenti (solo le email)
-    const users = await User.find({}, '-createdAt -updatedAt -password -__v');
+    const filter = {};
+
+    if (req.query.role) {
+      filter.role = req.query.role;
+    }
+
+    const users = await User.find(filter, '-createdAt -updatedAt -password -__v');
     res.json(users);
   } catch (err) {
     console.error(err.message);
     res.status(500).send('Errore del server');
   }
 }
+
 
 async function getUserById(req, res) {
   const userId = req.params.id;

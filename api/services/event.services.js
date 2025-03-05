@@ -4,14 +4,35 @@ const bcrypt = require('bcryptjs');
 const router = express.Router();
 
 async function getEvents(req, res) {
-    try {
-        const events = await Event.find({}, '-createdAt -updatedAt -__v');
-        res.json(events);
-    } catch (err) {
-        console.error(err.message);
-        res.status(500).send('Errore del server');
-    }
+  try {
+      const filter = {};
+
+      if (req.query.startDate && req.query.endDate) {
+          // Filtra eventi che iniziano e finiscono esattamente in quelle date
+          filter.startDate = new Date(req.query.startDate);
+          filter.endDate = new Date(req.query.endDate);
+      } else if (req.query.startDate) {
+          // Filtra eventi che iniziano esattamente in quella data
+          filter.startDate = new Date(req.query.startDate);
+      } else if (req.query.endDate) {
+          // Filtra eventi che finiscono esattamente in quella data
+          filter.endDate = new Date(req.query.endDate);
+      }
+
+      console.log(filter);
+      
+
+      // Se filter è vuoto, trova tutti gli eventi
+      const events = await Event.find(filter, '-createdAt -updatedAt -__v');
+      res.json(events);
+  } catch (err) {
+      console.error(err.message);
+      res.status(500).send('Errore del server');
+  }
 }
+
+
+
 
 async function getEventById(req, res) {
     const eventId = req.params.id;
