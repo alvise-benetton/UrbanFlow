@@ -211,7 +211,7 @@ const thresholdDialog = ref(null);
   width: 25vw;
   max-width: 30vw;
   max-height: calc(100vh - 1.25rem * 2);
-  overflow: scroll;
+  overflow-y: scroll;
 }
 .indicator {
   @apply w-2 h-2 bg-primary rounded-full;

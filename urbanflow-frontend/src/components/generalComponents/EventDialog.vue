@@ -1,14 +1,16 @@
 <script setup>
 import { PencilIcon, XMarkIcon } from "@heroicons/vue/20/solid";
-import { ref, computed, onBeforeMount, reactive, onMounted, inject, watch } from "vue";
+import { ref, computed, onBeforeMount, reactive, onMounted, inject, watch, provide } from "vue";
 import ZonesPicker from "./ZonesPicker.vue";
 import DatePicker from "./DatePicker.vue";
 import ChartSmallMirror from "./ChartSmallMirror.vue";
 import { TrashIcon } from "@heroicons/vue/24/solid";
 
 const event = inject("singleEvent");
+const listaEventi = inject("listaEventi");
 const zoneList = inject("listaZone");
 const localEvent = ref({...event.value});
+provide("localEvent", localEvent);
 const isEditing = defineModel("isEditing");
 const isNewEvent = defineModel("isNewEvent");
 const deleteEventModal = ref(null);
@@ -32,12 +34,9 @@ const abortChanges = () => {
   isEditing.value = false;
 };
 const saveChanges = async () => {
-  if (
-    isNewEvent.value &&
-    JSON.stringify(event.value) == JSON.stringify(localEvent.value)
-  ) {
+  if (JSON.stringify(event.value) === JSON.stringify(localEvent.value) ) {
     event.value = null;
-  } else {
+  }else if(isNewEvent.value){
     await fetch(`http://localhost:3000/api/events/`,{
     headers:{
       "x-access-token":localStorage.getItem("JWT"),
@@ -55,30 +54,64 @@ const saveChanges = async () => {
     }
     return res;
   }).then(()=>{
-    event.value.title = localEvent.value.title;
-    event.value.zones = localEvent.value.zones;
-    event.value.startDate = localEvent.value.startDate;
-    event.value.endDate = localEvent.value.endDate;
+    event.value = {...event.value};
     isEditing.value = false;
+
   })
     
-  }
+  }else{ // modifica
+
+    await fetch(`http://localhost:3000/api/events/${event.value._id}`,{
+    headers:{
+      "x-access-token":localStorage.getItem("JWT"),
+      "Content-Type": "application/json"
+    },
+    body: JSON.stringify({
+      title: localEvent.value.title,
+      zones: localEvent.value.zones.map(z=>z._id),
+      startDate: localEvent.value.startDate,
+      endDate: localEvent.value.endDate
+    }),
+    method:"PUT"}).then((res)=>{
+    if(!res.ok){
+      throw new Error("errore nella modifica evento");
+    }
+    return res;
+  }).then(()=>{
+    event.value = {...localEvent.value};
+    isEditing.value = false;
+  })
+
 };
-const deleteEvent = () => {
-  event.value = null;
+const deleteEvent = async() => {
+
+  await fetch(`http://localhost:3000/api/events/${event.value._id}`,{
+    headers:{
+      "x-access-token":localStorage.getItem("JWT"),
+    },
+    method:"DELETE"}).then((res)=>{
+    if(!res.ok){
+      throw new Error("errore nell'eliminazione evento");
+    }
+    return res;
+  }).then(()=>{
+    listaEventi.value = listaEventi.value.filter(e=>e._id != event.value._id); 
+    event.value = null;
+  })
 };
+
 onBeforeMount(() => {
   if (event.value.title == "") {
     isEditing.value = true;
     isNewEvent.value = true;
   }
-});
+  });
+}
+
 </script>
 <template>
   <div>
-    <div
-      class="eventDialog flex flex-col bg-base-100 p-5 rounded-box gap-5 shadow-md"
-    >
+    <div class="eventDialog flex flex-col bg-base-100 p-5 rounded-box gap-5 shadow-md">
       <div class="flex flex-row gap-2 items-center absolute" v-if="isCurrent">
         <div class="indicator absolute opacity-75 animate-ping"></div>
         <div class="indicator scale-75"></div>
@@ -89,7 +122,7 @@ onBeforeMount(() => {
         v-if="!isEditing && !isNewEvent"
       >
         <!-- Modifica evento -->
-        <button class="btn btn-square btn-sm" @click="isEditing = true">
+        <button class="btn btn-square btn-sm" @click="isEditing = true; isNewEvent = false, localEvent = {...event};console.log(localEvent)">
           <PencilIcon class="size-4"></PencilIcon>
         </button>
         <!-- Chiudi card evento -->
@@ -138,12 +171,12 @@ onBeforeMount(() => {
         />
       </div>
       <!-- Zone evento -->
-      <ZonesPicker
-        v-model:event="localEvent.zones"
+      <ZonesPicker v-if="localEvent.zones"
         v-model:isEditing="isEditing"
       ></ZonesPicker>
       <!-- Data evento -->
       <DatePicker
+        v-if="localEvent"
         v-model:event="localEvent"
         v-model:isEditing="isEditing"
       ></DatePicker>
@@ -166,7 +199,7 @@ onBeforeMount(() => {
         </div>
         <form class="flex flex-row gap-2 w-full modal-action" method="dialog">
           <button class="btn btn-primary flex-grow">Annulla</button>
-          <button class="btn btn-error text-white flex-grow" @click="deleteEvent">
+          <button class="btn btn-error text-white flex-grow" @click="deleteEvent()">
             Elimina
           </button>
         </form>

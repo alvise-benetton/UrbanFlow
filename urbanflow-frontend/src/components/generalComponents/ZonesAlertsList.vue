@@ -49,7 +49,7 @@ const changeFocusedList = (z, a) => {
 <template>
   <div class="dialog flex flex-col">
     <div
-      class="flex flex-col gap-5 rounded-box p-5 bg-base-200 shadow-md overflow-scroll"
+      class="flex flex-col gap-5 rounded-box p-5 bg-base-200 shadow-md overflow-y-scroll"
       v-if="!selectedZone"
     >
       <!-- Selettore Zone-Allerte -->

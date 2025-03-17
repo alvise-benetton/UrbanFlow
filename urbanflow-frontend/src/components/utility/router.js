@@ -27,7 +27,6 @@ const router = createRouter({
 router.beforeEach((to, from, next) => {
   const token = localStorage.getItem('JWT'); // Controlla se esiste un token
   if (to.meta.requiresAuth) {
-
     if(isTokenValid(token)){
       next();
     }else{

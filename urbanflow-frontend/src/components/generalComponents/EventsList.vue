@@ -30,7 +30,6 @@ watch(eventsData,()=>{
     }else{
       otherEvent.value.push(ev);
     }
-
   });
 
 })
@@ -67,7 +66,7 @@ const otherEvents = computed(() => {
   });
 });
 const singleEvent = ref(null);
-provide("singleEvent",singleEvent);
+provide("singleEvent", singleEvent);
 const isEditing = ref(false);
 const isNewEvent = ref(false);
 watch(singleEvent, (newValue, _) => {
@@ -117,7 +116,7 @@ const createEvent = () => {
       <small>In corso:</small>
       <button
         v-for="currentEvent in currentEvents"
-        @click="singleEvent = currentEvents"
+        @click="singleEvent = currentEvent"
         class="btn bg-base-100"
       >
         <span class="text-left w-full">{{ currentEvent.title }}</span>
@@ -137,7 +136,7 @@ const createEvent = () => {
       <p class="text-gray-400 w-full text-center">Nessun evento trovato</p>
     </div>
   </div>
-  <EventDialog v-else ></EventDialog>
+  <EventDialog v-else v-model:isEditing="isEditing" v-model:isNewEvent="isNewEvent"></EventDialog>
 </template>
 <style scoped>
 .eventListDialog {
@@ -145,6 +144,6 @@ const createEvent = () => {
   width: 25vw;
   max-width: 30vw;
   max-height: calc(100vh - 1.25rem * 2);
-  overflow: scroll;
+  overflow-y: scroll;
 }
 </style>

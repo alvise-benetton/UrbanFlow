@@ -1,7 +1,10 @@
 <script setup>
 import { UserIcon } from "@heroicons/vue/24/solid";
+import router from "../utility/router";
 
 function logout(){
+
+  //router.go('/login');
 
   fetch("http://localhost:3000/api/session",{
     method:"DELETE",
@@ -12,7 +15,7 @@ function logout(){
     }
     return resp.json();
   }).then(()=>{
-    this.$router.push('/login');
+    router.go('/login');
     localStorage.removeItem("JWT");
   });
 

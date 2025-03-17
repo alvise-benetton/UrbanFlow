@@ -1,10 +1,14 @@
 <script setup>
 import { MapPinIcon, PlusIcon } from "@heroicons/vue/20/solid";
-import { inject, ref } from "vue";
+import { computed, inject, ref, watch } from "vue";
 const zones = inject("listaZone"); 
-const localZones = defineModel("event");
+
 const isEditing = defineModel("isEditing");
-const zonesModal = ref(null);
+const zonesModal = ref(null)
+
+const localEvent = inject("localEvent");
+const localZones = ref(zones.value.filter(z => localEvent.value.zones.includes(z._id)));
+
 </script>
 <template>
   <div class="flex flex-col gap-2">
@@ -13,7 +17,7 @@ const zonesModal = ref(null);
       <small>Dove ha luogo l'evento?</small>
     </div>
     <div class="flex flex-row gap-1.5 flex-wrap">
-      <div v-for="zone in zones.filter((z)=>localZones.includes(z._id))" class="customItem bg-base-200">
+      <div v-for="zone in zones.filter(z=>localZones.includes(z))" class="customItem bg-base-200">
         <span>Zona {{ zone.name }}</span>
       </div>
       <button

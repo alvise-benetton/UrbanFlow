@@ -1,17 +1,22 @@
 s
 <script setup>
-import { defineExpose, defineModel, ref } from "vue";
+import { defineExpose, defineProps, ref } from "vue";
 import { ClockIcon } from "@heroicons/vue/20/solid";
-const event = defineModel("event");
-console.log("ev",event)
-const isEditing = defineModel("isEditing");
+const props = defineProps({
+  event: Object,
+  isEditing: Boolean
+});
+
+const event = props.event;
+const isEditing = props.isEditing;
 const isValid = ref(true);
-defineExpose({ isValid });
+defineExpose({ isValid }); // non credo vega usato
+
 
 function changeDateFormat(dateTime){
 
-  if(!typeof dateTime === "string")
-    return "";
+  if(typeof dateTime !== "string")
+    return "Errore!";
   let splitted = dateTime.split("T");
   let data = splitted[0].split("-");
   let time = splitted[1].split  (":");
@@ -19,8 +24,6 @@ function changeDateFormat(dateTime){
   return data[2] + "/" + data[1] + "/" + data[0] +" " + time[0] + ":" + time[1]; 
 
 }
-
-
 </script>
 <template>
   <div class="flex flex-col gap-2">
@@ -64,10 +67,8 @@ function changeDateFormat(dateTime){
         />
       </div>
       <div v-else class="customItem">
-
-        <span class="btn-sm rounded-md btn btn-primary btn-outline">{{ changeDateFormat(event.startDate) }}</span>
-        <span class="btn-sm rounded-md btn btn-primary btn-outline">{{ changeDateFormat(event.endDate) }}</span>
-
+          <span class="btn-sm rounded-md btn btn-primary btn-outline">{{ changeDateFormat(event.startDate) }}</span>
+          <span class="btn-sm rounded-md btn btn-primary btn-outline">{{ changeDateFormat(event.endDate) }}</span>
       </div>
     </div>
   </div>

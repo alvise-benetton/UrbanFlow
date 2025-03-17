@@ -61,17 +61,23 @@ export default {
       }
     };
 
-    // Provide delle variabili
+    const loadAll = ()=>{
+      loadEvents();
+      loadZones();
+      loadCameraData();
+    }
+
+    // Provide delle variabili e funzioni di aggiornamento
     provide("listaZone", listaZone);
     provide("listaMisurazioni", listaMisurazioni);
     provide("listaEventi", listaEventi);
+    // usati per aggiornare le varie liste
+    provide("loadAll", loadAll);
 
     // Lifecycle hooks
     onMounted(() => {
       if(isTokenValid(localStorage.getItem("JWT"))) {
-        loadCameraData();
-        loadZones();
-        loadEvents();
+        loadAll();
         const intervalId = setInterval(loadCameraData, 5000);
         onUnmounted(() => clearInterval(intervalId));
       }
@@ -80,4 +86,5 @@ export default {
     return { utente };
   }
 };
+
 </script>

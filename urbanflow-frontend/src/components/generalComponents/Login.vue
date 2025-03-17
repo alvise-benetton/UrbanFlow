@@ -71,6 +71,7 @@ const password = ref('');
 const loading = ref(false);
 const showError = ref(false);
 const errorMessage = ref('');
+const loadAll = inject('loadAll');
 
 const login = async () => {
   try {
@@ -86,16 +87,15 @@ const login = async () => {
     if (!response.ok) {
       throw new Error('Credenziali non valide');
     }
-
     const data = await response.json();
     localStorage.setItem('JWT', data.JWT);
-    
+    loadAll();
     router.push('/');
-  } catch (error) {
+  }catch (error) {
     showError.value = true;
     errorMessage.value = error.message;
     console.error('Login error:', error);
-  } finally {
+  }finally {
     loading.value = false;
   }
 };
