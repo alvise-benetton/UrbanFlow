@@ -6,10 +6,25 @@ import {
 } from "@heroicons/vue/20/solid";
 import { computed, inject, provide, ref, watch } from "vue";
 import EventDialog from "./EventDialog.vue";
+import router from "../utility/router";
+
+const urlId = defineModel("id");
 
 const eventsData = inject("listaEventi");
 const currentEvent = ref([]);
 const otherEvent = ref([]);
+const singleEvent = ref(urlId.value ? eventsData.value.find((e) => e._id === urlId.value) : null);
+
+
+watch(urlId, (newId) => {
+  if(!newId){
+    singleEvent.value = null
+  }else{
+    singleEvent.value = eventsData.value.find((e) => e._id === newId);
+  }
+  
+});
+
 eventsData.value.forEach(ev=> {
   currentEvent.value = [];
   otherEvent.value = []
@@ -18,6 +33,11 @@ eventsData.value.forEach(ev=> {
   }else{
     otherEvent.value.push(ev);
   }
+});
+
+
+const props = defineProps({
+  searchTerm: String,
 });
 
 watch(eventsData,()=>{
@@ -65,13 +85,12 @@ const otherEvents = computed(() => {
     return startDate > now || endDate < now;
   });
 });
-const singleEvent = ref(null);
-provide("singleEvent", singleEvent);
+
+
+
 const isEditing = ref(false);
-const isNewEvent = ref(false);
 watch(singleEvent, (newValue, _) => {
   isEditing.value = false;
-  isNewEvent.value = false;
   if (newValue === null) {
     document.getElementById("searchBar").classList.remove("hidden");
   } else {
@@ -79,17 +98,18 @@ watch(singleEvent, (newValue, _) => {
   }
 });
 const createEvent = () => {
-  singleEvent.value = {
-    title: "",
-    zones: [],
-    startDate: null,
-    endDate: null,
-  };
+  isEditing.value = true;
+  router.push("/Eventi/nuovo");
 };
+
+function setEvent(ev){
+  router.push(`/Eventi/${ev._id}`);
+}
+
 </script>
 <template>
   <div
-    v-if="singleEvent === null"
+    v-if="urlId === null && urlId !== 'nuovo' "
     class="eventListDialog flex flex-col gap-5 rounded-box p-5 bg-base-200 shadow-md"
   >
     <div
@@ -116,7 +136,7 @@ const createEvent = () => {
       <small>In corso:</small>
       <button
         v-for="currentEvent in currentEvents"
-        @click="singleEvent = currentEvent"
+        @click="setEvent(currentEvent)"
         class="btn bg-base-100"
       >
         <span class="text-left w-full">{{ currentEvent.title }}</span>
@@ -126,7 +146,7 @@ const createEvent = () => {
       <small>Altri:</small>
       <button
         v-for="otherEvent in otherEvents"
-        @click="singleEvent = otherEvent"
+        @click="setEvent(otherEvent)"
         class="btn bg-base-100"
       >
         <span class="text-left w-full">{{ otherEvent.title }}</span>
@@ -136,7 +156,7 @@ const createEvent = () => {
       <p class="text-gray-400 w-full text-center">Nessun evento trovato</p>
     </div>
   </div>
-  <EventDialog v-else v-model:isEditing="isEditing" v-model:isNewEvent="isNewEvent"></EventDialog>
+  <EventDialog v-else v-model:isEditing="isEditing" v-model:id="urlId"></EventDialog>
 </template>
 <style scoped>
 .eventListDialog {

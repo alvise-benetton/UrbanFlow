@@ -7,16 +7,19 @@
 <script>
 import { onMounted, onUnmounted, provide, ref } from "vue";
 import router, { isTokenValid } from "./components/utility/router";
+import { Notyf } from "notyf";
+import "notyf/notyf.min.css";
 
 export default {
   setup() {
     // Dichiarazioni REATTIVE nello scope dello setup
-    const listaZone = ref([]);
-    const listaMisurazioni = ref([]);
-    const listaEventi = ref([]);
+
+    const notyf = new Notyf(); 
     const utente = ref(null);
 
-    // Funzioni API DENTRO lo setup
+    provide('notyf',notyf);// servizio per i toast
+
+/*     // Funzioni API DENTRO lo setup
     const loadZones = async () => {
       try {
         const response = await fetch('http://localhost:3000/api/zones', {
@@ -62,29 +65,41 @@ export default {
     };
 
     const loadAll = ()=>{
+      if(isInit.value) // controllo di non aver già caricato
+        return;
       loadEvents();
       loadZones();
       loadCameraData();
+      isInit.value = true;
     }
 
     // Provide delle variabili e funzioni di aggiornamento
     provide("listaZone", listaZone);
     provide("listaMisurazioni", listaMisurazioni);
     provide("listaEventi", listaEventi);
-    // usati per aggiornare le varie liste
-    provide("loadAll", loadAll);
+    provide("loadAll", loadAll); */
 
     // Lifecycle hooks
-    onMounted(() => {
+   /*  onMounted(() => {
       if(isTokenValid(localStorage.getItem("JWT"))) {
-        loadAll();
         const intervalId = setInterval(loadCameraData, 5000);
         onUnmounted(() => clearInterval(intervalId));
       }
-    });
+    }); */
+
+    
+  
+
+
+  
+    
+
 
     return { utente };
   }
+
+
+  
 };
 
 </script>

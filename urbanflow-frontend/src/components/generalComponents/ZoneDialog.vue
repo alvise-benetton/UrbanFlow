@@ -5,12 +5,18 @@ import {
   QuestionMarkCircleIcon,
   XMarkIcon,
 } from "@heroicons/vue/20/solid";
-import { computed, inject, ref, watch } from "vue";
+import { inject, ref, watch } from "vue";
 
 const zone = inject("selectedZone");
 const misurazioni = inject("listaMisurazioni");
+const eventi = inject("listaEventi");
 const localZone = ref({ ...zone.value }); // Copia iniziale di zone
 const alert = ref({ ative: false, increment_pcent: 0 });
+
+const eventiZona = ref(eventi.value.filter((e) =>
+  e.zones.includes(localZone.value._id)
+));
+
 
 const getDensity = () => {
   return misurazioni.value.find((m) => m.zone === zone.value._id)?.data[0]
@@ -21,6 +27,7 @@ alert.value.active = getDensity() > zone.value.threshold;
 alert.value.increment_pcent = Math.floor(
   ((getDensity() - zone.value.threshold) / zone.value.threshold) * 100
 );
+
 
 watch(
   zone,
@@ -166,14 +173,14 @@ const thresholdDialog = ref(null);
     <div
       class="flex flex-col gap-2 p-3 bg-base-200 rounded-box items-center"
       :class="{
-        unfocus: isEditing,
+        unfocus: isEditing, 
       }"
     >
       <a
-        v-for="event in localZone.events"
+        v-for="event in eventiZona"
         class="btn btn-sm bg-base-100 justify-between w-full"
       >
-        <span> {{ event.title }}</span>
+        <span @click="$router.push(`/Eventi/${event._id}`)"> {{ event.title }}</span>
         <div v-if="event.isCurrent" class="indicator relative">
           <div class="indicator absolute top-0 left-0 animate-ping"></div>
         </div>

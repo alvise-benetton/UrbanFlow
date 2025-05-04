@@ -1,13 +1,25 @@
 <script setup>
-import { MapPinIcon, PlusIcon } from "@heroicons/vue/20/solid";
-import { computed, inject, ref, watch } from "vue";
-const zones = inject("listaZone"); 
+  import { MapPinIcon, PlusIcon } from "@heroicons/vue/20/solid";
+  import { computed, inject, ref, watch } from "vue";
+import router from "../utility/router";
 
-const isEditing = defineModel("isEditing");
-const zonesModal = ref(null)
+  const zoneList = inject("listaZone");
 
-const localEvent = inject("localEvent");
-const localZones = ref(zones.value.filter(z => localEvent.value.zones.includes(z._id)));
+  const event = defineModel("event");
+  const zones = ref(event.value.zones);
+  const isEditing = defineModel("isEditing");
+
+  const zonesModal = ref(null)
+  const localZones = ref([...zones.value]);
+
+  function confirmChanges() {
+    localZones.value.sort();
+    event.value.zones = zoneList.value.filter(z=>localZones.value.includes(z._id));
+    zonesModal.value.close();
+  }
+  function goToZone(zoneId){
+    router.push(`/Zone/${zoneId}`);
+  }
 
 </script>
 <template>
@@ -17,8 +29,8 @@ const localZones = ref(zones.value.filter(z => localEvent.value.zones.includes(z
       <small>Dove ha luogo l'evento?</small>
     </div>
     <div class="flex flex-row gap-1.5 flex-wrap">
-      <div v-for="zone in zones.filter(z=>localZones.includes(z))" class="customItem bg-base-200">
-        <span>Zona {{ zone.name }}</span>
+      <div v-for="zone in zoneList.filter((z)=>localZones.includes(z._id))" class="customItem bg-base-200">
+        <button @click="goToZone(zone._id)">Zona {{ zone.name }}</button>
       </div>
       <button
         class="btn btn-sm btn-square btn-primary btn-outline"
@@ -34,27 +46,26 @@ const localZones = ref(zones.value.filter(z => localEvent.value.zones.includes(z
       <p>In quali zone della città ha luogo l'evento?</p>
       <div class="flex flex-row flex-wrap gap-2">
         <input
-          v-for="zone in zones"
+          v-for="zone in zoneList"
           type="checkbox"
           class="btn btn-sm"
           :aria-label="'Zona ' + zone.name"
-          :checked="localZones.includes(zone)"
+          :checked="localZones.includes(zone._id)"
           @change="
             () => {
-              if (localZones.includes(zone)) {
-                localZones.splice(localZones.indexOf(zone), 1);
+              if (localZones.includes(zone._id)) {
+                localZones.splice(localZones.indexOf(zone._id), 1);
               } else {
-                localZones.push(zone);
-                localZones.sort();
+                localZones.push(zone._id);
               }
             }
           "
         />
       </div>
       <div class="modal-action">
-        <form method="dialog">
-          <button class="btn">Conferma</button>
-        </form>
+        <button class="btn" @click="confirmChanges">
+          <span>Conferma</span>
+        </button>
       </div>
     </div>
   </dialog>

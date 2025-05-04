@@ -4,7 +4,7 @@ const model = defineModel({ default: "Mappa" });
 const sectionsList = ref(["Zone", "Mappa", "Eventi"]);
 const setActive = (section) => {
   model.value = section;
-  window.location.hash = section;
+  window.history.pushState({}, "", `/${section}`);
   document.getElementById("searchBar").classList.remove("hidden");
 };
 </script>

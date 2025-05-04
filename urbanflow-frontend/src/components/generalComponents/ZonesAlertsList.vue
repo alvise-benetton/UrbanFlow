@@ -1,10 +1,9 @@
 <script setup>
 import { ExclamationTriangleIcon } from "@heroicons/vue/20/solid";
-import { inject, provide, reactive, ref, watch } from "vue";
+import { inject, provide, reactive, ref, watch,computed } from "vue";
 import ZoneDialog from "./ZoneDialog.vue";
-//import eventBus from "@/components/utility/eventBus";
 
-//const zonesList = defineProps(['zone'])
+
 
 const inFocus = reactive({
   zones: true,
@@ -21,7 +20,25 @@ watch(selectedZone, (newValue) => {
     document.getElementById("searchBar").classList.add("hidden");
   }
 });
+
+const searchTerm = defineModel("searchTerm");
+
+
+const filteredZones = computed(() => {
+  if (searchTerm.value == "") {
+    return zonesList.value;
+  } else {
+    return zonesList.value.filter((z) => {
+      let words = searchTerm.value.toLowerCase().trim().split(" ");
+      return words.every((word) => {
+        return z.name .toLowerCase().includes(word);
+      });
+    });
+  }
+});
+
 provide("selectedZone", selectedZone);
+
 const alertList = ref([]);
 watch(listaMisurazioni, () => {
   //setto la lista delle allerte
@@ -70,9 +87,34 @@ const changeFocusedList = (z, a) => {
         v-if="inFocus.zones && zonesList.length > 0"
         class="flex flex-col gap-3"
       >
+      
         <button
           class="btn bg-base-100 w-full flex justify-between"
-          v-for="zone in zonesList"
+          v-for="zone in filteredZones"
+          @click="selectedZone = zone"
+        >
+          <span>{{ zone.name }}</span>
+          <div
+            v-if="listaMisurazioni.length > 0 && getMisurazione(zone._id)"
+            class="flex gap-2"
+          >
+            <div class="badge">
+              {{ getMisurazione(zone._id)[0].data[0].density }}
+            </div>
+            <div
+              class="badge badge-error text-white"
+              v-if="
+                getMisurazione(zone._id)[0].data[0].density > zone.threshold
+              "
+            >
+              <ExclamationTriangleIcon class="size-4"></ExclamationTriangleIcon>
+            </div>
+          </div>
+        </button>
+      
+        <button
+          class="btn bg-base-100 w-full flex justify-between"
+          v-for="zone in filteredZones"
           @click="selectedZone = zone"
         >
           <span>{{ zone.name }}</span>

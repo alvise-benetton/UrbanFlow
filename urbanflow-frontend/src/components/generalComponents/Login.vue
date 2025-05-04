@@ -89,8 +89,10 @@ const login = async () => {
     }
     const data = await response.json();
     localStorage.setItem('JWT', data.JWT);
-    loadAll();
-    router.push('/');
+    console.log(data.JWT);
+    //loadAll();
+    await router.push('/');
+
   }catch (error) {
     showError.value = true;
     errorMessage.value = error.message;

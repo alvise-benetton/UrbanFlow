@@ -42,15 +42,6 @@ const mapInit = () => {
     }
   });
 
-  /* const zoneStore = useZoneStore();
-
-  zoneStore.updateZones().then(()=>{addZones(map,zoneStore.listaZone)}); */
-
-  //listHandler.updateZones().then((lista)=>{addZones(map,lista)});
-  //
-  /* watch(listHandler.listaZone, ()=>{
-    addZones(map)
-  }) */
 };
 // gestione dello zoom
 const zoomLevel = ref(15);

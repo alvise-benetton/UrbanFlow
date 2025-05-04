@@ -5,14 +5,15 @@ import ZonesPicker from "./ZonesPicker.vue";
 import DatePicker from "./DatePicker.vue";
 import ChartSmallMirror from "./ChartSmallMirror.vue";
 import { TrashIcon } from "@heroicons/vue/24/solid";
+import router from "../utility/router";
 
-const event = inject("singleEvent");
+/* const event = inject("singleEvent"); */
+const urlId = defineModel("id");
 const listaEventi = inject("listaEventi");
 const zoneList = inject("listaZone");
+const event = ref(listaEventi.value.find((e)=>e._id === urlId.value));
 const localEvent = ref({...event.value});
-provide("localEvent", localEvent);
 const isEditing = defineModel("isEditing");
-const isNewEvent = defineModel("isNewEvent");
 const deleteEventModal = ref(null);
 const isCurrent = computed(() => {
   const now = new Date();
@@ -21,43 +22,51 @@ const isCurrent = computed(() => {
   return startDate <= now && endDate >= now;
 });
 
-watch(event, (newVal) => {
+const notyf = inject("notyf");
+
+watch([listaEventi, urlId], () => {
+  event.value = listaEventi.value.find((e) => e._id === urlId.value);
+});
+
+watch(event, (newVal) => { 
   localEvent.value = { ...newVal }; // Aggiorna localZone quando zone cambia
 }, { deep: true });
 
-
 const abortChanges = () => {
-  if (isNewEvent.value) {
+  if (urlId === 'nuovo'){
     event.value = null;
   }
   localEvent.value = {...event.value};
   isEditing.value = false;
+  router.back();
 };
 const saveChanges = async () => {
   if (JSON.stringify(event.value) === JSON.stringify(localEvent.value) ) {
     event.value = null;
-  }else if(isNewEvent.value){
-    await fetch(`http://localhost:3000/api/events/`,{
-    headers:{
-      "x-access-token":localStorage.getItem("JWT"),
-      "Content-Type": "application/json"
-    },
-    body: JSON.stringify({
-      title: localEvent.value.title,
-      zones: localEvent.value.zones.map(z=>z._id),
-      startDate: localEvent.value.startDate,
-      endDate: localEvent.value.endDate
-    }),
-    method:"POST"}).then((res)=>{
-    if(!res.ok){
-      throw new Error("errore nella creazione evento");
-    }
-    return res;
-  }).then(()=>{
-    event.value = {...event.value};
-    isEditing.value = false;
-
-  })
+  }else if(urlId === 'nuovo'){ // nuovo evento
+      await fetch(`http://localhost:3000/api/events/`,{
+      headers:{
+        "x-access-token":localStorage.getItem("JWT"),
+        "Content-Type": "application/json"
+      },
+      body: JSON.stringify({
+        title: localEvent.value.title,
+        zones: localEvent.value.zones.filter(z=>z!==null).map(z=>z._id),
+        startDate: localEvent.value.startDate,
+        endDate: localEvent.value.endDate
+      }),
+      method:"POST"}).then((res)=>{
+      if(!res.ok){
+        notyf.error("Errore nella creazione dell'evento " + res.err);
+        throw new Error("errore nella creazione evento");
+      }
+      return res;
+    }).then(()=>{
+      notyf.success("Evento creato con successo!");
+      event.value = {...event.value};
+      isEditing.value = false;
+      router.push("/Eventi/"+res.body._id);
+    })
     
   }else{ // modifica
 
@@ -74,10 +83,12 @@ const saveChanges = async () => {
     }),
     method:"PUT"}).then((res)=>{
     if(!res.ok){
+      notyf.error("Errore nella modifica dell'evento " + res.err);
       throw new Error("errore nella modifica evento");
     }
     return res;
   }).then(()=>{
+    notyf.success("Evento modificato con successo!");
     event.value = {...localEvent.value};
     isEditing.value = false;
   })
@@ -91,21 +102,36 @@ const deleteEvent = async() => {
     },
     method:"DELETE"}).then((res)=>{
     if(!res.ok){
+      notyf.error("Errore nella eliminazione dell'evento " + res.err);
       throw new Error("errore nell'eliminazione evento");
     }
     return res;
   }).then(()=>{
+    notyf.success("Evento eliminato con successo!");
     listaEventi.value = listaEventi.value.filter(e=>e._id != event.value._id); 
     event.value = null;
   })
 };
 
-onBeforeMount(() => {
-  if (event.value.title == "") {
-    isEditing.value = true;
-    isNewEvent.value = true;
-  }
+  onBeforeMount(() => {
+    if (urlId === 'nuovo') {
+      localEvent.value = {
+        title: "",
+        zones: [],
+        startDate: new Date(),
+        endDate: new Date(),
+      }
+    }
   });
+
+}
+
+
+function closeEvent(){
+  event.value = null;
+  router.back();
+ 
+  
 }
 
 </script>
@@ -119,14 +145,14 @@ onBeforeMount(() => {
       </div>
       <div
         class="flex flex-row justify-end gap-2 bg-base-100"
-        v-if="!isEditing && !isNewEvent"
+        v-if="!isEditing && urlId!== 'nuovo'"
       >
         <!-- Modifica evento -->
-        <button class="btn btn-square btn-sm" @click="isEditing = true; isNewEvent = false, localEvent = {...event};console.log(localEvent)">
+        <button class="btn btn-square btn-sm" @click="isEditing = true; localEvent = {...event}">
           <PencilIcon class="size-4"></PencilIcon>
         </button>
         <!-- Chiudi card evento -->
-        <button class="btn btn-square btn-sm" @click="event = null">
+        <button class="btn btn-square btn-sm" @click="closeEvent()">
           <XMarkIcon class="size-4"></XMarkIcon>
         </button>
         <!-- Elimina evento -->
@@ -145,10 +171,7 @@ onBeforeMount(() => {
         <!-- Salva modifiche -->
         <button
           class="btn btn-sm btn-primary"
-          :disabled="
-            JSON.stringify(event) == JSON.stringify(localEvent) ||
-            localEvent.title == ''
-          "
+          :disabled=" JSON.stringify(event) === JSON.stringify(localEvent) || localEvent.title == '' "
           @click="saveChanges()"
         >
           Salva
@@ -157,7 +180,7 @@ onBeforeMount(() => {
       <!-- Titolo evento -->
       <div>
         <span
-          v-if="!isEditing && !isNewEvent"
+          v-if="!isEditing && urlId !== 'nuovo'"
           class="titleSpan font-bold card-title w-full"
           >{{ localEvent.title }}
         </span>
@@ -173,6 +196,7 @@ onBeforeMount(() => {
       <!-- Zone evento -->
       <ZonesPicker v-if="localEvent.zones"
         v-model:isEditing="isEditing"
+        v-model:event="localEvent"
       ></ZonesPicker>
       <!-- Data evento -->
       <DatePicker
@@ -182,7 +206,7 @@ onBeforeMount(() => {
       ></DatePicker>
       <!-- Dati storici -->
       <ChartSmallMirror
-        v-if="!isNewEvent"
+        v-if="urlId !== 'nuovo'"
         v-model:event="localEvent"
         v-model:zones="zoneList"
         :class="{

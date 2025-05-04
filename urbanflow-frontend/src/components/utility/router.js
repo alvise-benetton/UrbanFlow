@@ -20,7 +20,17 @@ const routes = [
 
 const router = createRouter({
   history: createWebHistory(),
-  routes
+  routes: [
+    { path: "/login", name: "Login", component: Login },
+    { path: "/", redirect: "/Mappa" },
+    { path: "/Mappa", name: "Mappa", component: Home , meta: { requiresAuth: true } },
+    { path: "/Eventi", name: "Eventi", component: Home , meta: { requiresAuth: true } },
+    { path: "/Eventi/:id", name: "EventoDettaglio", component: Home , meta: { requiresAuth: true } },
+    { path: "/Zone", name: "Zone", component: Home , meta: { requiresAuth: true } },
+    { path: "/Zone/:id", name: "ZonaDettaglio", component: Home , meta: { requiresAuth: true } },
+    { path: "/User", name: "User", component: Home, meta: { requiresAuth: true } },
+    { path: "/:pathMatch(.*)*", name: "NotFound", component: { template: "<h1>404 Page Not Found</h1>" } }
+  ]
 });
 
 // Middleware per proteggere le route
