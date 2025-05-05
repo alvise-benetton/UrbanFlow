@@ -115,7 +115,6 @@ const appSection = computed({
 
 const currentId = computed(() => {
   const pathParts = route.path.slice(1).split("/");
-  console.log(pathParts)
   return pathParts[1] || null; // Restituisce l'id se presente, altrimenti null
 });
 

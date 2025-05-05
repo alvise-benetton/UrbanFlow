@@ -8,7 +8,7 @@ function logout(){
 
   //router.go('/login');
 
-  fetch(`${API_URL}api/session`,{
+  fetch(`${API_URL}/api/session`,{
     method:"DELETE",
     headers:{"x-access-token":localStorage.getItem("JWT")}
   }).then((resp)=>{
@@ -17,7 +17,7 @@ function logout(){
     }
     return resp.json();
   }).then(()=>{
-    router.go('/login');
+    router.push('/login');
     localStorage.removeItem("JWT");
   });
 
