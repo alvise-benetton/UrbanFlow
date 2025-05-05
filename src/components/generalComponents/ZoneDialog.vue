@@ -6,34 +6,54 @@ import {
   XMarkIcon,
 } from "@heroicons/vue/20/solid";
 import { inject, ref, watch } from "vue";
+import router from "../utility/router";
 
-const zone = inject("selectedZone");
+const zone = defineModel("selectedZone");
 const misurazioni = inject("listaMisurazioni");
 const eventi = inject("listaEventi");
-const localZone = ref({ ...zone.value }); // Copia iniziale di zone
+const localZone = ref({...zone.value});
 const alert = ref({ ative: false, increment_pcent: 0 });
 
-const eventiZona = ref(eventi.value.filter((e) =>
-  e.zones.includes(localZone.value._id)
-));
+
+const eventiZona = ref([]);
+const API_URL = import.meta.env.VITE_API_URL;
+
+function closeCard(){
+  zone.value = null;
+  router.back();
+}
 
 
-const getDensity = () => {
-  return misurazioni.value.find((m) => m.zone === zone.value._id)?.data[0]
+const getDensity = (zone) => {
+  if(zone)
+  return misurazioni.value.find((m) => m.zone === zone._id)?.data[0]
     .density;
 };
 
-alert.value.active = getDensity() > zone.value.threshold;
+alert.value.active = getDensity(zone.value) > zone.value.threshold;
 alert.value.increment_pcent = Math.floor(
-  ((getDensity() - zone.value.threshold) / zone.value.threshold) * 100
-);
+((getDensity(zone.value) -  zone.value.threshold) /  zone.value.threshold) * 100);
 
 
 watch(
   zone,
   (newVal) => {
+
+    if(newVal === null){
+      localZone.value = null;
+      alert.value.active = false;
+      alert.value.increment_pcent = 0;
+      return;
+    }
     localZone.value = { ...newVal }; // Aggiorna localZone quando zone cambia
+  
+    alert.value.active = getDensity(newVal) > newVal.threshold;
+    alert.value.increment_pcent = Math.floor(
+    ((getDensity(newVal) - newVal.threshold) / newVal.threshold) * 100);
+    
+    eventiZona.value = eventi.value.filter((e) => e.zones.includes(newVal._id));
   },
+  
   { deep: true }
 );
 
@@ -45,7 +65,7 @@ const abortChanges = () => {
   localZone.value.threshold = zone.value.threshold;
 };
 const saveChanges = async () => {
-  await fetch(`http://localhost:3000/api/zones/${zone.value._id}`, {
+  await fetch(`${API_URL}/api/zones/${zone.value._id}`, {
     headers: {
       "x-access-token": localStorage.getItem("JWT"),
       "Content-Type": "application/json",
@@ -61,9 +81,9 @@ const saveChanges = async () => {
     })
     .then(() => {
       zone.value.threshold = localZone.value.threshold;
-      alert.value.active = getDensity() > zone.value.threshold;
+      alert.value.active = getDensity(zone.value) > zone.value.threshold;
       alert.value.increment_pcent = Math.floor(
-        ((getDensity() - zone.value.threshold) / zone.value.threshold) * 100
+        ((getDensity(zone.value) - zone.value.threshold) / zone.value.threshold) * 100
       );
     });
   isEditing.value = false;
@@ -82,7 +102,7 @@ const thresholdDialog = ref(null);
       v-if="!isEditing && !isNewEvent"
     >
       <!-- Chiudi card zona -->
-      <button class="btn btn-square btn-sm" @click="zone = null">
+      <button class="btn btn-square btn-sm" @click="closeCard">
         <XMarkIcon class="size-4"></XMarkIcon>
       </button>
     </div>
@@ -142,7 +162,7 @@ const thresholdDialog = ref(null);
     <p>
       All'ultima rilevazione, il numero di pedoni rilevati in
       {{ localZone.name }} è stato di
-      <span class="font-semibold">{{ getDensity() }}</span
+      <span class="font-semibold">{{ getDensity(localZone) }}</span
       >.
     </p>
     <!-- Card allerta -->
@@ -161,7 +181,7 @@ const thresholdDialog = ref(null);
       </p>
       <div class="flex flex-row justify-between">
         <span class="stat-value"
-          >{{ getDensity() }}<span class="text-sm">pedoni</span></span
+          >{{ getDensity(localZone) }}<span class="text-sm">pedoni</span></span
         >
         <span class="stat-value">+{{ alert.increment_pcent }}%</span>
       </div>

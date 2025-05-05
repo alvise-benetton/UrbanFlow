@@ -1,5 +1,5 @@
 <script setup>
-import { computed, inject, ref,provide, onMounted } from "vue";
+import { computed, inject, ref,provide, onMounted, onUnmounted } from "vue";
 import { useRouter, useRoute } from "vue-router";
 
 // Componenti
@@ -10,7 +10,6 @@ import MapFilterList from "./MapFilterList.vue";
 import UserButtons from "./UserButtons.vue";
 import EventsList from "./EventsList.vue";
 import ZonesAlertsList from "./ZonesAlertsList.vue";
-import { isTokenValid } from "../utility/router";
 
 
 const appAreas = ref(["User", "Main"]);
@@ -21,10 +20,11 @@ const measureData = ref([]);
 const eventsData = ref([]);
 const isInit = ref(false);
 
+const API_URL = import.meta.env.VITE_API_URL;
 
 const loadZones = async () => {
   try {
-    const response = await fetch('http://localhost:3000/api/zones', {
+    const response = await fetch(`${API_URL}/api/zones`, {
       method: 'GET',
       headers: { 'x-access-token': localStorage.getItem('JWT') },
     });
@@ -39,7 +39,7 @@ const loadZones = async () => {
 
 const loadCameraData = async () => {
   try {
-    const response = await fetch('http://localhost:3000/api/cameraData', {
+    const response = await fetch(`${API_URL}/api/cameraData`, {
       method: 'GET',
       headers: { 'x-access-token': localStorage.getItem('JWT') },
     });
@@ -53,7 +53,7 @@ const loadCameraData = async () => {
 
 const loadEvents = async() => {
   try {
-      const response = await fetch('http://localhost:3000/api/events', {
+      const response = await fetch(`${API_URL}/api/events`, {
       method: 'GET',
       headers: { 'x-access-token': localStorage.getItem('JWT') },
     });
@@ -82,7 +82,10 @@ provide("loadAll", loadAll);
 
 onMounted(()=>{
   loadAll();
+  const intervalId = setInterval(loadCameraData, 5000);
+  onUnmounted(() => clearInterval(intervalId));
 })
+
 
 
 
@@ -136,6 +139,8 @@ const currentId = computed(() => {
     <MapSearchBar
       v-model:appSection="appSection"
       v-model:searchTerm="searchTerm"
+      v-model:zones="zonesData"
+      v-model:events="eventsData"
       class="shadow-md"
     ></MapSearchBar>
     <MapFilterList

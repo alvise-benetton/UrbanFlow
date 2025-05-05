@@ -22,6 +22,7 @@ const isCurrent = computed(() => {
   return startDate <= now && endDate >= now;
 });
 
+const API_URL = import.meta.env.VITE_API_URL;
 const notyf = inject("notyf");
 
 watch([listaEventi, urlId], () => {
@@ -44,7 +45,7 @@ const saveChanges = async () => {
   if (JSON.stringify(event.value) === JSON.stringify(localEvent.value) ) {
     event.value = null;
   }else if(urlId === 'nuovo'){ // nuovo evento
-      await fetch(`http://localhost:3000/api/events/`,{
+      await fetch(`${API_URL}api/events/`,{
       headers:{
         "x-access-token":localStorage.getItem("JWT"),
         "Content-Type": "application/json"
@@ -70,7 +71,7 @@ const saveChanges = async () => {
     
   }else{ // modifica
 
-    await fetch(`http://localhost:3000/api/events/${event.value._id}`,{
+    await fetch(`${API_URL}/api/events/${event.value._id}`,{
     headers:{
       "x-access-token":localStorage.getItem("JWT"),
       "Content-Type": "application/json"
@@ -96,7 +97,7 @@ const saveChanges = async () => {
 };
 const deleteEvent = async() => {
 
-  await fetch(`http://localhost:3000/api/events/${event.value._id}`,{
+  await fetch(`${API_URL}/api/events/${event.value._id}`,{
     headers:{
       "x-access-token":localStorage.getItem("JWT"),
     },

@@ -3,6 +3,7 @@ import { inject, onMounted, ref, watch } from "vue";
 import ZoomPane from "../mapComponents/ZoomPane.vue";
 import eventBus from "../utility/eventBus";
 import ZoneTooltip from "../mapComponents/ZoneTooltip.vue";
+import router from "../utility/router";
 
 const listaZone = inject("listaZone");
 const listaEventi = inject("listaEventi");
@@ -48,22 +49,24 @@ const zoomLevel = ref(15);
 watch(zoomLevel, () => {
   mapRef.value.setZoom(zoomLevel.value);
 });
-function colorGradient(density) {
-  switch (true) {
-    case density < 30:
-      return "rgb(47,235,14)";
-    case density < 60:
-      return "rgb(131,243,13)";
-    case density < 90:
-      return "rgb(255,239,2)";
-    case density < 120:
-      return "rgb(255,121,0)";
-    default:
-      return "rgb(255,0,0)";
+function colorGradient(densityRatio) {
+  if(densityRatio >= 1.5){
+    return "rgb(255,0,0)";
   }
+  if(densityRatio > 1){
+    return "rgb(255,121,0)";;
+  }
+  if(densityRatio > 0.7){
+    return "rgb(255,239,2)";
+  }
+  if(densityRatio > 0.5){
+    return "rgb(131,243,13)";
+  }
+  return "rgb(47,235,14)";
+     
 }
-function addGradientZone(coordinates, density) {
-  const colorValue = colorGradient(density);
+function addGradientZone(coordinates, densityRatio) {
+  const colorValue = colorGradient(densityRatio);
   let g = L.polygon(coordinates, {
     className: "bgZona",
     stroke: false,
@@ -111,14 +114,16 @@ function mouseHandler(e) {
   }
 }
 // gestisce il click delle zone
-function clickHandler(layer) {}
+function clickHandler(zona) {
+  router.push(`/Zone/${zona}`)
+}
 
 function addZones(map, zone, misurazioni) {
   zonesAdded.value = true;
   zone.forEach((zona) => {
     const density = misurazioni.find((m) => m.zone === zona._id).data[0]
       .density;
-    addGradientZone(zona.coordinates, density);
+    addGradientZone(zona.coordinates, density/zona.threshold);
     if (density > zona.threshold) {
       addWarnSymbol(zona._id, zona.coordinates);
     }

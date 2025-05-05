@@ -8,4 +8,3 @@ import router from "./components/utility/router";
 const app = createApp(App);
 app.use(router);
 app.mount('#app');
-//app.globalProperties.$listaZone = [];

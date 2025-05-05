@@ -73,12 +73,15 @@ const showError = ref(false);
 const errorMessage = ref('');
 const loadAll = inject('loadAll');
 
+const API_URL = import.meta.env.VITE_API_URL;
+
+
 const login = async () => {
   try {
     loading.value = true;
     showError.value = false;
 
-    const response = await fetch("http://localhost:3000/api/session", {
+    const response = await fetch(`${API_URL}/api/session`, {
       method: "POST",
       body: JSON.stringify({ email: email.value, password: password.value }),
       headers: { "Content-Type": "application/json" }

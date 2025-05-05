@@ -1,4 +1,5 @@
 import { ref } from 'vue';
+const API_URL = import.meta.env.VITE_API_URL;
 
 const filters = {
   filters: ref([]),
@@ -10,7 +11,7 @@ const filters = {
 const zones = {
   zoneList: ref([]),
   async updateZones() {
-    return await fetch("http://localhost:3000/api/zones", {
+    return await fetch(`${API_URL}/api/zones`, {
         method: "GET",
         headers: { "x-access-token": localStorage.getItem("JWT") }
     })

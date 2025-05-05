@@ -2,6 +2,7 @@
 import { ExclamationTriangleIcon } from "@heroicons/vue/20/solid";
 import { inject, provide, reactive, ref, watch,computed } from "vue";
 import ZoneDialog from "./ZoneDialog.vue";
+import router from "../utility/router";
 
 
 
@@ -10,9 +11,11 @@ const inFocus = reactive({
   alerts: false,
 });
 
+
+const id = defineModel("id");
 const zonesList = inject("listaZone");
 const listaMisurazioni = inject("listaMisurazioni");
-const selectedZone = ref(null);
+const selectedZone = ref(zonesList.value.find((z)=>z._id === id.value));
 watch(selectedZone, (newValue) => {
   if (newValue === null) {
     document.getElementById("searchBar").classList.remove("hidden");
@@ -37,23 +40,26 @@ const filteredZones = computed(() => {
   }
 });
 
-provide("selectedZone", selectedZone);
-
-const alertList = ref([]);
-watch(listaMisurazioni, () => {
+const alertList = ref(zonesList.value.filter((z)=>z.threshold < listaMisurazioni.value.find((m)=> m.zone === z._id).data[0].density));
+watch(listaMisurazioni, (newVal) => {
   //setto la lista delle allerte
-  alertList.value = zonesList.value.filter(
-    (z) =>
-      z.threshold <
-      listaMisurazioni.value.find((l) => l.zone === z._id).data[0].density
-  );
+  alertList.value = zonesList.value.filter((z)=>z.threshold < newVal.find((l) => l.zone === z._id).data[0].density);
+  console.log("allerte:",alertList.value);
 });
+watch([zonesList,id],()=>{
+  selectedZone.value = zonesList.value.find((z)=>z._id === id.value);
+})
 
 function getMisurazione(id) {
   const ris = listaMisurazioni.value.filter((val) => val.zone == id);
   if (!ris || ris.length == 0) return null;
 
   return ris;
+}
+
+function goToZone(urlId){
+  router.push(`/Zone/${urlId}`);
+
 }
 
 const visible = ref(false);
@@ -67,7 +73,7 @@ const changeFocusedList = (z, a) => {
   <div class="dialog flex flex-col">
     <div
       class="flex flex-col gap-5 rounded-box p-5 bg-base-200 shadow-md overflow-y-scroll"
-      v-if="!selectedZone"
+      v-if="!id"
     >
       <!-- Selettore Zone-Allerte -->
       <ul
@@ -91,7 +97,7 @@ const changeFocusedList = (z, a) => {
         <button
           class="btn bg-base-100 w-full flex justify-between"
           v-for="zone in filteredZones"
-          @click="selectedZone = zone"
+          @click="goToZone(zone._id)"
         >
           <span>{{ zone.name }}</span>
           <div
@@ -115,7 +121,7 @@ const changeFocusedList = (z, a) => {
         <button
           class="btn bg-base-100 w-full flex justify-between"
           v-for="zone in filteredZones"
-          @click="selectedZone = zone"
+          @click="goToZone(zone._id)"
         >
           <span>{{ zone.name }}</span>
           <div
@@ -143,7 +149,7 @@ const changeFocusedList = (z, a) => {
         <button
           class="btn w-full flex justify-between bg-red-600 hover:bg-red-800"
           v-for="zone in alertList"
-          @click="selectedZone = zone"
+          @click="goToZone(zone._id)"
         >
           <span class="text-white">{{ zone.name }}</span>
 
@@ -167,7 +173,7 @@ const changeFocusedList = (z, a) => {
       </div>
     </div>
     <div v-else>
-      <ZoneDialog></ZoneDialog>
+      <ZoneDialog v-model:selectedZone="selectedZone"></ZoneDialog>
     </div>
   </div>
 </template>

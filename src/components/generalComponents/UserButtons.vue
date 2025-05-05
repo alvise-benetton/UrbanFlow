@@ -2,11 +2,13 @@
 import { UserIcon } from "@heroicons/vue/24/solid";
 import router from "../utility/router";
 
+const API_URL = import.meta.env.VITE_API_URL;
+
 function logout(){
 
   //router.go('/login');
 
-  fetch("http://localhost:3000/api/session",{
+  fetch(`${API_URL}api/session`,{
     method:"DELETE",
     headers:{"x-access-token":localStorage.getItem("JWT")}
   }).then((resp)=>{
