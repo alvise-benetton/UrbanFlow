@@ -3,7 +3,8 @@ module.exports = (req, res, next) => {
 
     res.on('finish', () => {
         const duration = Date.now() - start;
-        console.log(`[${new Date().toISOString()}] ${req.method} ${req.originalUrl} ${res.statusCode} - ${duration}ms`);
+        console.log(`Request : [${new Date().toISOString()}] ${req.method} ${req.originalUrl} body: ${JSON.stringify(req.body)}`);
+        console.log(`Response: [${new Date().toISOString()}] ${res.statusCode} - ${duration}ms`);
     });
 
     next();
