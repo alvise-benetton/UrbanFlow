@@ -96,6 +96,24 @@ const route = useRoute();
 // Calcola la sezione attiva in base al path
 const appSection = computed({
   get() {
+
+    const query = route.query; // questo è fatto per il redirect con pagine statiche di github pages
+  
+    if (query.page) {
+      if(query.id){
+
+        router.push(`/${query.page}/${query.id}`);
+        window.history.pushState( // serve per router.back()
+          { ...window.history.state, isRedirect: false },
+          '',
+          `/${query.page}`
+        )
+      }else{
+        router.push(`/${query.page}`);
+      }
+
+    }
+
     let path = route.path;
     console.log(path.split("/"))
     const base = import.meta.env.BASE_URL;
@@ -105,15 +123,16 @@ const appSection = computed({
     return pathParts[0] || "Mappa"; 
   },
   set(section) {
+
     const [newSection, id] = section.split("/");
-    
+  
     if (id) {
-      router.push(`${newSection}/${id}`.replace(/\/\//g, '/')); 
+      router.push(`/${newSection}/${id}`.replace(/\/\//g, '/')); 
     } else {
       if (route.path.endsWith("/")) {
-        router.push(`${newSection}/`.replace(/\/\//g, '/'));
+        router.push(`/${newSection}/`.replace(/\/\//g, '/'));
       } else {
-        router.push(`${newSection}`.replace(/\/\//g, '/'));
+        router.push(`/${newSection}`.replace(/\/\//g, '/'));
       }
     }
   }

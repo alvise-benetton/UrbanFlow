@@ -1,0 +1,32 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <script>
+        const path = window.location.pathname;
+        const base = '/urbanflow/';
+        let other;
+        if(path.startsWith(base)){
+            other = path.slice(base.length);
+        }else{
+            other = path;
+        }
+
+        const splitted = other.split("/");
+        
+        switch(splitted.length){
+
+            case 1: 
+                window.location.href = `/urbanflow/?page=${splitted[0]}`;
+                break;
+            case 2:
+                
+                window.location.href = `/urbanflow/?page=${splitted[0]}&id=${splitted[1]}`;
+        }
+      
+          
+    </script>
+  </head>
+  <body>
+    <p>Avvio applicazione...</p>
+  </body>
+</html>
