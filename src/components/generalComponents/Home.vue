@@ -96,27 +96,31 @@ const route = useRoute();
 // Calcola la sezione attiva in base al path
 const appSection = computed({
   get() {
-    const pathParts = route.path.slice(1).split("/");
+    let path = route.path;
+    console.log(path.split("/"))
+    const base = import.meta.env.BASE_URL;
+
+    path = path.slice(1);
+    const pathParts = path.split("/");
     return pathParts[0] || "Mappa"; 
   },
   set(section) {
     const [newSection, id] = section.split("/");
+    
     if (id) {
-      router.push(`/${newSection}/${id}`); 
+      router.push(`${newSection}/${id}`.replace(/\/\//g, '/')); 
     } else {
       if (route.path.endsWith("/")) {
-        router.push(`/${newSection}/`);
+        router.push(`${newSection}/`.replace(/\/\//g, '/'));
       } else {
-        router.push(`/${newSection}`);
+        router.push(`${newSection}`.replace(/\/\//g, '/'));
       }
     }
   }
 });
-
 const currentId = computed(() => {
   const pathParts = route.path.slice(1).split("/");
-  console.log(pathParts)
-  return pathParts[1] || null; // Restituisce l'id se presente, altrimenti null
+  return pathParts[1] || null;
 });
 
 
