@@ -29,16 +29,17 @@ const getDensity = (zone) => {
   return misurazioni.value.find((m) => m.zone === zone._id)?.data[0]
     .density;
 };
+if(zone.value){
+  alert.value.active = getDensity(zone.value) > zone.value.threshold;
+  alert.value.increment_pcent = Math.floor(
+  ((getDensity(zone.value) -  zone.value.threshold) /  zone.value.threshold) * 100);
 
-alert.value.active = getDensity(zone.value) > zone.value.threshold;
-alert.value.increment_pcent = Math.floor(
-((getDensity(zone.value) -  zone.value.threshold) /  zone.value.threshold) * 100);
+}
 
 
 watch(
   zone,
   (newVal) => {
-
     if(newVal === null){
       localZone.value = null;
       alert.value.active = false;

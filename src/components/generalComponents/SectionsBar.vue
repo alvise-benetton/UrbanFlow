@@ -6,7 +6,7 @@ const model = defineModel({ default: "Mappa" });
 const sectionsList = ref(["Zone", "Mappa", "Eventi"]);
 const setActive = (section) => {
   model.value = section;
-  router.push(`${section}`);
+  router.push(`/${section}`);
   document.getElementById("searchBar").classList.remove("hidden");
 };
 </script>
