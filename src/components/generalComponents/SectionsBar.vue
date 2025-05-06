@@ -1,10 +1,12 @@
 <script setup>
 import { ref } from "vue";
+import router from "../utility/router";
+
 const model = defineModel({ default: "Mappa" });
 const sectionsList = ref(["Zone", "Mappa", "Eventi"]);
 const setActive = (section) => {
   model.value = section;
-  window.history.pushState({}, "", `/${section}`);
+  router.push(`${section}`);
   document.getElementById("searchBar").classList.remove("hidden");
 };
 </script>
