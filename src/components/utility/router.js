@@ -1,6 +1,9 @@
 import { createRouter, createWebHistory } from 'vue-router';
 import Home from '@/components/generalComponents/Home.vue';
 import Login from '@/components/generalComponents/Login.vue';
+import UserView from "@/components/generalComponents/UserView.vue";
+import UserInfo from "@/components/generalComponents/UserInfo.vue";
+import UserManage from "@/components/generalComponents/UserManage.vue";
 import { jwtDecode } from 'jwt-decode';
 
 
@@ -23,12 +26,17 @@ const router = createRouter({
   routes: [
     { path: "/login", name: "Login", component: Login },
     { path: "/", redirect: "/Mappa" },
-    { path: "/Mappa", name: "Mappa", component: Home , meta: { requiresAuth: true } },
-    { path: "/Eventi", name: "Eventi", component: Home , meta: { requiresAuth: true } },
-    { path: "/Eventi/:id", name: "EventoDettaglio", component: Home , meta: { requiresAuth: true } },
-    { path: "/Zone", name: "Zone", component: Home , meta: { requiresAuth: true } },
-    { path: "/Zone/:id", name: "ZonaDettaglio", component: Home , meta: { requiresAuth: true } },
+    { path: "/Mappa", name: "Mappa", component: Home, meta: { requiresAuth: true } },
+    { path: "/Eventi", name: "Eventi", component: Home, meta: { requiresAuth: true } },
+    { path: "/Eventi/:id", name: "EventoDettaglio", component: Home, meta: { requiresAuth: true } },
+    { path: "/Zone", name: "Zone", component: Home, meta: { requiresAuth: true } },
+    { path: "/Zone/:id", name: "ZonaDettaglio", component: Home, meta: { requiresAuth: true } },
     { path: "/User", name: "User", component: Home, meta: { requiresAuth: true } },
+    {
+      path: "/User/:id", name: "User", component: UserView, children: [
+        { path: "info", component: UserInfo },
+        { path: "manage", component: UserManage }
+    ]},
     { path: "/:pathMatch(.*)*", name: "NotFound", component: { template: "<h1>404 Page Not Found</h1>" } }
   ]
 });
