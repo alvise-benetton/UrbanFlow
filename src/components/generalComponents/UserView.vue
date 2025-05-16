@@ -26,7 +26,7 @@ provide("user", user);
         </li>
       </ul>
     </div>
-    <div class="w-3/4 h-full bg-base-200/50 p-20 overflow-scroll">
+    <div class="w-3/4 h-full bg-base-200 p-20 overflow-scroll">
       <RouterView></RouterView>
     </div>
   </div>
