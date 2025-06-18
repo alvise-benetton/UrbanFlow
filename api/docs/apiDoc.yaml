@@ -821,12 +821,12 @@ components:
           type: string
           format: date-time
           description: Data di creazione dell'utente
-          example: "2024-08-17T14:07:30"
+          readOnly: true
         updatedAt:
           type: string
           format: date-time
           description: Data di aggiornamento dell'utente
-          example: "2024-08-18T14:07:30"
+          readOnly: true
     userUpdate:
       type: object
       required:
@@ -896,12 +896,12 @@ components:
           type: string
           format: date-time
           description: Data di creazione dell'evento
-          example: "2024-08-17T14:07:30"
+          readOnly: true
         updatedAt:
           type: string
           format: date-time
           description: Data di aggiornamento dell'evento
-          example: "2024-08-18T14:07:30"
+          readOnly: true
     zone:
       type: object
       required:
@@ -944,12 +944,12 @@ components:
           type: string
           format: date-time
           description: Data di creazione della zona
-          example: "2024-08-17T14:07:30"
+          readOnly: true
         updatedAt:
           type: string
           format: date-time
           description: Data di aggiornamento della zona
-          example: "2024-08-18T14:07:30"
+          readOnly: true
     cameraData:
       type: object
       required:
@@ -987,7 +987,7 @@ components:
           type: string
           format: date-time
           description: Data di creazione del documento
-          example: "2025-02-06T16:51:13.709Z"
+          readOnly: true
     session:
       type: object
       required:
@@ -1012,7 +1012,7 @@ components:
           type: string
           format: date-time
           description: Data di creazione della sessione
-          example: "2025-02-06T16:51:13.709Z"
+          readOnly: true
     auth:
       type: object
       required:
