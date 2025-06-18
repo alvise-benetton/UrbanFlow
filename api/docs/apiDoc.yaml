@@ -4,7 +4,7 @@ info:
   description: Docs ufficiali per le API utilizzate nel progetto UrbanFlow.
   version: 0.0.1
 servers:
-  - url: https://progetto-igsw-backend.onrender.com
+  - url: https://progetto-igsw-backend.onrender.com/api
     description: Server di produzione.
   - url: http://localhost:3000/v1
     description: Server di staging per test.
