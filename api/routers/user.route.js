@@ -5,8 +5,8 @@ const tokenCheckerAdmin = require('../middleware/tokenCheckerAdmin.js').tokenChe
 
 router.get('/',tokenCheckerAdmin,userService.getUsers);
 router.get('/:id',userService.getUserById);
-router.post('/',userService.createUser);
-router.put('/:id',tokenCheckerAdmin, userService.updateUser); // in realtà bisogna distinguere i 2 casi (modificare se stessi e altro utente)
+router.post('/',tokenCheckerAdmin,userService.createUser);
+router.put('/:id', userService.updateUser); 
 router.delete('/:id',userService.deleteUser);
 
 
