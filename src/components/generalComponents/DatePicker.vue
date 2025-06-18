@@ -10,9 +10,9 @@ defineExpose({ isValid }); // non credo vega usato
 
 
 function changeDateFormat(dateTime){
-
-  if(typeof dateTime !== "string")
+  if(typeof dateTime !== "string" || dateTime === "")
     return "Errore!";
+
   let splitted = dateTime.split("T");
   let data = splitted[0].split("-");
   let time = splitted[1].split  (":");
@@ -22,7 +22,8 @@ function changeDateFormat(dateTime){
 }
 
 function formatDateForInput(dateTime) {
-  if (!dateTime) return "";
+  if (!dateTime )
+    return "";
   const date = new Date(dateTime);
   const year = date.getFullYear();
   const month = String(date.getMonth() + 1).padStart(2, "0");
@@ -58,7 +59,7 @@ function formatDateForInput(dateTime) {
             'btn-error animate-pulse':
               new Date(event.startDate) > new Date(event.endDate),
           }"
-          :value="formatDateForInput(event.startDate)"
+          :value="event.startDate ? formatDateForInput(event.startDate) : 'seleziona data'"
           :max="formatDateForInput(event.endDate)"
         />
         <input
