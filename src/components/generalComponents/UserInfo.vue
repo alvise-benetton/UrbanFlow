@@ -5,6 +5,44 @@ import { XMarkIcon } from "@heroicons/vue/20/solid";
 const pswModal = ref(null);
 
 const user = inject("user");
+console.log("User info:", user);
+
+const notyf = inject("notyf");
+
+const newPwd = ref("");
+const confirmPwd = ref("");
+
+async function cambiaPass() {
+  if (newPwd.value !== confirmPwd.value) {
+    notyf.error("Le nuove password non corrispondono.");
+    return;
+  }
+  
+  try {
+    const response = await fetch(`${import.meta.env.VITE_API_URL}/api/users/${user.value._id}`, {
+      method: "PUT",
+      headers: {
+        "Content-Type": "application/json",
+        "x-access-token": localStorage.getItem("JWT"),
+      },
+      body: JSON.stringify({
+        password: newPwd.value
+      }),
+    });
+
+    if (!response.ok) {
+      throw new Error(`HTTP error! status: ${response.status}`);
+    }
+
+    const data = await response.json();
+    console.log("Password cambiata con successo:", data);
+    notyf.success("Password cambiata con successo!");
+    pswModal.value.close();
+  } catch (error) {
+    notyf.error("Errore durante il cambio password: " + error.message);
+    console.error("Errore durante il cambio password:", error);
+  }
+}
 
 </script>
 <template>
@@ -55,19 +93,11 @@ const user = inject("user");
         </button>
       </form>
       <h2 class="text-lg font-bold">Cambia password</h2>
-      <form method="put" class="flex flex-col gap-5">
-        <div class="flex flex-col gap-2">
-          <label class="item-label">Vecchia password</label>
-          <input
-            class="item-input"
-            type="password"
-            placeholder="Vecchia password"
-            required
-          />
-        </div>
+      <div class="flex flex-col gap-5">
         <div class="flex flex-col gap-2">
           <label class="item-label">Nuova password</label>
           <input
+            v-model="newPwd"
             class="item-input"
             type="password"
             placeholder="Nuova password"
@@ -77,6 +107,7 @@ const user = inject("user");
         <div class="flex flex-col gap-2">
           <label class="item-label">Ripeti nuova password</label>
           <input
+            v-model="confirmPwd"
             class="item-input"
             type="password"
             placeholder="Ripeti nuova password"
@@ -84,9 +115,9 @@ const user = inject("user");
           />
         </div>
         <div class="flex flex-row gap-2">
-          <button type="submit" class="btn btn-primary w-fit">Salva</button>
+          <button type="submit" class="btn btn-primary w-fit"  @click="cambiaPass()" >Salva</button>
         </div>
-      </form>
+      </div>
     </div>
   </dialog>
 </template>
