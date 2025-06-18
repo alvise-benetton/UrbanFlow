@@ -1,4 +1,4 @@
-# README del Branch
+# docs
 
 > **Nota:** Questo README si riferisce esclusivamente a questo branch. Per la documentazione generale del progetto, consultare il branch `main`.
 
