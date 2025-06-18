@@ -5,15 +5,31 @@ import ZonesPicker from "./ZonesPicker.vue";
 import DatePicker from "./DatePicker.vue";
 import ChartSmallMirror from "./ChartSmallMirror.vue";
 import { TrashIcon } from "@heroicons/vue/24/solid";
-import router from "../utility/router";
+import router, { authFetch } from "../utility/router";
+
 
 /* const event = inject("singleEvent"); */
 const urlId = defineModel("id");
 const listaEventi = inject("listaEventi");
 const zoneList = inject("listaZone");
-const event = ref(listaEventi.value.find((e)=>e._id === urlId.value));
-const localEvent = ref({...event.value});
 const isEditing = defineModel("isEditing");
+
+const event = ref(null);
+if (urlId.value === 'nuovo') {
+  console.log("Creating new event");
+  event.value = {
+    title: "",
+    zones: [],
+    startDate: new Date(),
+    endDate: new Date(new Date().getTime() + 24 * 60 * 60 * 1000), // 1 day
+  }
+  isEditing.value = true;
+} else {
+  event.value = listaEventi.value.find((e) => e._id === urlId.value);
+}
+
+const localEvent = ref({...event.value});
+
 const deleteEventModal = ref(null);
 const isCurrent = computed(() => {
   const now = new Date();
@@ -22,11 +38,14 @@ const isCurrent = computed(() => {
   return startDate <= now && endDate >= now;
 });
 
+
 const API_URL = import.meta.env.VITE_API_URL;
 const notyf = inject("notyf");
 
 watch([listaEventi, urlId], () => {
+
   event.value = listaEventi.value.find((e) => e._id === urlId.value);
+
 });
 
 watch(event, (newVal) => { 
@@ -42,10 +61,11 @@ const abortChanges = () => {
   router.back();
 };
 const saveChanges = async () => {
+  
   if (JSON.stringify(event.value) === JSON.stringify(localEvent.value) ) {
     event.value = null;
-  }else if(urlId === 'nuovo'){ // nuovo evento
-      await fetch(`${API_URL}api/events/`,{
+  }else if(urlId.value === 'nuovo'){ // nuovo evento
+      await authFetch(`${API_URL}/api/events/`,{
       headers:{
         "x-access-token":localStorage.getItem("JWT"),
         "Content-Type": "application/json"
@@ -66,12 +86,12 @@ const saveChanges = async () => {
       notyf.success("Evento creato con successo!");
       event.value = {...event.value};
       isEditing.value = false;
-      router.push("/Eventi/"+res.body._id);
+      router.back();
     })
     
   }else{ // modifica
 
-    await fetch(`${API_URL}/api/events/${event.value._id}`,{
+    await authFetch(`${API_URL}/api/events/${event.value._id}`,{
     headers:{
       "x-access-token":localStorage.getItem("JWT"),
       "Content-Type": "application/json"
@@ -94,10 +114,12 @@ const saveChanges = async () => {
     isEditing.value = false;
   })
 
-};
-const deleteEvent = async() => {
+  };
+}
 
-  await fetch(`${API_URL}/api/events/${event.value._id}`,{
+async function deleteEvent(){
+
+  await authFetch(`${API_URL}/api/events/${event.value._id}`,{
     headers:{
       "x-access-token":localStorage.getItem("JWT"),
     },
@@ -111,28 +133,13 @@ const deleteEvent = async() => {
     notyf.success("Evento eliminato con successo!");
     listaEventi.value = listaEventi.value.filter(e=>e._id != event.value._id); 
     event.value = null;
+    router.back();
   })
 };
-
-  onBeforeMount(() => {
-    if (urlId === 'nuovo') {
-      localEvent.value = {
-        title: "",
-        zones: [],
-        startDate: new Date(),
-        endDate: new Date(),
-      }
-    }
-  });
-
-}
-
 
 function closeEvent(){
   event.value = null;
   router.back();
- 
-  
 }
 
 </script>
@@ -201,7 +208,7 @@ function closeEvent(){
       ></ZonesPicker>
       <!-- Data evento -->
       <DatePicker
-        v-if="localEvent"
+        v-if="localEvent && localEvent.startDate && localEvent.endDate"
         v-model:event="localEvent"
         v-model:isEditing="isEditing"
       ></DatePicker>

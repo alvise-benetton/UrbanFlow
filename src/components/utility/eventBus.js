@@ -1,4 +1,6 @@
 import { ref } from 'vue';
+import { authFetch } from './router';
+
 const API_URL = import.meta.env.VITE_API_URL;
 
 const filters = {
@@ -11,7 +13,7 @@ const filters = {
 const zones = {
   zoneList: ref([]),
   async updateZones() {
-    return await fetch(`${API_URL}/api/zones`, {
+    return await authFetch(`${API_URL}/api/zones`, {
         method: "GET",
         headers: { "x-access-token": localStorage.getItem("JWT") }
     })
@@ -27,7 +29,7 @@ const zones = {
         return data;
     })
     .catch((error) => {
-        console.error("Fetch error:", error);
+        console.error("authFetch error:", error);
     });
   }
 }

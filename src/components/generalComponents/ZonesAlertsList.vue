@@ -118,29 +118,6 @@ const changeFocusedList = (z, a) => {
           </div>
         </button>
       
-        <button
-          class="btn bg-base-100 w-full flex justify-between"
-          v-for="zone in filteredZones"
-          @click="goToZone(zone._id)"
-        >
-          <span>{{ zone.name }}</span>
-          <div
-            v-if="listaMisurazioni.length > 0 && getMisurazione(zone._id)"
-            class="flex gap-2"
-          >
-            <div class="badge">
-              {{ getMisurazione(zone._id)[0].data[0].density }}
-            </div>
-            <div
-              class="badge badge-error text-white"
-              v-if="
-                getMisurazione(zone._id)[0].data[0].density > zone.threshold
-              "
-            >
-              <ExclamationTriangleIcon class="size-4"></ExclamationTriangleIcon>
-            </div>
-          </div>
-        </button>
       </div>
       <!-- Lista allerte -->
       <div v-if="inFocus.alerts" class="flex flex-col gap-2">

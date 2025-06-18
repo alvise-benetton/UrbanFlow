@@ -115,17 +115,8 @@ function setEvent(ev){
     <div
       class="flex justify-between sticky top-0 bg-base-200 border-b border-base-300 pb-5"
     >
-      <!-- Filtri -->
-      <div class="flex gap-2">
-        <button class="btn btn-square btn-sm bg-base-100">
-          <CalendarDateRangeIcon class="size-4"></CalendarDateRangeIcon>
-        </button>
-        <button class="btn btn-square btn-sm bg-base-100">
-          <MapPinIcon class="size-4"></MapPinIcon>
-        </button>
-      </div>
       <!-- Crea evento -->
-      <div>
+      <div class="ml-auto">
         <button class="btn btn-square btn-sm btn-primary" @click="createEvent">
           <PlusIcon class="size-4"></PlusIcon>
         </button>

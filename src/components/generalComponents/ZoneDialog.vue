@@ -5,14 +5,13 @@ import {
   QuestionMarkCircleIcon,
   XMarkIcon,
 } from "@heroicons/vue/20/solid";
-import { inject, ref, watch } from "vue";
-import router from "../utility/router";
-
+import { computed, inject, ref, watch } from "vue";
+import router, { authFetch } from "../utility/router";
 const zone = defineModel("selectedZone");
 const misurazioni = inject("listaMisurazioni");
 const eventi = inject("listaEventi");
 const localZone = ref({...zone.value});
-const alert = ref({ ative: false, increment_pcent: 0 });
+const alert = ref({ active: false, increment_pcent: 0 });
 
 
 const eventiZona = ref([]);
@@ -22,6 +21,15 @@ function closeCard(){
   zone.value = null;
   router.back();
 }
+
+const eventiAttuali = computed(() => {
+  const now = new Date();
+  return eventi.value.filter((event) => {
+    const startDate = new Date(event.startDate);
+    const endDate = new Date(event.endDate);
+    return startDate <= now && now <= endDate;
+  });
+});
 
 
 const getDensity = (zone) => {
@@ -51,8 +59,7 @@ watch(
     alert.value.active = getDensity(newVal) > newVal.threshold;
     alert.value.increment_pcent = Math.floor(
     ((getDensity(newVal) - newVal.threshold) / newVal.threshold) * 100);
-    
-    eventiZona.value = eventi.value.filter((e) => e.zones.includes(newVal._id));
+    eventiZona.value = eventiAttuali.value.filter((ev) => ev.zones.includes(newVal._id));
   },
   
   { deep: true }
@@ -66,7 +73,7 @@ const abortChanges = () => {
   localZone.value.threshold = zone.value.threshold;
 };
 const saveChanges = async () => {
-  await fetch(`${API_URL}/api/zones/${zone.value._id}`, {
+  await authFetch(`${API_URL}/api/zones/${zone.value._id}`, {
     headers: {
       "x-access-token": localStorage.getItem("JWT"),
       "Content-Type": "application/json",
@@ -176,7 +183,7 @@ const thresholdDialog = ref(null);
     >
       <ExclamationTriangleIcon class="size-10"></ExclamationTriangleIcon>
       <p>
-        Alle {{ alert.hour }} del {{ alert.day }} il numero di pedoni rilevati
+        Il numero di pedoni rilevati
         in {{ localZone.name }} è stato superiore al limite impostato di
         {{ zone.threshold }}.
       </p>
@@ -207,10 +214,10 @@ const thresholdDialog = ref(null);
         </div>
       </a>
       <small
-        v-if="!localZone.events || localZone.events.length <= 0"
+        v-if="!eventiZona || eventiZona.length <= 0"
         class="text-gray-500"
       >
-        Nessun evento è previsto nella zona
+        Nessun evento in corso nella zona
       </small>
     </div>
   </div>

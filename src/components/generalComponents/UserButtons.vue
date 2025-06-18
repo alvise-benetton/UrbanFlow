@@ -1,6 +1,7 @@
 <script setup>
 import { UserIcon } from "@heroicons/vue/24/solid";
-import router from "../utility/router";
+import router, { authFetch } from "../utility/router";
+import { inject } from "vue";
 
 const API_URL = import.meta.env.VITE_API_URL;
 
@@ -8,7 +9,7 @@ function logout(){
 
   //router.go('/login');
 
-  fetch(`${API_URL}/api/session`,{
+  authFetch(`${API_URL}/api/session`,{
     method:"DELETE",
     headers:{"x-access-token":localStorage.getItem("JWT")}
   }).then((resp)=>{
@@ -33,7 +34,7 @@ function logout(){
       </summary>
       <ul class="menu dropdown-content gap-2">
         <li><button class="btn btn-error text-white w-fit shadow-md" @click="logout">Logout</button></li>
-        <li><a class="btn w-fit shadow-md">Area riservata</a></li>
+        <li><router-link to="/AreaRiservata/info" class="btn w-fit shadow-md">Area riservata</router-link></li>
       </ul>
     </details>
   </div>
