@@ -6,6 +6,8 @@ import { authFetch } from "../utility/router";
 
 
 const notyf = inject("notyf");
+const me = inject("user");
+const myID = me.value._id;
 
 const focusedUser = ref({
   _id: null,
@@ -208,7 +210,7 @@ async function saveUser(){
           required
         />
       </div>
-      <div class="form-control">
+      <div class="form-control" v-if="focusedUser._id !== myID">
         <label class="label">
           <span class="label-text">Ruolo</span>
         </label>

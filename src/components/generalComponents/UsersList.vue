@@ -6,6 +6,7 @@ import { authFetch } from "../utility/router";
 
 const users = inject("users");
 const me = inject("user"); 
+const notyf = inject("notyf");
 
 const route = useRoute();
 const myID = me.value._id;
@@ -27,7 +28,6 @@ const editUser = (id) => {
 
 async function deleteUser() {
   const id = focusedUser.value._id;
-  console.log("Eliminazione utente", id);
   try {
     const response = await authFetch(`${import.meta.env.VITE_API_URL}/api/users/${id}`, {
       method: "DELETE",
@@ -41,9 +41,11 @@ async function deleteUser() {
         users.value.splice(index, 1);
       }
     } else {
+      notyf.error("Errore durante l'eliminazione dell'utente");
       console.error("Errore nell'eliminazione utente "+ id, response.statusText);
     }
   } catch (error) {
+    notyf.error("Errore durante l'eliminazione dell'utente");
     console.error("Errore nell'eliminazione utente "+ id, error);
   }
 }
@@ -68,18 +70,18 @@ const deleteDialog = ref(null);
           }"
           >{{ user.role }}</span
         >
+        <span class="badge bg-success text-white p-3" v-if="user._id == myID">Sei tu</span>
       </div>
      
       <div
         class="absolute flex flex-row top-1/2 right-5 -translate-y-1/2 gap-2">
-        <span class="badge bg-success text-white p-3" v-if="user._id == myID">Sei tu</span>
-        <div v-else>
+        
+        <div>
           <button class="btn btn-xs btn-square btn-primary text-white" @click="editUser(user._id)">
             <PencilIcon class="size-4"></PencilIcon>
           </button>
-          <button
+          <button v-if="user._id !== myID"
             class="btn btn-xs btn-square btn-error text-white ml-2"
-            v-if="user._id != myID"
             @click="deleteDialog.showModal(); focusedUser = user">
             <TrashIcon class="size-4"></TrashIcon>
           </button>
