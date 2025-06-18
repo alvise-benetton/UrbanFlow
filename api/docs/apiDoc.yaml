@@ -951,7 +951,6 @@ components:
             required:
               - density
               - timestamp
-              - _id
             properties:
               density:
                 type: integer
@@ -961,10 +960,6 @@ components:
                 type: integer
                 description: Timestamp della rilevazione (ms da epoch)
                 example: 1740665234331
-              _id:
-                type: string
-                description: ID univoco della rilevazione
-                example: "67c07192192a91509906ca93"
         createdAt:
           type: string
           format: date-time
