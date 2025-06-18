@@ -815,6 +815,44 @@ components:
             - base
           description: Ruolo dell'utente nella piattaforma.
           example: admin
+    userUpdate:
+      type: object
+      required:
+        - _id
+        - name
+        - surname
+        - email
+        - role
+        - password
+      properties:
+        _id:
+          type: string
+          description: Numero identificativo dell'utente.
+          example: "60d0fe4f5311236168a109ca"
+          readOnly: true
+        name:
+          type: string
+          description: Nome dell'utente.
+          example: Mario
+        surname:
+          type: string
+          description: Cognome dell'utente.
+          example: Rossi
+        email:
+          type: string
+          description: Email istituzionale dell'utente.
+          example: mario.rossi@domain.it
+        role:
+          type: string
+          enum:
+            - admin
+            - base
+          description: Ruolo dell'utente nella piattaforma.
+          example: admin
+        password:
+          type: string
+          description: Password dell'utente.
+          example: "MarioRossi123"
     event:
       type: object
       required:
@@ -959,41 +997,3 @@ components:
           type: string
           example: Errore!
           description: Descrizione dell'errore
-    userUpdate:
-      type: object
-      required:
-        - _id
-        - name
-        - surname
-        - email
-        - role
-        - password
-      properties:
-        _id:
-          type: string
-          description: Numero identificativo dell'utente.
-          example: "60d0fe4f5311236168a109ca"
-          readOnly: true
-        name:
-          type: string
-          description: Nome dell'utente.
-          example: Mario
-        surname:
-          type: string
-          description: Cognome dell'utente.
-          example: Rossi
-        email:
-          type: string
-          description: Email istituzionale dell'utente.
-          example: mario.rossi@domain.it
-        role:
-          type: string
-          enum:
-            - admin
-            - base
-          description: Ruolo dell'utente nella piattaforma.
-          example: admin
-        password:
-          type: string
-          description: Password dell'utente.
-          example: "MarioRossi123"
