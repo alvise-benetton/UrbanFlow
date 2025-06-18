@@ -5,7 +5,6 @@ Questo branch contiene la RESTful API del progetto.
 ## Struttura della cartella
 
 - api/
-  - docs/
   - middleware/
   - models/
   - routers/
