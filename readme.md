@@ -1,9 +1,3 @@
-# PROGETTO TRENTO SUPER MEGA SMART
+# deliverables
 
-### Sezione 1
-
-cose molto interessanti
-
-### Sezione 2
-
-altre cose molto interessanti
+Il branch `deliverables` contiene sotto forma di file immagine i contenuti grafici dei deliverables del progetto. I file sono organizzati in cartelle che corrispondono ai vari deliverables.
