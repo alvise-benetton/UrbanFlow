@@ -11,6 +11,8 @@ const cors = require('cors');
 const zone = require('./models/zone.model');
 const mongoose = require('mongoose');
 const updateCameraData = require('./serverFill');
+const seedDatabase = require('./seeder');
+
 
 
 require('dotenv').config();
@@ -43,5 +45,7 @@ const min = 60* sec;
 // updateCameraData();
 //setTimeout(updateCameraData,1 * min); // aggiunge dati casuali al db ogni 5 secondi
 module.exports = app;
+//seedDatabase();
+
 
 

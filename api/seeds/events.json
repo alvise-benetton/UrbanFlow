@@ -1,0 +1,47 @@
+[
+  {
+    "_id": "67bf1b467183702bb6a1093b",
+    "title": "Trento Running Day",
+    "startDate": "2025-06-01T09:00:00.000Z",
+    "endDate": "2025-08-31T20:00:00.000Z",
+    "zones": ["67a4bc203c103259d4150e21", "67a4bc203c103259d4150e23"]
+  },
+  {
+    "_id": "67c2ee66bacb3f23947a3322",
+    "title": "Sapori in Piazza",
+    "startDate": "2025-05-15T10:00:00.000Z",
+    "endDate": "2025-08-20T22:00:00.000Z",
+    "zones": ["67a4bc203c103259d4150e20", "67a4bc203c103259d4150e22"]
+  },
+  {
+    "_id": "67c2ef99bacb3f23947a9b87",
+    "title": "Mercatino di Primavera",
+    "startDate": "2025-03-19T11:29:00.000Z",
+    "endDate": "2025-03-31T10:29:00.000Z",
+    "zones": [
+      "67a4bc203c103259d4150e1c",
+      "67a4bc203c103259d4150e1f",
+      "67a4bc203c103259d4150e21"
+    ]
+  },
+  {
+    "_id": "67c2efa7bacb3f23947aa0ac",
+    "title": "Esposizione Auto d'Epoca",
+    "startDate": "2025-06-10T10:00:00.000Z",
+    "endDate": "2025-08-15T19:00:00.000Z",
+    "zones": [null, null]
+  },
+  {
+    "_id": "67d84125e3cf36188b6593d3",
+    "title": "Fiera delle Associazioni",
+    "startDate": "2025-03-13T15:34:00.000Z",
+    "endDate": "2025-04-06T14:34:00.000Z",
+    "zones": [
+      "67a4bc203c103259d4150e1a",
+      "67a4bc203c103259d4150e1c",
+      "67a4bc203c103259d4150e1f",
+      "67a4bc203c103259d4150e1c",
+      "67a4bc203c103259d4150e1d"
+    ]
+  }
+]
