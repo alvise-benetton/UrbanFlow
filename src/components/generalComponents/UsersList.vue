@@ -1,49 +1,53 @@
 <script setup>
-import { ref, inject } from "vue";
+import { ref, inject, onBeforeMount } from "vue";
 import { PencilIcon, TrashIcon } from "@heroicons/vue/20/solid";
-import { useRoute } from "vue-router";
-const users = [
-  {
-    _id: "123456789",
-    name: "Alessandro",
-    surname: "Moretti",
-    email: "alessandro.moretti@comune.tn.it",
-    role: "admin",
-  },
-  {
-    _id: "987654321",
-    name: "Giulia",
-    surname: "Rossi",
-    email: "giulia.rossi@comune.tn.it",
-    role: "base",
-  },
-  {
-    _id: "456789123",
-    name: "Marco",
-    surname: "Bianchi",
-    email: "marco.bianchi@comune.tn.it",
-    role: "base",
-  },
-  {
-    _id: "654321987",
-    name: "Elena",
-    surname: "Verdi",
-    email: "elena.verdi@comune.tn.it",
-    role: "base",
-  },
-];
+import { useRoute } from "vue-router"
+import { authFetch } from "../utility/router";
+
+const users = inject("users");
+const me = inject("user"); 
+
 const route = useRoute();
-const myID = route.params.id;
-const focusedUser = inject("focusedUser");
-const editDialog = inject("dialog");
+const myID = me.value._id;
+
+const emit = defineEmits(['editUser']);
+
+
+const focusedUser = ref(null);
+
+const emitEditEvent = (id) => {
+  emit('editUser', id);
+};
+
+
 const editUser = (id) => {
-  focusedUser.value = users.find((user) => user._id == id);
-  editDialog.value.showModal();
+  emitEditEvent(id);
 };
-const deleteUser = (id) => {
-  // Call the API to delete the user
-  // After deletion, refresh the users list
-};
+
+
+async function deleteUser() {
+  const id = focusedUser.value._id;
+  console.log("Eliminazione utente", id);
+  try {
+    const response = await authFetch(`${import.meta.env.VITE_API_URL}/api/users/${id}`, {
+      method: "DELETE",
+      headers: {
+        "x-access-token": localStorage.getItem("JWT"),
+      },
+    });
+    if (response.ok) {
+      const index = users.value.findIndex((user) => user._id === id);
+      if (index !== -1) {
+        users.value.splice(index, 1);
+      }
+    } else {
+      console.error("Errore nell'eliminazione utente "+ id, response.statusText);
+    }
+  } catch (error) {
+    console.error("Errore nell'eliminazione utente "+ id, error);
+  }
+}
+
 const deleteDialog = ref(null);
 </script>
 <template>
@@ -64,26 +68,22 @@ const deleteDialog = ref(null);
           }"
           >{{ user.role }}</span
         >
-        <span class="badge bg-success text-white p-3" v-if="user._id == myID"
-          >Sei tu</span
-        >
       </div>
+     
       <div
-        class="absolute flex flex-row top-1/2 right-5 -translate-y-1/2 gap-2"
-      >
-        <button
-          class="btn btn-xs btn-square btn-primary text-white"
-          @click="editUser(user._id)"
-        >
-          <PencilIcon class="size-4"></PencilIcon>
-        </button>
-        <button
-          class="btn btn-xs btn-square btn-error text-white"
-          v-if="user._id != myID"
-          @click="deleteDialog.showModal()"
-        >
-          <TrashIcon class="size-4"></TrashIcon>
-        </button>
+        class="absolute flex flex-row top-1/2 right-5 -translate-y-1/2 gap-2">
+        <span class="badge bg-success text-white p-3" v-if="user._id == myID">Sei tu</span>
+        <div v-else>
+          <button class="btn btn-xs btn-square btn-primary text-white" @click="editUser(user._id)">
+            <PencilIcon class="size-4"></PencilIcon>
+          </button>
+          <button
+            class="btn btn-xs btn-square btn-error text-white ml-2"
+            v-if="user._id != myID"
+            @click="deleteDialog.showModal(); focusedUser = user">
+            <TrashIcon class="size-4"></TrashIcon>
+          </button>
+        </div>
       </div>
     </div>
   </div>
@@ -92,7 +92,7 @@ const deleteDialog = ref(null);
       <h3 class="font-bold text-lg mb-4">Conferma eliminazione</h3>
       <p>Sei sicuro di voler eliminare questo utente?</p>
       <div class="modal-action">
-        <button class="btn btn-error">Elimina</button>
+        <button class="btn btn-error" @click="deleteUser()">Elimina</button>
         <button class="btn" @click="deleteDialog.close()">Annulla</button>
       </div>
     </form>

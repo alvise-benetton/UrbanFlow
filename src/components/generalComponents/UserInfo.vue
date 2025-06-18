@@ -1,8 +1,11 @@
 <script setup>
 import { ref, inject } from "vue";
 import { XMarkIcon } from "@heroicons/vue/20/solid";
-const user = inject("user");
+
 const pswModal = ref(null);
+
+const user = inject("user");
+
 </script>
 <template>
   <div class="flex flex-col gap-5">
@@ -52,7 +55,7 @@ const pswModal = ref(null);
         </button>
       </form>
       <h2 class="text-lg font-bold">Cambia password</h2>
-      <form method="post" class="flex flex-col gap-5">
+      <form method="put" class="flex flex-col gap-5">
         <div class="flex flex-col gap-2">
           <label class="item-label">Vecchia password</label>
           <input

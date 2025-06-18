@@ -4,7 +4,13 @@ import { createApp } from "vue";
 import App from "./App.vue";
 import router from "./components/utility/router";
 
-console.log(import.meta.env);
 const app = createApp(App);
+
+app.config.errorHandler = (err) => {
+if (err.response?.status === 403) {
+    router.push('/login')
+}
+  }
+
 app.use(router);
 app.mount('#app');

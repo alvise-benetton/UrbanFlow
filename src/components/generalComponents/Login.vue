@@ -61,7 +61,7 @@
 <script setup>
 import { ref, inject } from 'vue';
 import { useRouter } from 'vue-router';
-import { jwtDecode } from 'jwt-decode';
+import { authFetch } from '../utility/router';
 
 const router = useRouter();
 
@@ -75,24 +75,27 @@ const loadAll = inject('loadAll');
 
 const API_URL = import.meta.env.VITE_API_URL;
 
+const user = inject('user');
+
 
 const login = async () => {
   try {
     loading.value = true;
     showError.value = false;
 
-    const response = await fetch(`${API_URL}/api/session`, {
+    const response = await authFetch(`${API_URL}/api/session`, {
       method: "POST",
       body: JSON.stringify({ email: email.value, password: password.value }),
       headers: { "Content-Type": "application/json" }
+    }).then((resp) => {
+      if (!resp.ok) {
+        throw new Error('Credenziali non valide');
+      }
+      return resp;
     });
-
-    if (!response.ok) {
-      throw new Error('Credenziali non valide');
-    }
     const data = await response.json();
     localStorage.setItem('JWT', data.JWT);
-    console.log(data.JWT);
+    
     //loadAll();
     await router.push('/');
 

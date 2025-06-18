@@ -1,16 +1,12 @@
 <script setup>
 import { useRoute } from "vue-router";
-import { ref, provide } from "vue";
+import { ref, provide, inject } from "vue";
+import { jwtDecode } from "jwt-decode";
 const path = useRoute();
+
+const user = inject("user");
+
 // Oggetto user
-const user = ref({
-  _id: "123456789",
-  name: "Alessandro",
-  surname: "Moretti",
-  email: "alessandro.moretti@comune.tn.it",
-  role: "admin",
-});
-provide("user", user);
 </script>
 <template>
   <div class="fixed w-full h-full flex flex-row gap-0">
@@ -20,14 +16,19 @@ provide("user", user);
           <RouterLink class="menu-item" to="info">Il mio profilo</RouterLink>
         </li>
         <li>
-          <RouterLink v-if="user.role == 'admin'" class="menu-item" to="manage"
-            >Gestisci utenti</RouterLink
-          >
+          <RouterLink v-if="user.role === 'admin'" class="menu-item" to="manage">Gestisci utenti</RouterLink>
         </li>
       </ul>
     </div>
     <div class="w-3/4 h-full bg-base-200 p-20 overflow-scroll">
       <RouterView></RouterView>
+    </div>
+    <div class="absolute bottom-5 left-5">
+      <button 
+        class="btn btn-primary" 
+        @click="$router.push('/')">
+        Torna alla mappa
+      </button>
     </div>
   </div>
 </template>

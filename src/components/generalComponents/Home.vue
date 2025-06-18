@@ -10,7 +10,10 @@ import MapFilterList from "./MapFilterList.vue";
 import UserButtons from "./UserButtons.vue";
 import EventsList from "./EventsList.vue";
 import ZonesAlertsList from "./ZonesAlertsList.vue";
+import { authFetch } from "../utility/router";
 
+const user = inject("user");
+const loadUser = inject("loadUser");
 
 const appAreas = ref(["User", "Main"]);
 const searchTerm = ref("");
@@ -24,7 +27,7 @@ const API_URL = import.meta.env.VITE_API_URL;
 
 const loadZones = async () => {
   try {
-    const response = await fetch(`${API_URL}/api/zones`, {
+    const response = await authFetch(`${API_URL}/api/zones`, {
       method: 'GET',
       headers: { 'x-access-token': localStorage.getItem('JWT') },
     });
@@ -33,13 +36,13 @@ const loadZones = async () => {
     zonesData.value = data; // Usa .value correttamente
 
   } catch (error) {
-    console.error('Fetch error:', error);
+    console.error('authFetch error:', error);
   }
 };
 
 const loadCameraData = async () => {
   try {
-    const response = await fetch(`${API_URL}/api/cameraData`, {
+    const response = await authFetch(`${API_URL}/api/cameraData`, {
       method: 'GET',
       headers: { 'x-access-token': localStorage.getItem('JWT') },
     });
@@ -47,13 +50,13 @@ const loadCameraData = async () => {
     const data = await response.json();
     measureData.value = data;
   } catch (error) {
-    console.error('Fetch error:', error);
+    console.error('authFetch error:', error);
   }
 };
 
 const loadEvents = async() => {
   try {
-      const response = await fetch(`${API_URL}/api/events`, {
+      const response = await authFetch(`${API_URL}/api/events`, {
       method: 'GET',
       headers: { 'x-access-token': localStorage.getItem('JWT') },
     });
@@ -61,7 +64,7 @@ const loadEvents = async() => {
     const data = await response.json();
     eventsData.value = data;
   } catch (error) {
-    console.error('Fetch error:', error);
+    console.error('authFetch error:', error);
   }
 };
 
@@ -71,6 +74,7 @@ const loadAll = ()=>{
   loadEvents();
   loadZones();
   loadCameraData();
+  user.value = loadUser();
   isInit.value = true;
 }
 
@@ -166,12 +170,12 @@ const currentId = computed(() => {
       v-model:events="eventsData"
       class="shadow-md"
     ></MapSearchBar>
-    <MapFilterList
+<!--     <MapFilterList
       v-if="appSection === 'Mappa'"
       class="boxFadeIn shadow-md"
-    ></MapFilterList>
+    ></MapFilterList> -->
     <EventsList
-      v-else-if="appSection === 'Eventi'"
+      v-if="appSection === 'Eventi'"
       v-model:events="eventsData"
       v-model:searchTerm="searchTerm"
       v-model:id ="currentId"

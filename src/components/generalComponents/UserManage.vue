@@ -1,12 +1,18 @@
 <script setup>
-import { ref, provide } from "vue";
+import { ref, provide, onBeforeMount, onMounted ,inject, watch} from "vue";
 import { MagnifyingGlassIcon } from "@heroicons/vue/20/solid";
-import UsersList from "./UsersList.vue";
+import UsersList from "@/components/generalComponents/UsersList.vue";
+import { authFetch } from "../utility/router";
+
+
+const notyf = inject("notyf");
+
 const focusedUser = ref({
   _id: null,
   name: "",
   surname: "",
   email: "",
+  password: "",
   role: "",
 });
 const createUser = () => {
@@ -14,17 +20,121 @@ const createUser = () => {
     _id: null,
     name: "",
     surname: "",
-    email: "",
+    email: "",  
+    password : "",
     role: "",
   };
   dialog.value.showModal();
 };
+
+
+
 const dialog = ref(null);
-provide("focusedUser", focusedUser);
-provide("dialog", dialog);
+const users = ref([]);
+provide("users", users);
+//provide("focusedUser", focusedUser);
+//provide("dialog", dialog);
+
+watch(focusedUser, (newValue) => {
+  console.log("Focused user changed:", newValue);
+}, { deep: true });
+
+onBeforeMount(async () => {
+
+  try {
+    const res = await authFetch(`${import.meta.env.VITE_API_URL}/api/users`, {
+      method: "GET",
+      headers: {
+        "x-access-token": localStorage.getItem("JWT"),
+      },
+    });
+    if (!res.ok) {
+      throw new Error(`HTTP error! status: ${res.status}`);
+    }
+    const data = await res.json();
+    users.value = data;
+    console.log("Utenti caricati:", users.value);
+  } catch (error) {
+    console.error("authFetch error:", error);
+  }
+});
+
+
+const handleEditUser = (id) => {
+  console.log("ID utente da modificare:", id);
+
+  const user = users.value.find((user) => user._id === id);
+  if (user) {
+    focusedUser.value = { ...user }; 
+    dialog.value.showModal();
+  } else {
+    console.error("Utente non trovato con ID:", id);
+  } 
+
+};
+
+async function saveUser(){
+  console.log("Salvataggio utente", focusedUser.value);
+  const API_URL = import.meta.env.VITE_API_URL;
+  const token = localStorage.getItem("JWT");
+
+  const body = JSON.stringify(focusedUser.value);
+
+  console.log("Salvataggio utente", body);
+
+  if (focusedUser.value._id) {
+    await authFetch(`${API_URL}/api/users/${focusedUser.value._id}`, {
+      method: "PUT",
+      headers: { 
+        "x-access-token": token,
+        "Content-Type": "application/json"
+      },
+      body: body,
+    }).then(
+      (res) => {
+        if (!res.ok) {
+          notyf.error("Errore durante il salvataggio dell'utente");
+          throw new Error("Errore durante il salvataggio dell'utente");
+        }
+
+        notyf.success("Utente modificato con successo!");
+        return res.json();
+      }
+    ).then(() => {
+      users.value = users.value.map((user) =>
+        user._id === focusedUser.value._id ? focusedUser.value : user
+      );
+    }
+    );
+  } else {
+    await authFetch(`${API_URL}/api/users`, {
+      method: "POST",
+      headers: { 
+        "x-access-token": token,
+        "Content-Type": "application/json"
+      },
+      body: body,
+    }).then(
+      (res) => {
+        if (!res.ok) {
+          notyf.error("Errore durante la creazione dell'utente");
+          throw new Error("Errore durante la creazione dell'utente");
+        }
+        notyf.success("Utente creato con successo!");
+        return res.json();
+      }
+    ).then((data) => {
+      users.value.push(data);
+      focusedUser.value = data;
+    });
+  }
+  dialog.value.close();
+}
+
 </script>
 <template>
-  <div class="flex flex-col gap-5">
+  
+ <div class="flex flex-col gap-5">
     <div>
       <h2 class="text-lg">Tutti gli utenti</h2>
       <span class="text-black/50"
@@ -42,8 +152,9 @@ provide("dialog", dialog);
         Nuovo utente
       </button>
     </div>
-    <UsersList></UsersList>
+      <UsersList @editUser="handleEditUser"></UsersList>
   </div>
+  
   <dialog id="userDialog" class="modal" ref="dialog">
     <form method="dialog" class="modal-box flex flex-col gap-2">
       <h3 class="font-bold text-lg">
@@ -85,6 +196,18 @@ provide("dialog", dialog);
           required
         />
       </div>
+      <div v-if="!focusedUser._id" class="form-control">
+        <label class="label">
+          <span class="label-text">Password</span>
+        </label>
+        <input
+          v-model="focusedUser.password"
+          type="password"
+          placeholder="Password"
+          class="input input-bordered"
+          required
+        />
+      </div>
       <div class="form-control">
         <label class="label">
           <span class="label-text">Ruolo</span>
@@ -100,10 +223,15 @@ provide("dialog", dialog);
         </select>
       </div>
       <div class="modal-action">
-        <button type="submit" class="btn btn-primary">
+        <button 
+          type="submit" 
+          class="btn btn-primary" 
+            :disabled="!focusedUser.name || !focusedUser.surname || (!focusedUser._id && !focusedUser.email) || !focusedUser.role"
+          @click="saveUser()"
+        >
           {{ focusedUser._id ? "Salva" : "Crea" }}
         </button>
-        <button type="button" class="btn" @click="dialog.close()">
+        <button type="button" class="btn" @click="dialog.close() ">
           Annulla
         </button>
       </div>
