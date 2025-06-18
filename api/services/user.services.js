@@ -5,14 +5,20 @@ const router = express.Router();
 
 async function getUsers(req, res) {
   try {
-    // Recupera la lista di tutti gli utenti (solo le email)
-    const users = await User.find({}, '-createdAt -updatedAt -password -__v');
+    const filter = {};
+
+    if (req.query.role) {
+      filter.role = req.query.role;
+    }
+
+    const users = await User.find(filter, '-createdAt -updatedAt -password -__v');
     res.json(users);
   } catch (err) {
     console.error(err.message);
     res.status(500).send('Errore del server');
   }
 }
+
 
 async function getUserById(req, res) {
   const userId = req.params.id;
@@ -58,6 +64,11 @@ async function updateUser(req, res) {
     const userId = req.params.id;  
     const updates = req.body;      
 
+    if (updates.password) {
+      const salt=await bcrypt.genSalt(10);
+      updates.password = await bcrypt.hash(updates.password, salt);
+    }
+
     const updatedUser = await User.findByIdAndUpdate(
       userId,
       updates,
@@ -91,7 +102,8 @@ async function deleteUser(req, res) {
       return res.status(404).json({ message: 'Utente non trovato' });
     }
 
-    res.json({ message: 'Utente eliminato con successo' });
+    res.status(204).send();
+
   } catch (err) {
     console.error(err.message);
     res.status(500).send('Errore del server');

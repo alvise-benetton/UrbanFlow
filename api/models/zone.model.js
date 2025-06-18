@@ -13,7 +13,6 @@ const ZoneSchema = new mongoose.Schema({
     required: true,
     //unique: true
   },
-
   threshold: {
     type: Number,
     required: true,

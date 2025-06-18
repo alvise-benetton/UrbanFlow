@@ -1,19 +1,27 @@
 const mongoose = require('mongoose');
 const bcrypt = require('bcrypt');
+const fs = require('fs');
+const path = require('path');
 const User = require('./models/user.model');
 const Event = require('./models/event.model');
 const Zone = require('./models/zone.model');
+const CameraData = require('./models/cameraData.model'); // Assicurati che il path sia corretto
 const db = require('./services/db.services');
 require('dotenv').config();
 
 db.connect();
+
+// Importa dati da file JSON esterni
+const zonesData = JSON.parse(fs.readFileSync(path.join(__dirname, 'seeds/zones.json'), 'utf8'));
+const eventsData = JSON.parse(fs.readFileSync(path.join(__dirname, 'seeds/events.json'), 'utf8'));
+const cameraData = JSON.parse(fs.readFileSync(path.join(__dirname, 'seeds/camera_data.json'), 'utf8'));
 
 const usersData = [
   {
     name: 'Mario',
     surname: 'Rossi',
     email: 'mario.rossi@example.com',
-    password: 'password_mario', 
+    password: 'password_mario',
     role: 'admin',
   },
   {
@@ -32,86 +40,38 @@ const usersData = [
   },
 ];
 
-const eventsData = [
-  {
-    title: "Festival dell'economia",
-    startDate: "2024-11-19T15:00:00.000Z",
-    endDate: "2024-11-19T18:00:00.000Z",
-    zones: [1, 2],
-  },
-  {
-    title: 'Conferenza sulla tecnologia',
-    startDate: "2024-12-01T10:00:00.000Z",
-    endDate: "2024-12-01T12:30:00.000Z",
-    zones: [3, 4, 5],
-  },
-  {
-    title: 'Workshop di design',
-    startDate: "2024-12-05T14:00:00.000Z",
-    endDate: "2024-12-05T16:00:00.000Z",
-    zones: [2],
-  },
-];
-
-const zonesData = [
-  {
-    name: 'Zona Nord',
-    zone: [10, 20],
-    latestData: {
-      density: 50,
-      date: new Date(),
-    },
-    threshold: 200,
-  },
-  {
-    name: 'Zona Sud',
-    zone: [30, 40],
-    latestData: {
-      density: 80,
-      date: new Date(),
-    },
-    threshold: 250,
-  },
-  {
-    name: 'Zona Est',
-    zone: [15, 25],
-    latestData: {
-      density: 100,
-      date: new Date(),
-    },
-    threshold: 300,
-  },
-];
-
 async function seedDatabase() {
   try {
-    // Cancella i dati esistenti
-    await User.deleteMany({});
+    // await User.deleteMany({});
     await Event.deleteMany({});
     await Zone.deleteMany({});
+    await CameraData.deleteMany({});
     console.log('Database svuotato');
 
-    // Inserisci utenti con password criptate
+    /*
     for (const userData of usersData) {
       const salt = await bcrypt.genSalt(10);
       userData.password = await bcrypt.hash(userData.password, salt);
-      const user = new User(userData);
-      await user.save();
+      await new User(userData).save();
     }
-    console.log('Dati utenti inseriti con password criptate');
+    console.log('Utenti inseriti');
 
+    
+    */
     await Event.insertMany(eventsData);
-    console.log('Dati eventi inseriti');
-
+    console.log('Eventi inseriti da JSON');
     await Zone.insertMany(zonesData);
-    console.log('Dati zone inseriti');
+    console.log('Zone inserite da JSON');
+    
+    await CameraData.insertMany(cameraData);
+    console.log('Dati delle camere inseriti da JSON');
 
-    console.log('Popolamento del database completato');
     mongoose.connection.close();
+    console.log('Popolamento completato e connessione chiusa');
   } catch (err) {
-    console.error('Errore durante il popolamento del database:', err);
+    console.error('Errore nel seeding:', err);
     mongoose.connection.close();
   }
 }
 
-seedDatabase();
+module.exports = seedDatabase;
