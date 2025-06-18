@@ -710,14 +710,14 @@ paths:
         content:
           application/json:
             schema:
-              $ref: "#/components/schemas/auth"
+              $ref: "#/components/schemas/sessionRequest"
       responses:
-        201:
+        200:
           description: Sessione creata.
           content:
             application/json:
               schema:
-                $ref: "#/components/schemas/authResponse"
+                $ref: "#/components/schemas/sessionResponse"
         400:
           description: Richiesta non valida.
           content:
@@ -750,8 +750,16 @@ paths:
       security:
         - authToken: []
       responses:
-        204:
-          description: La sessione è stata eliminata correttamente.
+        200:
+          description: Logout effettuato con successo.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: Logout effettuato con successo
         400:
           description: Richiesta non valida.
           content:
@@ -988,32 +996,7 @@ components:
           format: date-time
           description: Data di creazione del documento
           readOnly: true
-    session:
-      type: object
-      required:
-        - _id
-        - userId
-        - token
-        - createdAt
-      properties:
-        _id:
-          type: string
-          description: ID univoco della sessione
-          example: "67a4e881eecfbc031958b05c"
-        userId:
-          type: string
-          description: ID dell'utente associato
-          example: "60d0fe4f5311236168a109ca"
-        token:
-          type: string
-          description: Token di autenticazione
-          example: "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9"
-        createdAt:
-          type: string
-          format: date-time
-          description: Data di creazione della sessione
-          readOnly: true
-    auth:
+    sessionRequest:
       type: object
       required:
         - email
@@ -1026,7 +1009,7 @@ components:
         password:
           type: string
           example: "MarioRossi123"
-    authResponse:
+    sessionResponse:
       type: object
       properties:
         JWT:
