@@ -4,7 +4,7 @@ info:
   description: Docs ufficiali per le API utilizzati nel progetto UrbanFlow.
   version: 0.0.1
 servers:
-  - url: http://api.urbanflow.it/v1
+  - url: https://progetto-igsw-backend.onrender.com/v1
     description: Server di produzione.
   - url: http://localhost:3000/v1
     description: Server di staging per test.
@@ -461,7 +461,6 @@ paths:
             application/json:
               schema:
                 $ref: "#/components/schemas/error"
-
     delete:
       tags:
         - Event
