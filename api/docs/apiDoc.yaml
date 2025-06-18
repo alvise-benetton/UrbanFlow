@@ -1,7 +1,7 @@
 openapi: 3.0.0
 info:
   title: UrbanFlow API
-  description: Docs ufficiali per le API utilizzati nel progetto UrbanFlow.
+  description: Docs ufficiali per le API utilizzate nel progetto UrbanFlow.
   version: 0.0.1
 servers:
   - url: https://progetto-igsw-backend.onrender.com/v1
@@ -817,21 +817,24 @@ components:
             - base
           description: Ruolo dell'utente nella piattaforma.
           example: admin
+        createdAt:
+          type: string
+          format: date-time
+          description: Data di creazione dell'utente
+          example: "2024-08-17T14:07:30"
+        updatedAt:
+          type: string
+          format: date-time
+          description: Data di aggiornamento dell'utente
+          example: "2024-08-18T14:07:30"
     userUpdate:
       type: object
       required:
-        - _id
         - name
         - surname
         - email
         - role
-        - password
       properties:
-        _id:
-          type: string
-          description: Numero identificativo dell'utente.
-          example: "60d0fe4f5311236168a109ca"
-          readOnly: true
         name:
           type: string
           description: Nome dell'utente.
@@ -853,7 +856,7 @@ components:
           example: admin
         password:
           type: string
-          description: Password dell'utente.
+          description: Password dell'utente (opzionale, solo se si vuole aggiornare).
           example: "MarioRossi123"
     event:
       type: object
@@ -862,6 +865,7 @@ components:
         - title
         - startDate
         - endDate
+        - zones
       properties:
         _id:
           type: string
@@ -884,10 +888,20 @@ components:
           example: "2024-08-18T14:07:30"
         zones:
           type: array
-          description: Array di interi, sono gli id delle zone in cui l'evento ha luogo.
+          description: Array di id delle zone (stringhe) in cui l'evento ha luogo.
           items:
-            type: integer
-          example: [1, 2]
+            type: string
+          example: ["60d0fe4f5311236168a109cc", "60d0fe4f5311236168a109cd"]
+        createdAt:
+          type: string
+          format: date-time
+          description: Data di creazione dell'evento
+          example: "2024-08-17T14:07:30"
+        updatedAt:
+          type: string
+          format: date-time
+          description: Data di aggiornamento dell'evento
+          example: "2024-08-18T14:07:30"
     zone:
       type: object
       required:
@@ -905,7 +919,6 @@ components:
           type: string
           description: Nome della zona.
           example: "Piazza Duomo"
-          readOnly: true
         coordinates:
           type: array
           description: Array di coppie latitudine-longitudine per identificare i vertici del poligono rappresentante una zona.
@@ -922,13 +935,21 @@ components:
               [45.46527, 9.19051],
               [45.46527, 9.18951],
             ]
-          readOnly: true
         threshold:
-          type: integer
+          type: number
           default: 0
           example: 250
           description: Limite oltre il quale segnalare un'affluenza imprevista. Se 0, significa che non c'è nessun limite.
-
+        createdAt:
+          type: string
+          format: date-time
+          description: Data di creazione della zona
+          example: "2024-08-17T14:07:30"
+        updatedAt:
+          type: string
+          format: date-time
+          description: Data di aggiornamento della zona
+          example: "2024-08-18T14:07:30"
     cameraData:
       type: object
       required:
@@ -955,11 +976,11 @@ components:
               - timestamp
             properties:
               density:
-                type: integer
+                type: number
                 description: Densità registrata
                 example: 31
               timestamp:
-                type: integer
+                type: number
                 description: Timestamp della rilevazione (ms da epoch)
                 example: 1740665234331
         createdAt:
@@ -967,7 +988,31 @@ components:
           format: date-time
           description: Data di creazione del documento
           example: "2025-02-06T16:51:13.709Z"
-
+    session:
+      type: object
+      required:
+        - _id
+        - userId
+        - token
+        - createdAt
+      properties:
+        _id:
+          type: string
+          description: ID univoco della sessione
+          example: "67a4e881eecfbc031958b05c"
+        userId:
+          type: string
+          description: ID dell'utente associato
+          example: "60d0fe4f5311236168a109ca"
+        token:
+          type: string
+          description: Token di autenticazione
+          example: "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9"
+        createdAt:
+          type: string
+          format: date-time
+          description: Data di creazione della sessione
+          example: "2025-02-06T16:51:13.709Z"
     auth:
       type: object
       required:
