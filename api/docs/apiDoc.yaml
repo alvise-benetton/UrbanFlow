@@ -1,24 +1,3 @@
-# -- FATTO get /users
-# -- FATTO post
-# -- FATTO get /users/{id}
-# -- FATTO put: update dei dati
-# -- FATTO delete: eliminazione utente
-# -- FATTO get /events
-# -- FATTO post
-# -- FATTO get /events/{id}
-# -- FATTO put
-# -- FATTO delete
-# -- FATTO get /zone
-# -- FATTO get /zones/{id}
-# -- FATTO put
-# -- FATTO Formato errori codice 500 + ref altri errori
-# -- FATTO inserire securety
-# -- FATTO modificato auth in session
-
-# TODO:
-# - Documentazione eventi ??
-# - Controlla accesso risorsa ~ok
-
 openapi: 3.0.0
 info:
   title: UrbanFlow API
