@@ -5,19 +5,17 @@ import { inject } from "vue";
 
 const API_URL = import.meta.env.VITE_API_URL;
 
-function logout(){
+async function logout(){
 
   //router.go('/login');
 
-  authFetch(`${API_URL}/api/session`,{
+  await authFetch(`${API_URL}/api/session`,{
     method:"DELETE",
     headers:{"x-access-token":localStorage.getItem("JWT")}
   }).then((resp)=>{
     if(!resp.ok){
       throw new Error("Errore durante il logut");
     }
-    return resp.json();
-  }).then(()=>{
     router.push('/login');
     localStorage.removeItem("JWT");
   });
