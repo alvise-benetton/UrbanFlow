@@ -17,6 +17,8 @@ tags:
     description: Endpoints relativi a un oggetto zona.
   - name: Session
     description: Endpoints relativi alla gestione delle sessioni.
+  - name: CameraData
+    description: Endpoints relativi ai dati raccolti.
 paths:
   /users:
     get:
