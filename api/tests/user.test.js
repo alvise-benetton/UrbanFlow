@@ -304,7 +304,11 @@ describe('PUT /api/users/:id', () => {
       role: 'user',
     });
 
-    const updates = { name: 'Luigi', surname: 'Verdi' };
+      const updates = {
+        name: 'Luigi',
+        surname: 'Verdi',
+        password: 'newpass123'
+      };
 
     const response = await request(app)
       .put(`/api/users/${userUpdate._id}`)
@@ -312,7 +316,15 @@ describe('PUT /api/users/:id', () => {
       .send(updates)
       .expect(200);
 
-    expect(response.body.data).toMatchObject(updates);
+     const updatedUser = await User.findById(userUpdate._id);
+    const isPasswordCorrect = await bcrypt.compare(updates.password, updatedUser.password);
+    console.log(updates.password);
+    console.log(updatedUser.password);
+    
+
+    expect(response.body.data.name).toBe(updates.name);
+    expect(response.body.data.surname).toBe(updates.surname);
+    expect(isPasswordCorrect).toBe(true);
   });
 
   it('dovrebbe restituire 404 se l\'utente non esiste', async () => {
@@ -355,7 +367,7 @@ describe('PUT /api/users/:id', () => {
 
 
 describe('DELETE /api/users/:id', () => {
-  it('dovrebbe restituire 200 e confermare l\'eliminazione dell\'utente', async () => {
+  it('dovrebbe restituire 204', async () => {
     const user = await User.create(userAdmin);
 
     // token JWT valido per il test admin.
@@ -373,9 +385,9 @@ describe('DELETE /api/users/:id', () => {
     const response = await request(app)
       .delete(`/api/users/${userToDel._id}`)
       .set('x-access-token', tokenAdmin)
-      .expect(200);
+      .expect(204);
 
-    expect(response.body.message).toBe('Utente eliminato con successo');
+    
 
     const deletedUser = await User.findById(userToDel._id);
     expect(deletedUser).toBeNull();

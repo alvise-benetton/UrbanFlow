@@ -33,7 +33,7 @@ async function createSession(req,res) {
             process.env.SUPER_SECRET,
             { expiresIn: '1h' } // scadenza
         );
-        return res.status(200).json({
+        return res.status(201).json({
             JWT: token
         });
 
@@ -52,7 +52,8 @@ async function deleteSession(req,res) { // i token JWT non sono revocabili, al l
         //non server perchè c'è tokencheker
 
         blacklist.add(token); // Aggiungi il token alla blacklist
-        return res.status(200).json({ message: "Logout effettuato con successo" });
+        res.status(204).send();
+
     } catch (error) {
         return res.status(500).json({ error: 'Errore durante il logout: ' + error });
     }

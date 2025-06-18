@@ -111,7 +111,8 @@ async function createEvent(req, res) {
         return res.status(404).json({ message: 'Evento non trovato' });
       }
   
-      res.json({ message: 'Evento eliminato con successo' });
+      res.status(204).send();
+
     } catch (err) {
       console.error(err.message);
       res.status(500).send('Errore del server');

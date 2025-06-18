@@ -70,7 +70,7 @@ describe('POST /api/session', () => {
                 password: 'password123',
             });
 
-        expect(res.status).toBe(200);
+        expect(res.status).toBe(201);
         expect(res.body).toHaveProperty('JWT');
     });
 
@@ -147,31 +147,18 @@ describe('DELETE /session', () => {
         expect(res.body).toEqual({ error: 'Nessun token' });
     });
 
-    it('dovrebbe restituire 200 e aggiungere il token in blacklist se presente', async () => {
+    it('dovrebbe restituire 204 e aggiungere il token in blacklist se presente', async () => {
         const token = 'testToken123';
 
         // Eseguiamo la richiesta inviando il token nell'header
         const res = await request(app)
             .delete('/api/session')
             .set('x-access-token', tokenAdmin)
-            .expect(200);
+            .expect(204);
 
-        expect(res.body).toEqual({ message: 'Logout effettuato con successo' });
+        
     });
 
-    // it('dovrebbe restituire 500 in caso di errore durante il logout', async () => {
-    //   jest.spyOn(blacklist, 'add').mockImplementationOnce(() => {
-    //     throw new Error('Errore di test');
-    //   });
 
-    //   const token = 'tokenPerTestError';
-
-    //   const res = await request(app)
-    //     .delete('/api/session')
-    //     .set('x-access-token', tokenAdmin);
-
-    //   expect(res.status).toBe(500);
-    //   expect(res.body.error).toContain('Errore durante il logout: Error: Errore di test');
-    // });
 });
 

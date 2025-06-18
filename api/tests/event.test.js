@@ -310,7 +310,7 @@ describe('PUT /api/events/:id', () => {
 
 
 describe('DELETE /api/events/:id', () => {
-    it('dovrebbe restituire 200 e confermare l\'eliminazione dell\'evento', async () => {
+    it('dovrebbe restituire 204', async () => {
 
         const eventToDel = await Event.create({
             title: 'Test Event to delete',
@@ -322,9 +322,9 @@ describe('DELETE /api/events/:id', () => {
         const response = await request(app)
             .delete(`/api/events/${eventToDel._id}`)
             .set('x-access-token', tokenAdmin)
-            .expect(200);
+            .expect(204);
 
-        expect(response.body.message).toBe('Evento eliminato con successo');
+        
 
         const deletedUser = await User.findById(eventToDel._id);
         expect(deletedUser).toBeNull();
