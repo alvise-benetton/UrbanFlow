@@ -5,7 +5,8 @@ import ZonesPicker from "./ZonesPicker.vue";
 import DatePicker from "./DatePicker.vue";
 import ChartSmallMirror from "./ChartSmallMirror.vue";
 import { TrashIcon } from "@heroicons/vue/24/solid";
-import router from "../utility/router";
+import router, { authFetch } from "../utility/router";
+
 
 /* const event = inject("singleEvent"); */
 const urlId = defineModel("id");
@@ -45,7 +46,7 @@ const saveChanges = async () => {
   if (JSON.stringify(event.value) === JSON.stringify(localEvent.value) ) {
     event.value = null;
   }else if(urlId === 'nuovo'){ // nuovo evento
-      await fetch(`${API_URL}api/events/`,{
+      await authFetch(`${API_URL}api/events/`,{
       headers:{
         "x-access-token":localStorage.getItem("JWT"),
         "Content-Type": "application/json"
@@ -71,7 +72,7 @@ const saveChanges = async () => {
     
   }else{ // modifica
 
-    await fetch(`${API_URL}/api/events/${event.value._id}`,{
+    await authFetch(`${API_URL}/api/events/${event.value._id}`,{
     headers:{
       "x-access-token":localStorage.getItem("JWT"),
       "Content-Type": "application/json"
@@ -97,7 +98,7 @@ const saveChanges = async () => {
 };
 const deleteEvent = async() => {
 
-  await fetch(`${API_URL}/api/events/${event.value._id}`,{
+  await authFetch(`${API_URL}/api/events/${event.value._id}`,{
     headers:{
       "x-access-token":localStorage.getItem("JWT"),
     },

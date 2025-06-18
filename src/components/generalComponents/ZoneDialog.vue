@@ -6,7 +6,7 @@ import {
   XMarkIcon,
 } from "@heroicons/vue/20/solid";
 import { inject, ref, watch } from "vue";
-import router from "../utility/router";
+import router, { authFetch } from "../utility/router";
 
 const zone = defineModel("selectedZone");
 const misurazioni = inject("listaMisurazioni");
@@ -66,7 +66,7 @@ const abortChanges = () => {
   localZone.value.threshold = zone.value.threshold;
 };
 const saveChanges = async () => {
-  await fetch(`${API_URL}/api/zones/${zone.value._id}`, {
+  await authFetch(`${API_URL}/api/zones/${zone.value._id}`, {
     headers: {
       "x-access-token": localStorage.getItem("JWT"),
       "Content-Type": "application/json",

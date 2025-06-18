@@ -6,7 +6,6 @@ const searchTerm = defineModel("searchTerm");
 
 const zones = defineModel("zones");
 const events = defineModel("events");
-console.log(events)
 
 const txt = ref("un evento o una zona");
 watch(appSection, (newValue) => {
@@ -32,7 +31,6 @@ watch(appSection, (newValue) => {
     </label>
     <div v-if="searchTerm && appSection === 'Mappa'" class="search-results-card flex flex-col bg-base-200 p-5 rounded-box mt-5">
       <p>Risultati per: "{{ searchTerm }}"</p>
-      <!-- Qui puoi aggiungere la logica per mostrare i risultati della ricerca -->
       <div>
         <div v-if="zones && zones.length > 0">
           <h3 class="font-bold mb-2">Zone</h3>
@@ -45,13 +43,12 @@ watch(appSection, (newValue) => {
         <div v-if="events && events.length > 0" class="mt-4">
           <h3 class="font-bold mb-2">Eventi</h3>
           <ul>
-            <li v-for="event in events.filter(e => e.title && e.title.toLowerCase().startsWith(searchTerm.toLowerCase()))" class="mb-1">
-              {{ event.name }}
+            <li v-for="event in events.filter(e => e.title && e.title.toLowerCase().startsWith(searchTerm.toLowerCase()))" class="btn bg-base-100 mb-2 w-full" @click="$router.push(`/Eventi/${event._id}`)">
+              {{ event.title }}
             </li>
           </ul>
         </div>
       </div>
-
     </div>
   </div>
 </template>
