@@ -18,7 +18,10 @@ require('dotenv').config();
 const app = express();
 app.use(cors());
 // Connessione al database
-db.connect();
+if (process.env.NODE_ENV !== 'test') {
+    db.connect();
+}
+
 
 // Middleware per il parsing JSON
 app.use(express.json());
@@ -39,4 +42,6 @@ const sec = 1000;
 const min = 60* sec;
 // updateCameraData();
 //setTimeout(updateCameraData,1 * min); // aggiunge dati casuali al db ogni 5 secondi
+module.exports = app;
+
 

@@ -1,7 +1,7 @@
 const bcrypt = require('bcryptjs');
 const jwt = require('jsonwebtoken'); // used to create, sign, and verify tokens
 
-const users = require('../models/user.model');
+const Users = require('../models/user.model');
 
 const blacklist = require('../middleware/tokenChecker').blacklist; // Blacklist dei token
 
@@ -13,7 +13,9 @@ async function createSession(req,res) {
         if (!email || !password) {
             return res.status(400).json({ error: "'email' e 'password' sono campi obbligatori"});
         }
-        let user = await users.findOne({
+        console.log(req.body.email);
+        
+        let user = await Users.findOne({
             email: req.body.email
         }).exec();
 
@@ -31,12 +33,12 @@ async function createSession(req,res) {
             process.env.SUPER_SECRET,
             { expiresIn: '1h' } // scadenza
         );
-        return res.status(200).json({
+        return res.status(201).json({
             JWT: token
         });
 
     }catch (error) {
-        return res.status(500).json({error: 'Internal Server Error. '+ error });
+        return res.status(500).json({error: 'Internal Server Error' });
     }
 }
 
@@ -44,12 +46,14 @@ async function deleteSession(req,res) { // i token JWT non sono revocabili, al l
     try {
         let token = req.headers['x-access-token'];
 
-        if (!token) {
-            return res.status(400).json({ error: "Token mancante" });
-        }
+        // if (!token) {
+        //     return res.status(400).json({ error: "Token mancante" });
+        // }
+        //non server perchè c'è tokencheker
 
         blacklist.add(token); // Aggiungi il token alla blacklist
-        return res.status(200).json({ message: "Logout effettuato con successo" });
+        res.status(204).send();
+
     } catch (error) {
         return res.status(500).json({ error: 'Errore durante il logout: ' + error });
     }
@@ -65,7 +69,12 @@ function deleteExpiredToken() {
     });
 }
 
-setInterval(deleteExpiredToken, 60 * 20 * 1000); // ogni 20 minuti eliminino i token in blacklist scaduti.
+if (process.env.NODE_ENV !== 'test') {
+    // Esegui setInterval solo se NON sei in modalità test
+    setInterval(deleteExpiredToken, 60 * 20 * 1000); // ogni 20 minuti eliminano i token in blacklist scaduti
+}
+
+
 
 
 module.exports = {createSession,deleteSession};
