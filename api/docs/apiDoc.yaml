@@ -659,26 +659,19 @@ paths:
     get:
       tags:
         - CameraData
-      summary: Restituisce le ultime misurazioni delle zone.
+      summary: Restituisce tutte le misurazioni delle zone.
+      description: Restituisce un array di oggetti cameraData, ciascuno contenente le misurazioni per una specifica zona.
       security:
         - authToken: []
       responses:
         200:
-          description: Risorsa JSON contenente lista misurazioni delle ultime misurazioni.
+          description: Risorsa JSON contenente la lista delle misurazioni.
           content:
             application/json:
               schema:
-                type: object
-                properties:
-                  latest:
-                    type: array
-                    items:
-                      $ref: "#/components/schemas/cameraData"
-
-                  historical:
-                    type: array
-                    items:
-                      $ref: "#/components/schemas/cameraData"
+                type: array
+                items:
+                  $ref: "#/components/schemas/cameraData"
 
         400:
           description: Richiesta non valida.
@@ -900,23 +893,46 @@ components:
     cameraData:
       type: object
       required:
+        - _id
         - zone
-        - density
-        - date
+        - data
+        - createdAt
       properties:
+        _id:
+          type: string
+          description: ID univoco della cameraData
+          example: "67a4e881eecfbc031958b05c"
         zone:
-          type: number
+          type: string
           description: ID della zona
-          example: 3
-        density:
-          type: number
-          description: Densità registrata nella zona.
-          example: 120
-        date:
+          example: "67a4bc203c103259d4150e1e"
+        data:
+          type: array
+          description: Array di misurazioni di densità
+          items:
+            type: object
+            required:
+              - density
+              - timestamp
+              - _id
+            properties:
+              density:
+                type: integer
+                description: Densità registrata
+                example: 31
+              timestamp:
+                type: integer
+                description: Timestamp della rilevazione (ms da epoch)
+                example: 1740665234331
+              _id:
+                type: string
+                description: ID univoco della rilevazione
+                example: "67c07192192a91509906ca93"
+        createdAt:
           type: string
           format: date-time
-          description: Data dell'ultima rilevazione.
-          example: "2024-08-17T14:07:30"
+          description: Data di creazione del documento
+          example: "2025-02-06T16:51:13.709Z"
 
     auth:
       type: object
