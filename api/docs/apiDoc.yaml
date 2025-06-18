@@ -2,7 +2,7 @@ openapi: 3.0.0
 info:
   title: UrbanFlow API
   description: Docs ufficiali per le API utilizzate nel progetto UrbanFlow.
-  version: 0.0.1
+  version: 0.5.3
 servers:
   - url: https://progetto-igsw-backend.onrender.com/api
     description: Server di produzione.
