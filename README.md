@@ -1,29 +1,5 @@
-# urbanflow-frontend
+# urbanflow-frontend-release
+Questo beanch viene utilizzato per compilare il progetto e fare il deploy.
 
-This template should help get you started developing with Vue 3 in Vite.
-
-## Recommended IDE Setup
-
-[VSCode](https://code.visualstudio.com/) + [Volar](https://marketplace.visualstudio.com/items?itemName=Vue.volar) (and disable Vetur).
-
-## Customize configuration
-
-See [Vite Configuration Reference](https://vite.dev/config/).
-
-## Project Setup
-
-```sh
-npm install
-```
-
-### Compile and Hot-Reload for Development
-
-```sh
-npm run dev
-```
-
-### Compile and Minify for Production
-
-```sh
-npm run build
-```
+### Workflow
+I singoli branch delle feature vengono aggregati con dei merge al branch "frontend, e dopo un eventuale refactor del codice effettuiamo il merge in "frontend-release"
