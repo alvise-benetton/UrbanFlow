@@ -1,0 +1,1016 @@
+openapi: 3.0.0
+info:
+  title: UrbanFlow API
+  description: Docs ufficiali per le API utilizzate nel progetto UrbanFlow.
+  version: 0.5.3
+servers:
+  - url: https://progetto-igsw-backend.onrender.com/api
+    description: Server di produzione.
+  - url: http://localhost:3000/v1
+    description: Server di staging per test.
+tags:
+  - name: User
+    description: Endpoints relativi a un oggetto utente.
+  - name: Event
+    description: Endpoints relativi a un oggetto evento.
+  - name: Zone
+    description: Endpoints relativi a un oggetto zona.
+  - name: Session
+    description: Endpoints relativi alla gestione delle sessioni.
+  - name: CameraData
+    description: Endpoints relativi ai dati raccolti.
+paths:
+  /users:
+    get:
+      tags:
+        - User
+      summary: Restituisce la lista degli utenti.
+      description: Restituisce la lista degli utenti presenti sulla piattaforma.
+      security:
+        - authToken: []
+      parameters:
+        - name: role
+          in: query
+          required: false
+          description: Ruolo degli utenti da cercare, se non specificato restituisce tutti gli utenti.
+          schema:
+            type: string
+            enum:
+              - admin
+              - base
+      responses:
+        200:
+          description: Risorsa JSON contenente lista degli utenti.
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/user"
+        400:
+          description: Richiesta non valida.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/error"
+        401:
+          description: Non autenticato.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/error"
+        403:
+          description: Accesso non autorizzato alla risorsa.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/error"
+        500:
+          description: Errore interno al server.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/error"
+    post:
+      tags:
+        - User
+      summary: Crea un nuovo utente.
+      description: Aggiunge un nuovo utente al database.
+      security:
+        - authToken: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/user"
+      responses:
+        201:
+          description: Utente creato.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/user"
+        400:
+          description: Richiesta non valida.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/error"
+        401:
+          description: Non autenticato.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/error"
+        403:
+          description: Accesso non autorizzato alla risorsa.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/error"
+        500:
+          description: Errore interno al server.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/error"
+  /users/{id}:
+    get:
+      tags:
+        - User
+      summary: Restituisce utente specifico.
+      description: Ottiene i dettagli di un singolo utente dato il suo ID.
+      security:
+        - authToken: []
+      parameters:
+        - name: id
+          in: path
+          description: id dell'utente da restituire
+          schema:
+            type: integer
+          required: true
+      responses:
+        200:
+          description: Informazioni dell'evento restitutite con successo.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/user"
+        400:
+          description: Richiesta non valida.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/error"
+        401:
+          description: Non autenticato.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/error"
+        403:
+          description: Accesso non autorizzato alla risorsa.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/error"
+        404:
+          description: Evento non trovato.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/error"
+        500:
+          description: Errore interno al server.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/error"
+    put:
+      tags:
+        - User
+      summary: Aggiorna un utente esistente.
+      description: Aggiorna i dettagli dell'utente dato il suo ID.
+      security:
+        - authToken: []
+      parameters:
+        - name: id
+          in: path
+          required: true
+          description: ID dell'utente da aggiornare.
+          schema:
+            type: integer
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/userUpdate"
+      responses:
+        200:
+          description: Utente aggiornato con successo.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/user"
+        400:
+          description: Richiesta non valida.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/error"
+        401:
+          description: Non autenticato.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/error"
+        403:
+          description: Accesso non autorizzato alla risorsa.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/error"
+        404:
+          description: Utente non trovato.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/error"
+        500:
+          description: Errore interno al server.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/error"
+    delete:
+      tags:
+        - User
+      summary: Elimina un utente esistente.
+      description: Rimuove un utente dato il suo ID.
+      security:
+        - authToken: []
+      parameters:
+        - name: id
+          in: path
+          required: true
+          description: ID dell'utente da eliminare.
+          schema:
+            type: integer
+      responses:
+        204:
+          description: Utente eliminato con successo.
+        400:
+          description: Richiesta non valida.
+        401:
+          description: Non autenticato.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/error"
+        403:
+          description: Accesso non autorizzato alla risorsa.
+        404:
+          description: Utente non trovato.
+        500:
+          description: Errore interno al server.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/error"
+  /events:
+    get:
+      tags:
+        - Event
+      summary: Restituisce la lista degli eventi.
+      description: Ottiene un elenco di tutti gli eventi disponibili.
+      security:
+        - authToken: []
+      parameters:
+        - in: query
+          name: startDate
+          schema:
+            type: string
+            format: date-time
+            example: "2024-08-17T14:07:30"
+          required: false
+        - in: query
+          name: endDate
+          schema:
+            type: string
+            format: date-time
+            example: "2024-08-17T14:07:30"
+          required: false
+      responses:
+        200:
+          description: Risorsa JSON contenente lista di eventi.
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/event"
+        400:
+          description: Richiesta non valida.
+        401:
+          description: Non autenticato.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/error"
+        403:
+          description: Accesso non autorizzato alla risorsa.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/error"
+        500:
+          description: Errore interno al server.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/error"
+    post:
+      tags:
+        - Event
+      summary: Crea un nuovo evento.
+      description: Aggiunge un nuovo evento al database.
+      security:
+        - authToken: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/event"
+      responses:
+        201:
+          description: Evento creato con successo.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/event"
+        400:
+          description: Richiesta non valida.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/error"
+        401:
+          description: Non autenticato
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/error"
+        403:
+          description: Accesso non autorizzato alla risorsa.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/error"
+        500:
+          description: Errore interno al server.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/error"
+  /events/{id}:
+    get:
+      tags:
+        - Event
+      summary: Restituisce un evento specifico.
+      description: Ottiene i dettagli di un singolo evento dato il suo ID.
+      security:
+        - authToken: []
+      parameters:
+        - name: id
+          in: path
+          required: true
+          description: ID dell'evento da cercare.
+          schema:
+            type: string
+      responses:
+        200:
+          description: Informazioni dell'evento restituite con successo.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/event"
+        400:
+          description: Richiesta non valida.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/error"
+        401:
+          description: Non autenticato
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/error"
+        403:
+          description: Accesso non autorizzato alla risorsa.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/error"
+        404:
+          description: Evento non trovato.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/error"
+        500:
+          description: Errore interno al server.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/error"
+    put:
+      tags:
+        - Event
+      summary: Aggiorna un evento esistente.
+      description: Aggiorna i dettagli di un evento dato il suo ID.
+      security:
+        - authToken: []
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/event"
+      responses:
+        200:
+          description: Evento aggiornato con successo
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/event"
+        400:
+          description: Richiesta non valida
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/error"
+        401:
+          description: Non autenticato
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/error"
+        403:
+          description: Accesso non autorizzato alla risorsa.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/error"
+        404:
+          description: Evento non trovato
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/error"
+        500:
+          description: Errore interno al server.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/error"
+    delete:
+      tags:
+        - Event
+      summary: Elimina un evento esistente.
+      description: Rimuove un evento dato il suo ID.
+      security:
+        - authToken: []
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        204:
+          description: Evento eliminato con successo
+        400:
+          description: Richiesta non valida
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/error"
+        401:
+          description: Non autenticato
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/error"
+        403:
+          description: Accesso non autorizzato alla risorsa.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/error"
+        404:
+          description: Evento non trovato
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/error"
+        500:
+          description: Errore interno al server.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/error"
+  /zones:
+    get:
+      tags:
+        - Zone
+      summary: Restituisce la lista delle zone.
+      description: Ottiene un elenco di tutte le zone disponibili.
+      security:
+        - authToken: []
+      responses:
+        200:
+          description: Risorsa JSON contenente lista di zone.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/zone"
+        400:
+          description: Richiesta non valida.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/error"
+        401:
+          description: Non autenticato
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/error"
+        403:
+          description: Accesso non autorizzato alla risorsa.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/error"
+        500:
+          description: Errore interno al server.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/error"
+  /zones/{id}:
+    get:
+      tags:
+        - Zone
+      summary: Restituisce una zona esistente.
+      description: Ottiene i dettagli di una singola zona dato il suo ID.
+      security:
+        - authToken: []
+      parameters:
+        - name: id
+          in: path
+          required: true
+          description: ID della zona da cercare.
+          schema:
+            type: string
+      responses:
+        200:
+          description: Informazioni della zona restituite con successo.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/zone"
+        400:
+          description: Richiesta non valida.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/error"
+        401:
+          description: Non autenticato
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/error"
+        403:
+          description: Accesso non autorizzato alla risorsa.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/error"
+        404:
+          description: Zona non trovata.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/error"
+        500:
+          description: Errore interno al server.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/error"
+    put:
+      tags:
+        - Zone
+      summary: Aggiorna una zona esistente.
+      description: Aggiorna i dettagli di una zona dato il suo ID.
+      security:
+        - authToken: []
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/zone"
+      responses:
+        200:
+          description: Zona aggiornata con successo
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/zone"
+        400:
+          description: Richiesta non valida
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/error"
+        401:
+          description: Non autenticato
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/error"
+        403:
+          description: Accesso non autorizzato alla risorsa.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/error"
+        404:
+          description: Zona non trovata
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/error"
+        500:
+          description: Errore interno al server.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/error"
+  /cameraData:
+    get:
+      tags:
+        - CameraData
+      summary: Restituisce tutte le misurazioni delle zone.
+      description: Restituisce un array di oggetti cameraData, ciascuno contenente le misurazioni per una specifica zona.
+      security:
+        - authToken: []
+      responses:
+        200:
+          description: Risorsa JSON contenente la lista delle misurazioni.
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/cameraData"
+
+        400:
+          description: Richiesta non valida.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/error"
+        401:
+          description: Non autenticato
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/error"
+        403:
+          description: Accesso non autorizzato alla risorsa.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/error"
+        500:
+          description: Errore interno al server.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/error"
+
+  /session:
+    post:
+      tags:
+        - Session
+      summary: Crea una nuova sessione.
+      description: Fornendo email e password corretti viene restituito un token di sessione.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/sessionRequest"
+      responses:
+        201:
+          description: Sessione creata.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/sessionResponse"
+        400:
+          description: Richiesta non valida.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/error"
+        401:
+          description: Non autorizzato.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/error"
+        403:
+          description: Accesso non autorizzato alla risorsa.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/error"
+        500:
+          description: Errore interno al server.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/error"
+    delete:
+      tags:
+        - Session
+      summary: Elimina sessione.
+      description: Fornendo il token JWT è possibile eliminare la sessione corrente.
+      security:
+        - authToken: []
+      responses:
+        204:
+          description: Logout effettuato con successo.
+        400:
+          description: Richiesta non valida.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/error"
+        401:
+          description: Non autorizzato.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/error"
+        403:
+          description: Accesso non autorizzato alla risorsa.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/error"
+        500:
+          description: Errore interno al server.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/error"
+
+components:
+  securitySchemes:
+    authToken:
+      type: http
+      scheme: bearer
+      description: Token per autenticazione JWT
+  schemas:
+    user:
+      type: object
+      required:
+        - _id
+        - name
+        - surname
+        - email
+        - role
+      properties:
+        _id:
+          type: string
+          description: Numero identificativo dell'utente.
+          example: "60d0fe4f5311236168a109ca"
+          readOnly: true
+        name:
+          type: string
+          description: Nome dell'utente.
+          example: Mario
+        surname:
+          type: string
+          description: Cognome dell'utente.
+          example: Rossi
+        email:
+          type: string
+          description: Email istituzionale dell'utente.
+          example: mario.rossi@domain.it
+        role:
+          type: string
+          enum:
+            - admin
+            - base
+          description: Ruolo dell'utente nella piattaforma.
+          example: admin
+        createdAt:
+          type: string
+          format: date-time
+          description: Data di creazione dell'utente
+          readOnly: true
+        updatedAt:
+          type: string
+          format: date-time
+          description: Data di aggiornamento dell'utente
+          readOnly: true
+    userUpdate:
+      type: object
+      required:
+        - name
+        - surname
+        - email
+        - role
+      properties:
+        name:
+          type: string
+          description: Nome dell'utente.
+          example: Mario
+        surname:
+          type: string
+          description: Cognome dell'utente.
+          example: Rossi
+        email:
+          type: string
+          description: Email istituzionale dell'utente.
+          example: mario.rossi@domain.it
+        role:
+          type: string
+          enum:
+            - admin
+            - base
+          description: Ruolo dell'utente nella piattaforma.
+          example: admin
+        password:
+          type: string
+          description: Password dell'utente (opzionale, solo se si vuole aggiornare).
+          example: "MarioRossi123"
+    event:
+      type: object
+      required:
+        - _id
+        - title
+        - startDate
+        - endDate
+        - zones
+      properties:
+        _id:
+          type: string
+          description: Codice identificativo evento.
+          example: "60d0fe4f5311236168a109cb"
+          readOnly: true
+        title:
+          type: string
+          description: Titolo dell'evento registrato.
+          example: "Festival dell'economia"
+        startDate:
+          type: string
+          format: date-time
+          description: Data di inizio dell'evento (oggetto data convertito in stringa).
+          example: "2024-08-17T14:07:30"
+        endDate:
+          type: string
+          format: date-time
+          description: Data di fine dell'evento (oggetto data convertito in stringa).
+          example: "2024-08-18T14:07:30"
+        zones:
+          type: array
+          description: Array di id delle zone (stringhe) in cui l'evento ha luogo.
+          items:
+            type: string
+          example: ["60d0fe4f5311236168a109cc", "60d0fe4f5311236168a109cd"]
+        createdAt:
+          type: string
+          format: date-time
+          description: Data di creazione dell'evento
+          readOnly: true
+        updatedAt:
+          type: string
+          format: date-time
+          description: Data di aggiornamento dell'evento
+          readOnly: true
+    zone:
+      type: object
+      required:
+        - _id
+        - name
+        - coordinates
+        - threshold
+      properties:
+        _id:
+          type: string
+          description: Identificativo della zona.
+          example: "60d0fe4f5311236168a109cc"
+          readOnly: true
+        name:
+          type: string
+          description: Nome della zona.
+          example: "Piazza Duomo"
+        coordinates:
+          type: array
+          description: Array di coppie latitudine-longitudine per identificare i vertici del poligono rappresentante una zona.
+          items:
+            type: array
+            items:
+              type: number
+            minItems: 2
+            maxItems: 2
+          example:
+            [
+              [45.46427, 9.18951],
+              [45.46427, 9.19051],
+              [45.46527, 9.19051],
+              [45.46527, 9.18951],
+            ]
+        threshold:
+          type: number
+          default: 0
+          example: 250
+          description: Limite oltre il quale segnalare un'affluenza imprevista. Se 0, significa che non c'è nessun limite.
+        createdAt:
+          type: string
+          format: date-time
+          description: Data di creazione della zona
+          readOnly: true
+        updatedAt:
+          type: string
+          format: date-time
+          description: Data di aggiornamento della zona
+          readOnly: true
+    cameraData:
+      type: object
+      required:
+        - _id
+        - zone
+        - data
+        - createdAt
+      properties:
+        _id:
+          type: string
+          description: ID univoco della cameraData
+          example: "67a4e881eecfbc031958b05c"
+        zone:
+          type: string
+          description: ID della zona
+          example: "67a4bc203c103259d4150e1e"
+        data:
+          type: array
+          description: Array di misurazioni di densità
+          items:
+            type: object
+            required:
+              - density
+              - timestamp
+            properties:
+              density:
+                type: number
+                description: Densità registrata
+                example: 31
+              timestamp:
+                type: number
+                description: Timestamp della rilevazione (ms da epoch)
+                example: 1740665234331
+        createdAt:
+          type: string
+          format: date-time
+          description: Data di creazione del documento
+          readOnly: true
+    sessionRequest:
+      type: object
+      required:
+        - email
+        - password
+      properties:
+        email:
+          type: string
+          format: email
+          example: mario.rossi@domain.it
+        password:
+          type: string
+          example: "MarioRossi123"
+    sessionResponse:
+      type: object
+      properties:
+        JWT:
+          type: string
+          example: 7WK5T79u5mIzjIXXi2oI9Fglmgivv7RAJ7izyj9tUyQ
+    error:
+      type: object
+      properties:
+        error:
+          type: string
+          example: Errore!
+          description: Descrizione dell'errore
