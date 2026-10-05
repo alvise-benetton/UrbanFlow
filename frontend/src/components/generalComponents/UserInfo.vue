@@ -17,9 +17,14 @@ async function cambiaPass() {
     notyf.error("Le nuove password non corrispondono.");
     return;
   }
+  if (!user?.value?._id) {
+    notyf.error("Utente non autenticato o dati non ancora disponibili.");
+    return;
+  }
   
   try {
-    const response = await fetch(`${import.meta.env.VITE_API_URL}/api/users/${user.value._id}`, {
+    const API_URL = import.meta.env.VITE_API_URL || "http://localhost:3000";
+    const response = await fetch(`${API_URL}/api/users/${user.value._id}`, {
       method: "PUT",
       headers: {
         "Content-Type": "application/json",
@@ -46,7 +51,7 @@ async function cambiaPass() {
 
 </script>
 <template>
-  <div class="flex flex-col gap-5">
+  <div v-if="user" class="flex flex-col gap-5">
     <div>
       <h2 class="text-lg">Il tuo utente</h2>
       <span class="text-black/50"
@@ -57,18 +62,18 @@ async function cambiaPass() {
     <div class="card-box rounded-md shadow-md bg-white flex flex-row gap-3">
       <div class="item-box">
         <span class="item-title">Nome:</span>
-        <span class="item-value">{{ user.name }}</span>
+        <span class="item-value">{{ user?.name }}</span>
       </div>
       <div class="item-box">
         <span class="item-title">Cognome:</span>
-        <span class="item-value">{{ user.surname }}</span>
+        <span class="item-value">{{ user?.surname }}</span>
       </div>
     </div>
     <!-- Email -->
     <div class="card-box rounded-md shadow-md bg-white flex flex-row gap-3">
       <div class="item-box">
         <span class="item-title">Email:</span>
-        <span class="item-value">{{ user.email }}</span>
+        <span class="item-value">{{ user?.email }}</span>
       </div>
     </div>
     <!-- Ruolo -->
@@ -76,13 +81,16 @@ async function cambiaPass() {
       <div class="item-box">
         <span class="item-title">Ruolo:</span>
         <span class="item-value">{{
-          user.role == "admin" ? "Amministratore" : "Base"
+          user?.role == "admin" ? "Amministratore" : "Base"
         }}</span>
       </div>
     </div>
     <button @click="pswModal.showModal()" class="btn btn-primary w-fit">
       Cambia password
     </button>
+  </div>
+  <div v-else class="flex justify-center p-10">
+    <span class="loading loading-spinner loading-lg"></span>
   </div>
   <!-- Modal -->
   <dialog class="modal" ref="pswModal">

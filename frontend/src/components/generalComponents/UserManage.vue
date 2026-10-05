@@ -1,5 +1,5 @@
 <script setup>
-import { ref, provide, onBeforeMount, onMounted ,inject, watch} from "vue";
+import { ref, provide, onBeforeMount, onMounted, inject, watch, computed } from "vue";
 import { MagnifyingGlassIcon } from "@heroicons/vue/20/solid";
 import UsersList from "@/components/generalComponents/UsersList.vue";
 import { authFetch } from "../utility/router";
@@ -7,7 +7,7 @@ import { authFetch } from "../utility/router";
 
 const notyf = inject("notyf");
 const me = inject("user");
-const myID = me.value._id;
+const myID = computed(() => me?.value?._id || null);
 
 const focusedUser = ref({
   _id: null,

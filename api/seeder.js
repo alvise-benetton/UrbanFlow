@@ -42,22 +42,19 @@ const usersData = [
 
 async function seedDatabase() {
   try {
-    // await User.deleteMany({});
+    await User.deleteMany({});
     await Event.deleteMany({});
     await Zone.deleteMany({});
     await CameraData.deleteMany({});
     console.log('Database svuotato');
 
-    /*
     for (const userData of usersData) {
       const salt = await bcrypt.genSalt(10);
       userData.password = await bcrypt.hash(userData.password, salt);
       await new User(userData).save();
     }
-    console.log('Utenti inseriti');
+    console.log('Utenti inseriti (Mario Rossi admin, Luca Bianchi user, Giulia Verdi admin)');
 
-    
-    */
     await Event.insertMany(eventsData);
     console.log('Eventi inseriti da JSON');
     await Zone.insertMany(zonesData);
@@ -66,12 +63,18 @@ async function seedDatabase() {
     await CameraData.insertMany(cameraData);
     console.log('Dati delle camere inseriti da JSON');
 
-    mongoose.connection.close();
+    await mongoose.connection.close();
     console.log('Popolamento completato e connessione chiusa');
   } catch (err) {
     console.error('Errore nel seeding:', err);
-    mongoose.connection.close();
+    await mongoose.connection.close();
+    process.exit(1);
   }
 }
 
+if (require.main === module) {
+  seedDatabase();
+}
+
 module.exports = seedDatabase;
+

@@ -7,7 +7,7 @@ router.get('/',tokenCheckerAdmin,userService.getUsers);
 router.get('/:id',userService.getUserById);
 router.post('/',tokenCheckerAdmin,userService.createUser);
 router.put('/:id', userService.updateUser); 
-router.delete('/:id',userService.deleteUser);
+router.delete('/:id', tokenCheckerAdmin, userService.deleteUser);
 
 
 module.exports = router;        

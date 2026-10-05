@@ -261,7 +261,7 @@ describe('PUT /api/events/:id', () => {
             zones: [8, 9]
         });
 
-        const updates = { title: 'updated title', zones: [3, 4] };
+        const updates = { title: 'updated title', zones: ['3', '4'] };
 
         const response = await request(app)
             .put(`/api/events/${eventUpdate._id}`)

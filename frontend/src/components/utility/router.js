@@ -84,17 +84,20 @@ export function isTokenValid(token) {
     }
 }
 
-export async function authFetch(url, options) { // per il redirect al login
+export async function authFetch(url, options = {}) {
+  const baseUrl = import.meta.env.VITE_API_URL || 'http://localhost:3000';
+  const targetUrl = url.startsWith('http')
+    ? url
+    : `${baseUrl}${url.startsWith('/') ? '' : '/'}${url}`;
 
+  const response = await fetch(targetUrl, options);
 
-  const response = await fetch(url, options)
-  
-
-  if (response.status === 403) {
-    router.push('/login')
-    throw new Error('Forbidden')
+  if (response.status === 401 || response.status === 403) {
+    if (window.location.pathname !== '/login') {
+      router.push('/login');
+    }
   }
-  return response
+  return response;
 }
 export default router;
 

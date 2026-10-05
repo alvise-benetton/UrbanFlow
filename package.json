@@ -1,0 +1,21 @@
+{
+  "name": "urbanflow",
+  "version": "1.0.0",
+  "description": "UrbanFlow — Real-Time Pedestrian Flow Monitoring and Management Platform",
+  "private": true,
+  "scripts": {
+    "start": "npm --prefix api start",
+    "dev:api": "npm --prefix api start",
+    "dev:frontend": "npm --prefix frontend run dev",
+    "dev": "concurrently -n \"api,web\" -c \"blue,green\" \"npm run dev:api\" \"npm run dev:frontend\"",
+    "build": "npm --prefix frontend run build",
+    "test": "npm --prefix api test",
+    "test:api": "npm --prefix api test",
+    "seed": "npm --prefix api run seed",
+    "install:all": "npm install && npm --prefix api install && npm --prefix frontend install"
+  },
+  "devDependencies": {
+    "concurrently": "^8.2.2"
+  },
+  "license": "SEE LICENSE IN LICENSE"
+}

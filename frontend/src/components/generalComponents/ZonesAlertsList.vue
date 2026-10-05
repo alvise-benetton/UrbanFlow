@@ -11,55 +11,69 @@ const inFocus = reactive({
   alerts: false,
 });
 
-
 const id = defineModel("id");
-const zonesList = inject("listaZone");
-const listaMisurazioni = inject("listaMisurazioni");
-const selectedZone = ref(zonesList.value.find((z)=>z._id === id.value));
+const zonesList = inject("listaZone", ref([]));
+const listaMisurazioni = inject("listaMisurazioni", ref([]));
+const selectedZone = ref(zonesList?.value ? zonesList.value.find((z) => z._id === id.value) : null);
+
 watch(selectedZone, (newValue) => {
+  const searchBar = document.getElementById("searchBar");
+  if (!searchBar) return;
   if (newValue === null) {
-    document.getElementById("searchBar").classList.remove("hidden");
+    searchBar.classList.remove("hidden");
   } else {
-    document.getElementById("searchBar").classList.add("hidden");
+    searchBar.classList.add("hidden");
   }
 });
 
 const searchTerm = defineModel("searchTerm");
 
-
 const filteredZones = computed(() => {
-  if (searchTerm.value == "") {
+  if (!zonesList?.value) return [];
+  if (!searchTerm.value) {
     return zonesList.value;
   } else {
+    let words = searchTerm.value.toLowerCase().trim().split(" ");
     return zonesList.value.filter((z) => {
-      let words = searchTerm.value.toLowerCase().trim().split(" ");
       return words.every((word) => {
-        return z.name .toLowerCase().includes(word);
+        return (z.name || "").toLowerCase().includes(word);
       });
     });
   }
 });
 
-const alertList = ref(zonesList.value.filter((z)=>z.threshold < listaMisurazioni.value.find((m)=> m.zone === z._id).data[0].density));
-watch(listaMisurazioni, (newVal) => {
-  //setto la lista delle allerte
-  alertList.value = zonesList.value.filter((z)=>z.threshold < newVal.find((l) => l.zone === z._id).data[0].density);
-  console.log("allerte:",alertList.value);
+const alertList = computed(() => {
+  if (!zonesList?.value || !listaMisurazioni?.value) return [];
+  return zonesList.value.filter((z) => {
+    const density = getDensity(z._id);
+    return density != null && density > z.threshold;
+  });
 });
-watch([zonesList,id],()=>{
-  selectedZone.value = zonesList.value.find((z)=>z._id === id.value);
-})
 
-function getMisurazione(id) {
-  const ris = listaMisurazioni.value.filter((val) => val.zone == id);
-  if (!ris || ris.length == 0) return null;
+watch([zonesList, id], () => {
+  selectedZone.value = zonesList?.value ? zonesList.value.find((z) => z._id === id.value) : null;
+});
 
+function getMisurazione(zoneId) {
+  if (!listaMisurazioni?.value) return null;
+  const ris = listaMisurazioni.value.filter((val) => val.zone == zoneId);
+  if (!ris || ris.length === 0) return null;
   return ris;
 }
 
-function goToZone(urlId){
-  router.push(`/Zone/${urlId}`);
+function getDensity(zoneId) {
+  const m = getMisurazione(zoneId);
+  return m?.[0]?.data?.[0]?.density ?? null;
+}
 
+function getOverThresholdPercent(zone) {
+  const density = getDensity(zone._id);
+  if (density == null || !zone.threshold) return 0;
+  return Math.floor((density / zone.threshold) * 100 - 100);
+}
+
+function goToZone(urlId) {
+  router.push(`/Zone/${urlId}`);
 }
 
 const visible = ref(false);
@@ -101,17 +115,15 @@ const changeFocusedList = (z, a) => {
         >
           <span>{{ zone.name }}</span>
           <div
-            v-if="listaMisurazioni.length > 0 && getMisurazione(zone._id)"
+            v-if="getDensity(zone._id) !== null"
             class="flex gap-2"
           >
             <div class="badge">
-              {{ getMisurazione(zone._id)[0].data[0].density }}
+              {{ getDensity(zone._id) }}
             </div>
             <div
               class="badge badge-error text-white"
-              v-if="
-                getMisurazione(zone._id)[0].data[0].density > zone.threshold
-              "
+              v-if="getDensity(zone._id) > zone.threshold"
             >
               <ExclamationTriangleIcon class="size-4"></ExclamationTriangleIcon>
             </div>
@@ -132,15 +144,7 @@ const changeFocusedList = (z, a) => {
 
           <div class="flex gap-2">
             <div class="badge">
-              +
-              {{
-                Math.floor(
-                  (getMisurazione(zone._id)[0].data[0].density /
-                    zone.threshold) *
-                    100 -
-                    100
-                )
-              }}%
+              +{{ getOverThresholdPercent(zone) }}%
             </div>
             <div class="badge badge-error text-white">
               <ExclamationTriangleIcon class="size-4"></ExclamationTriangleIcon>

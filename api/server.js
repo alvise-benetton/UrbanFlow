@@ -1,6 +1,7 @@
-const app = require('./index');
 require('dotenv').config();
+const app = require('./index');
 
-// Avvio del server
-const PORT = process.env.PORT;
-app.listen(PORT, () => console.log(`Server avviato sulla porta ${PORT}`));
+const PORT = process.env.PORT || 3000;
+app.listen(PORT, () => {
+    console.log(`UrbanFlow API server avviato sulla porta ${PORT}`);
+});

@@ -10,64 +10,32 @@ import router from "../utility/router";
 
 const urlId = defineModel("id");
 
-const eventsData = inject("listaEventi");
-const currentEvent = ref([]);
-const otherEvent = ref([]);
-const singleEvent = ref(urlId.value ? eventsData.value.find((e) => e._id === urlId.value) : null);
-
+const eventsData = inject("listaEventi", ref([]));
+const singleEvent = ref(urlId.value && eventsData?.value ? eventsData.value.find((e) => e._id === urlId.value) : null);
 
 watch(urlId, (newId) => {
-  if(!newId){
-    singleEvent.value = null
+  if(!newId || !eventsData?.value){
+    singleEvent.value = null;
   }else{
-    singleEvent.value = eventsData.value.find((e) => e._id === newId);
-  }
-  
-});
-
-eventsData.value.forEach(ev=> {
-  currentEvent.value = [];
-  otherEvent.value = []
-  if(ev.startDate <= Date.now && ev.endDate >= Date.now()){
-    currentEvent.value.push(ev);
-  }else{
-    otherEvent.value.push(ev);
+    singleEvent.value = eventsData.value.find((e) => e._id === newId) || null;
   }
 });
 
-
-const props = defineProps({
-  searchTerm: String,
-});
-
-watch(eventsData,()=>{
-  currentEvent.value = [];
-  otherEvent.value = [];
-  eventsData.value.forEach(ev=> {
-    
-    if(ev.startDate <= Date.now && ev.endDate >= Date.now()){
-      currentEvent.value.push(ev);
-    }else{
-      otherEvent.value.push(ev);
-    }
-  });
-
-})
-
+const searchTerm = defineModel("searchTerm");
 
 const filteredEventsData = computed(() => {
-  if (searchTerm.value == "") {
+  if (!eventsData?.value) return [];
+  if (!searchTerm?.value) {
     return eventsData.value;
   } else {
+    let words = searchTerm.value.toLowerCase().trim().split(" ");
     return eventsData.value.filter((ev) => {
-      let words = searchTerm.value.toLowerCase().trim().split(" ");
       return words.every((word) => {
-        return ev.title.toLowerCase().includes(word);
+        return (ev.title || "").toLowerCase().includes(word);
       });
     });
   }
 });
-const searchTerm = defineModel("searchTerm");
 
 const currentEvents = computed(() => {
   const now = new Date();

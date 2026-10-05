@@ -8,7 +8,6 @@ const User = require('../models/user.model');
 const path = require('path');
 require('dotenv').config({ path: path.resolve(__dirname, '../.env') });
 
-
 let mongoServer;
 let token, TokenPayload;
 const userValidToken = {
@@ -22,17 +21,17 @@ const userValidToken = {
 const zonesData = [
     {
         name: "Zona Nord",
-        zone: [1, 2],
+        coordinates: [[1, 2], [3, 4]],
         threshold: 50
     },
     {
         name: "Zona Centro",
-        zone: [4, 5],
+        coordinates: [[4, 5], [6, 7]],
         threshold: 75
     },
     {
         name: "Zona Sud",
-        zone: [7, 8],
+        coordinates: [[7, 8], [9, 10]],
         threshold: 100
     }
 ];
@@ -48,11 +47,9 @@ beforeAll(async () => {
 
     const user = await User.create(userValidToken);
 
-
     // token JWT valido per il test admin.
     TokenPayload = { id: user.id, email: user.email, role: user.role };
     token = jwt.sign(TokenPayload, process.env.SUPER_SECRET, { expiresIn: '1h' });
-
 });
 
 afterEach(async () => {
@@ -67,10 +64,8 @@ afterAll(async () => {
     await mongoServer.stop();
 });
 
-
 describe('GET /api/zones', () => {
     it('dovrebbe restituire 200 e una lista di zone', async () => {
-
         await Zone.insertMany(zonesData);
 
         const response = await request(app)
@@ -86,15 +81,12 @@ describe('GET /api/zones', () => {
                 expect.objectContaining({
                     _id: expect.any(String),
                     name: expect.any(String),
-                    zone: expect.arrayContaining([expect.any(Number)]),
+                    coordinates: expect.any(Array),
                     threshold: expect.any(Number),
                 })
             ])
         );
-
     });
-
-
 
     it('dovrebbe restituire 401 se non viene fornito il token', async () => {
         const response = await request(app)
@@ -105,7 +97,6 @@ describe('GET /api/zones', () => {
     });
 
     it('dovrebbe restituire 500 se c\'è un errore del server', async () => {
-
         const spy = jest.spyOn(Zone, 'find').mockRejectedValue(new Error('Errore del server'));
 
         const response = await request(app)
@@ -119,10 +110,8 @@ describe('GET /api/zones', () => {
     });
 });
 
-
-describe('GET /api/zones:id', () => {
-    it('dovrebbe restituire una lista di Zonei', async () => {
-
+describe('GET /api/zones/:id', () => {
+    it('dovrebbe restituire i dati di una singola zona', async () => {
         const ZoneExample = await Zone.insertMany(zonesData);
 
         const response = await request(app)
@@ -130,24 +119,15 @@ describe('GET /api/zones:id', () => {
             .set('x-access-token', token)
             .expect(200);
 
-        //controllo valori aspettati
-        const bodiel = await response.body;
-        console.log(bodiel);
-        console.log('assadsdsadadsaasdsadas');
-
-
         expect(response.body).toEqual(
             expect.objectContaining({
                 _id: expect.any(String),
                 name: ZoneExample[0].name,
                 threshold: ZoneExample[0].threshold,
-                zone: expect.arrayContaining(ZoneExample[0].zone)
+                coordinates: expect.any(Array)
             })
         );
-
     });
-
-
 
     it('dovrebbe restituire 401 se non viene fornito il token', async () => {
         const response = await request(app)
@@ -158,7 +138,6 @@ describe('GET /api/zones:id', () => {
     });
 
     it('dovrebbe restituire 500 se c\'è un errore del server', async () => {
-
         const spy = jest.spyOn(Zone, 'findById').mockRejectedValue(new Error('Errore del server'));
 
         const response = await request(app)
@@ -172,17 +151,15 @@ describe('GET /api/zones:id', () => {
     });
 });
 
-
 describe('PUT /api/zones/:id', () => {
     it('dovrebbe restituire 200 e aggiornare una zona esistente', async () => {
-
         const zoneUpdate = await Zone.create({
             name: "Zona Nuova",
-            zone: [49, 50],
+            coordinates: [[49, 50], [51, 52]],
             threshold: 500
         });
 
-        const updates = { name: 'Zona aggiornata', zone: [99, 99] };
+        const updates = { name: 'Zona aggiornata', coordinates: [[99, 99], [100, 100]] };
 
         const response = await request(app)
             .put(`/api/zones/${zoneUpdate._id}`)
@@ -212,7 +189,7 @@ describe('PUT /api/zones/:id', () => {
 
         const ZoneTest = await Zone.create({
             name: "Zona Errore",
-            zone: [49, 50],
+            coordinates: [[49, 50], [51, 52]],
             threshold: 500
         });
 

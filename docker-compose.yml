@@ -1,0 +1,50 @@
+services:
+  mongo:
+    image: mongo:7.0
+    container_name: urbanflow-mongo
+    restart: unless-stopped
+    ports:
+      - "27017:27017"
+    volumes:
+      - mongo-data:/data/db
+    networks:
+      - urbanflow-network
+
+  api:
+    build:
+      context: ./api
+      dockerfile: Dockerfile
+    container_name: urbanflow-api
+    restart: unless-stopped
+    ports:
+      - "3000:3000"
+    environment:
+      - PORT=3000
+      - DB_URL=mongodb://mongo:27017/urbanflow
+      - SUPER_SECRET=urbanflow_super_secret_jwt_key_2025_prod_secure
+      - JWT_SECRET=urbanflow_super_secret_jwt_key_2025_prod_secure
+    depends_on:
+      - mongo
+    networks:
+      - urbanflow-network
+
+  frontend:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile
+    container_name: urbanflow-frontend
+    restart: unless-stopped
+    ports:
+      - "8080:80"
+    depends_on:
+      - api
+    networks:
+      - urbanflow-network
+
+volumes:
+  mongo-data:
+    driver: local
+
+networks:
+  urbanflow-network:
+    driver: bridge
