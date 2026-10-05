@@ -3,24 +3,21 @@
   <head>
     <script>
         const path = window.location.pathname;
-        const base = '/urbanflow/';
-        let other;
-        if(path.startsWith(base)){
-            other = path.slice(base.length);
-        }else{
-            other = path;
-        }
+        const match = path.match(/^\/urbanflow\/?/i);
+        const base = match ? match[0].endsWith('/') ? match[0] : match[0] + '/' : '/UrbanFlow/';
+        const other = match ? path.slice(match[0].length).replace(/^\//, '') : path.replace(/^\//, '');
 
-        const splitted = other.split("/");
+        const splitted = other.split("/").filter(Boolean);
         
         switch(splitted.length){
-
             case 1: 
-                window.location.href = `/urbanflow/?page=${splitted[0]}`;
+                window.location.href = `${base}?page=${encodeURIComponent(splitted[0])}`;
                 break;
             case 2:
-                
-                window.location.href = `/urbanflow/?page=${splitted[0]}&id=${splitted[1]}`;
+                window.location.href = `${base}?page=${encodeURIComponent(splitted[0])}&id=${encodeURIComponent(splitted[1])}`;
+                break;
+            default:
+                window.location.href = base;
         }
       
           

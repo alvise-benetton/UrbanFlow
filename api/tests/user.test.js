@@ -318,8 +318,6 @@ describe('PUT /api/users/:id', () => {
 
      const updatedUser = await User.findById(userUpdate._id);
     const isPasswordCorrect = await bcrypt.compare(updates.password, updatedUser.password);
-    console.log(updates.password);
-    console.log(updatedUser.password);
     
 
     expect(response.body.data.name).toBe(updates.name);

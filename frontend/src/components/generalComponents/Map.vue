@@ -84,7 +84,12 @@ function zoneMidPoint(coords) {
   }
   return [x / coords.length, y / coords.length];
 }
+const warnMarkers = ref(new Map());
+
 function addWarnSymbol(id, coordinates) {
+  if (warnMarkers.value.has(id)) {
+    return;
+  }
   let warnIcon = L.icon({
     iconUrl:
       "data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAyNCAyNCIgZmlsbD0iI2U1NGE0YSIgY2xhc3M9InNpemUtNiI+CiAgPGRlZnM+CiAgICA8ZmlsdGVyIGlkPSJzaGFkb3ciIHg9Ii01MCUiIHk9Ii01MCUiIHdpZHRoPSIyMDAlIiBoZWlnaHQ9IjIwMCUiPgogICAgICA8ZmVEcm9wU2hhZG93IGR4PSIwIiBkeT0iMCIgc3RkRGV2aWF0aW9uPSIyIiBmbG9vZC1jb2xvcj0iIzdhNzk3OSIgZmxvb2Qtb3BhY2l0eT0iMC41Ii8+CiAgICA8L2ZpbHRlcj4KICA8L2RlZnM+CiAgPGNpcmNsZSBjeD0iMTIiIGN5PSIxMiIgcj0iOCIgZmlsbD0id2hpdGUiIGZpbHRlcj0idXJsKCNzaGFkb3cpIi8+CiAgPHBhdGggZmlsbC1ydWxlPSJldmVub2RkIiBkPSJNMi4yNSAxMmMwLTUuMzg1IDQuMzY1LTkuNzUgOS43NS05Ljc1czkuNzUgNC4zNjUgOS43NSA5Ljc1LTQuMzY1IDkuNzUtOS43NSA5Ljc1UzIuMjUgMTcuMzg1IDIuMjUgMTJaTTEyIDguMjVhLjc1Ljc1IDAgMCAxIC43NS43NXYzLjc1YS43NS43NSAwIDAgMS0xLjUgMFY5YS43NS43NSAwIDAgMSAuNzUtLjc1Wm0wIDguMjVhLjc1Ljc1IDAgMSAwIDAtMS41Ljc1Ljc1IDAgMCAwIDAgMS41WiIgY2xpcC1ydWxlPSJldmVub2RkIiAvPgo8L3N2Zz4K",
@@ -93,18 +98,28 @@ function addWarnSymbol(id, coordinates) {
   });
   let warnMarker = L.marker(zoneMidPoint(coordinates), { icon: warnIcon });
   warnMarker.addTo(zoneLayer.value);
+  warnMarkers.value.set(id, warnMarker);
 }
+
+function removeWarnSymbol(id) {
+  const marker = warnMarkers.value.get(id);
+  if (marker && zoneLayer.value) {
+    zoneLayer.value.removeLayer(marker);
+    warnMarkers.value.delete(id);
+  }
+}
+
 // colora le zone al passare del mouse
 function mouseHandler(e) {
   const layer = e.target;
   if (e.type === "mouseover") {
     layer.setStyle({ stroke: true });
     layer.bringToFront();
-    const tempZone = listaZone.value.find((zona) => zona._id === layer.id);
-    const tempEvents = listaEventi.value.filter((evento) =>
-      evento.zones.includes(tempZone._id)
+    const tempZone = listaZone?.value?.find((zona) => zona._id === layer.id);
+    const tempEvents = (listaEventi?.value || []).filter((evento) =>
+      Array.isArray(evento.zones) && evento.zones.some((z) => String(z._id || z) === String(tempZone?._id))
     );
-    hoveredZone.value = tempZone;
+    hoveredZone.value = tempZone || null;
     hoveredEvents.value = tempEvents;
   }
   if (e.type === "mouseout") {
@@ -113,42 +128,70 @@ function mouseHandler(e) {
     hoveredEvents.value = null;
   }
 }
+
 // gestisce il click delle zone
 function clickHandler(zona) {
-  router.push(`/Zone/${zona}`)
+  router.push(`/Zone/${zona}`);
 }
 
 function addZones(map, zone, misurazioni) {
+  if (!map || !zone || !misurazioni) return;
   zonesAdded.value = true;
+  if (gradientLayer.value) gradientLayer.value.clearLayers();
+
   zone.forEach((zona) => {
-    const density = misurazioni.find((m) => m.zone === zona._id).data[0]
-      .density;
-    addGradientZone(zona.coordinates, density/zona.threshold);
-    if (density > zona.threshold) {
-      addWarnSymbol(zona._id, zona.coordinates);
+    const m = misurazioni.find((item) => item.zone === zona._id);
+    const density = m?.data?.[0]?.density ?? 0;
+    const ratio = zona.threshold ? density / zona.threshold : 0;
+
+    if (zona.coordinates && zona.coordinates.length > 0) {
+      addGradientZone(zona.coordinates, ratio);
+      if (density > zona.threshold) {
+        addWarnSymbol(zona._id, zona.coordinates);
+      }
+
+      let p = L.polygon(zona.coordinates, {
+        stroke: false,
+        color: "rgb(80,80,80)",
+        weight: 2.5,
+        fillColor: "transparent",
+        lineCap: "round",
+        lineJoin: "round",
+      });
+      p.on({
+        mouseover: mouseHandler,
+        mouseout: mouseHandler,
+        click: () => {
+          clickHandler(zona._id);
+        },
+      });
+      p.id = zona._id;
+      p.addTo(zoneLayer.value);
     }
-    let p = L.polygon(zona.coordinates, {
-      stroke: false,
-      color: "rgb(80,80,80)",
-      weight: 2.5,
-      fillColor: "transparent",
-      lineCap: "round",
-      lineJoin: "round",
-    });
-    p.on({
-      mouseover: mouseHandler,
-      mouseout: mouseHandler,
-      click: (zona) => {
-        clickHandler(zona.target.id);
-      },
-    });
-    p.id = zona._id;
-    p.addTo(zoneLayer.value);
   });
   map.addLayer(gradientLayer.value);
   map.addLayer(zoneLayer.value);
 }
-function updateGradient() {}
+
+function updateGradient(map, misurazioni) {
+  if (!gradientLayer.value || !misurazioni || !listaZone?.value) return;
+  gradientLayer.value.clearLayers();
+
+  listaZone.value.forEach((zona) => {
+    const m = misurazioni.find((item) => item.zone === zona._id);
+    const density = m?.data?.[0]?.density ?? 0;
+    const ratio = zona.threshold ? density / zona.threshold : 0;
+
+    if (zona.coordinates && zona.coordinates.length > 0) {
+      addGradientZone(zona.coordinates, ratio);
+      if (density > zona.threshold) {
+        addWarnSymbol(zona._id, zona.coordinates);
+      } else {
+        removeWarnSymbol(zona._id);
+      }
+    }
+  });
+}
 function filterHandler() {
   watch(
     () => eventBus.filters.filters.value.length,

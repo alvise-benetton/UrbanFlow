@@ -15,8 +15,8 @@ const user = inject("user");
         <li class="menu-item">
           <RouterLink class="menu-item" to="info">Il mio profilo</RouterLink>
         </li>
-        <li>
-          <RouterLink v-if="user.role === 'admin'" class="menu-item" to="manage">Gestisci utenti</RouterLink>
+        <li v-if="user?.role === 'admin'">
+          <RouterLink class="menu-item" to="manage">Gestisci utenti</RouterLink>
         </li>
       </ul>
     </div>

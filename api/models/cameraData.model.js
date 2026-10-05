@@ -5,14 +5,16 @@ const CameraDataSchema = new mongoose.Schema({
   zone: {
     type: String,
     required: true,
+    index: true,
   },
-  data : [
+  data: [
     {
       density: Number,
-      timestamp:Number
+      timestamp: Number,
     }
   ]
+}, { timestamps: true });
 
-}, { timestamps: true }); // timestamps aggiunge createdAt e updatedAt automaticamente
+CameraDataSchema.index({ zone: 1, updatedAt: -1 });
 
 module.exports = mongoose.model('CameraData', CameraDataSchema);

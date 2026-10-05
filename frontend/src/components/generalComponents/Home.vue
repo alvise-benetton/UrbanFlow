@@ -86,7 +86,10 @@ provide("loadAll", loadAll);
 
 onMounted(()=>{
   loadAll();
-  const intervalId = setInterval(loadCameraData, 5000);
+  const intervalId = setInterval(() => {
+    if (typeof document !== 'undefined' && document.visibilityState === 'hidden') return;
+    loadCameraData();
+  }, 5000);
   onUnmounted(() => clearInterval(intervalId));
 })
 
@@ -119,7 +122,6 @@ const appSection = computed({
     }
 
     let path = route.path;
-    console.log(path.split("/"))
     const base = import.meta.env.BASE_URL;
 
     path = path.slice(1);

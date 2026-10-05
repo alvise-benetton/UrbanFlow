@@ -1,6 +1,6 @@
 const express = require('express');
 const tokenChecker = require("../middleware/tokenChecker").tokenChecker;
-const sessionService = require("../services/session.serivice");
+const sessionService = require("../services/session.service");
 const router = express.Router();
 
 router.post('/',sessionService.createSession);

@@ -1,44 +1,47 @@
 const CameraData = require('../models/cameraData.model');
-const express = require('express');
 const Zone = require('../models/zone.model');
-const router = express.Router();
 
 async function getCameraData(req, res) {
   try {
-    // Recupera la lista di tutte le misurazioni
-    const zones = await CameraData.find({}, '-updatedAt -__v');
-    
+    const isLatest = req.query.latest === 'true';
+    const projection = isLatest ? { zone: 1, data: { $slice: 1 } } : '-updatedAt -__v';
+    const query = CameraData.find({}, projection);
+    const zones = typeof query.lean === 'function' ? await query.lean() : await query;
     res.json(zones);
   } catch (err) {
-    console.error(err.message);
     res.status(500).send('Errore del server');
   }
 }
 
-
 async function createNewCameraData(req, res) {
   try {
-    const zoneId = req.body.zone;
-    const density = req.body.density;
+    const { zone: zoneId, density } = req.body;
 
-    if(!density && density < 0)
-        return res.status(400).json({message:"Bad request"});
+    if (typeof density !== 'number' || density < 0 || !zoneId) {
+      return res.status(400).json({ message: 'Bad request' });
+    }
 
-    const zone = await Zone.findById(zoneId).then((zone)=>{
-        if(zone){ // la zona è presente
-            data = new CameraData({zone:zoneId,density:density/* ,createdAt:Date.now(),updatedAt:Date.now()*/});
-            data.save();
-        }else{
-            return res.status(404).json({message:'Zona non trovata'});
-        }
+    const zoneQuery = Zone.findById(zoneId);
+    const zone = typeof zoneQuery.lean === 'function' ? await zoneQuery.lean() : await zoneQuery;
+    if (!zone) {
+      return res.status(404).json({ message: 'Zona non trovata' });
+    }
 
-    })
-    res.json({ zone });
+    let cameraRecord = await CameraData.findOne({ zone: zoneId });
+    if (!cameraRecord) {
+      cameraRecord = new CameraData({ zone: zoneId, data: [] });
+    }
+
+    cameraRecord.data.unshift({
+      density,
+      timestamp: Date.now(),
+    });
+
+    await cameraRecord.save();
+    return res.status(201).json({ zone: zoneId, density });
   } catch (err) {
-    console.error(err.message);
-    res.status(500).send('Errore del server');
+    return res.status(500).send('Errore del server');
   }
 }
 
 module.exports = { getCameraData, createNewCameraData };
-

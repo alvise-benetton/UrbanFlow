@@ -132,7 +132,7 @@ async function saveUser(){
   }
   dialog.value.close();
 }
-
+const searchUserTerm = ref("");
 </script>
 <template>
   
@@ -145,16 +145,16 @@ async function saveUser(){
     </div>
     <div class="flex flex-row justify-between">
       <label
-        class="flex flex-row gap-2 border-2 border-base-200 rounded-lg p-3 bg-white text-gray-500 items-center"
+        class="flex flex-row gap-2 border-2 border-base-200 rounded-lg p-3 bg-white text-gray-500 items-center min-w-72"
       >
-        <MagnifyingGlassIcon class="size-5"></MagnifyingGlassIcon>
-        <input type="text" class="outline-none" placeholder="Cerca utente" />
+        <MagnifyingGlassIcon class="size-5" />
+        <input v-model="searchUserTerm" type="text" class="outline-none grow" placeholder="Cerca utente per nome o email..." />
       </label>
       <button class="btn btn-primary w-fit" @click="createUser()">
         Nuovo utente
       </button>
     </div>
-      <UsersList @editUser="handleEditUser"></UsersList>
+    <UsersList :searchTerm="searchUserTerm" @editUser="handleEditUser"></UsersList>
   </div>
   
   <dialog id="userDialog" class="modal" ref="dialog">

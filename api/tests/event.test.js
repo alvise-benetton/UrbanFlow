@@ -134,11 +134,6 @@ describe('GET /api/events:id', () => {
             .set('x-access-token', tokenAdmin)
             .expect(200);
 
-        //controllo valori aspettati
-        const bodiel = await response.body;
-        console.log(bodiel);
-        console.log('assadsdsadadsaasdsadas');
-
 
         expect(response.body).toEqual(
             expect.objectContaining({

@@ -1,47 +1,46 @@
 <script setup>
 import { MinusIcon, PlusIcon } from "@heroicons/vue/24/solid";
-import { defineModel } from "vue";
-const model = defineModel();
+
+const model = defineModel({ default: 15 });
+
+function zoomIn() {
+  if (model.value < 17) {
+    model.value++;
+  }
+}
+
+function zoomOut() {
+  if (model.value > 15) {
+    model.value--;
+  }
+}
 </script>
+
 <template>
-  <div class="flex flex-col bg-base-200 rounded-box shadow-md">
+  <div class="flex flex-col bg-base-200 rounded-box shadow-md overflow-hidden border border-base-300">
     <button
-      class="w-10 h-10 flex justify-center items-center"
+      class="w-10 h-10 flex justify-center items-center hover:bg-base-300 transition-colors"
       id="zoomIn"
-      @click="model += 1 ? model < 17 : 0"
-      :class="{ disabled: model >= 17 }"
+      @click="zoomIn"
+      :disabled="model >= 17"
+      :class="{ 'opacity-40 cursor-not-allowed': model >= 17 }"
+      aria-label="Ingrandisci mappa"
     >
-      <PlusIcon class="size-4"></PlusIcon>
+      <PlusIcon class="size-4" />
     </button>
+    <div class="h-px bg-base-300"></div>
     <button
-      class="w-10 h-10 flex justify-center items-center"
+      class="w-10 h-10 flex justify-center items-center hover:bg-base-300 transition-colors"
       id="zoomOut"
-      @click="model -= 1 ? model > 15 : 0"
-      :class="{ disabled: model <= 15 }"
+      @click="zoomOut"
+      :disabled="model <= 15"
+      :class="{ 'opacity-40 cursor-not-allowed': model <= 15 }"
+      aria-label="Rimpicciolisci mappa"
     >
-      <MinusIcon class="size-4"></MinusIcon>
+      <MinusIcon class="size-4" />
     </button>
   </div>
 </template>
+
 <style scoped>
-button {
-  transition: all 0.2s ease-in-out;
-}
-button:hover {
-  background-color: rgba(127.5, 127.5, 127.5, 0.5);
-}
-.disabled {
-  filter: opacity(0.5);
-  opacity: 0.5;
-  cursor: default;
-  background-color: transparent !important;
-}
-#zoomIn {
-  border-top-left-radius: var(--rounded-box, 1rem);
-  border-top-right-radius: var(--rounded-box, 1rem);
-}
-#zoomOut {
-  border-bottom-left-radius: var(--rounded-box, 1rem);
-  border-bottom-right-radius: var(--rounded-box, 1rem);
-}
 </style>

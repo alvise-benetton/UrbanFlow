@@ -7,8 +7,7 @@ import vueDevTools from 'vite-plugin-vue-devtools'
 
 // https://vite.dev/config/
 export default defineConfig(({ mode }) => ({
-  // base: mode === 'production' ? '/urbanflow/' : '/',
-  base: '/urbanflow/',
+  base: process.env.VITE_BASE_PATH || (mode === 'production' ? '/UrbanFlow/' : '/'),
   plugins: [
     vue(),
     vueJsx(),

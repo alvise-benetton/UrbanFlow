@@ -1,14 +1,18 @@
 services:
-  mongo:
+  mongodb:
     image: mongo:7.0
     container_name: urbanflow-mongo
     restart: unless-stopped
     ports:
       - "27017:27017"
+    environment:
+      - MONGO_INITDB_ROOT_USERNAME=${MONGO_INITDB_ROOT_USERNAME:-urbanflow_admin}
+      - MONGO_INITDB_ROOT_PASSWORD=${MONGO_INITDB_ROOT_PASSWORD:-36a8f7b2c9129c99019565917d12acb1}
+      - MONGO_INITDB_DATABASE=urbanflow
     volumes:
-      - mongo-data:/data/db
+      - ${MONGO_DATA_DIR:-/opt/urbanflow/mongo-data}:/data/db
     networks:
-      - urbanflow-network
+      - default
 
   api:
     build:
@@ -20,31 +24,34 @@ services:
       - "3000:3000"
     environment:
       - PORT=3000
-      - DB_URL=mongodb://mongo:27017/urbanflow
-      - SUPER_SECRET=urbanflow_super_secret_jwt_key_2025_prod_secure
-      - JWT_SECRET=urbanflow_super_secret_jwt_key_2025_prod_secure
+      - DB_URL=${DB_URL:-mongodb://urbanflow_admin:36a8f7b2c9129c99019565917d12acb1@mongodb:27017/urbanflow?authSource=admin}
+      - SUPER_SECRET=${SUPER_SECRET:-urbanflow_super_secret_jwt_key_2025_prod_secure}
+      - JWT_SECRET=${JWT_SECRET:-urbanflow_super_secret_jwt_key_2025_prod_secure}
     depends_on:
-      - mongo
+      - mongodb
     networks:
-      - urbanflow-network
+      - default
 
   frontend:
     build:
       context: ./frontend
       dockerfile: Dockerfile
+      args:
+        - VITE_BASE_PATH=/
+        - VITE_API_URL=
     container_name: urbanflow-frontend
     restart: unless-stopped
     ports:
-      - "8080:80"
+      - "80:80"
     depends_on:
       - api
     networks:
-      - urbanflow-network
+      - default
 
 volumes:
   mongo-data:
     driver: local
 
 networks:
-  urbanflow-network:
-    driver: bridge
+  default:
+    name: urbanflow_default

@@ -7,7 +7,10 @@ const sectionsList = ref(["Zone", "Mappa", "Eventi"]);
 const setActive = (section) => {
   model.value = section;
   router.push(`/${section}`);
-  document.getElementById("searchBar").classList.remove("hidden");
+  const searchBar = document.getElementById("searchBar");
+  if (searchBar) {
+    searchBar.classList.remove("hidden");
+  }
 };
 </script>
 <template>

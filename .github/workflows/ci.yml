@@ -52,3 +52,26 @@ jobs:
         run: npm --prefix frontend run build
         env:
           VITE_API_URL: http://localhost:3000
+
+  deploy-oracle:
+    name: Deploy to Oracle Server
+    needs: [test-api, build-frontend]
+    if: github.ref == 'refs/heads/main' && github.event_name == 'push'
+    runs-on: ubuntu-latest
+    steps:
+      - name: Execute remote deploy via SSH
+        uses: appleboy/ssh-action@v1.2.0
+        env:
+          SSH_KEY: ${{ secrets.ORACLE_SSH_KEY }}
+        if: env.SSH_KEY != ''
+        with:
+          host: ${{ secrets.ORACLE_HOST || '130.162.248.23' }}
+          username: ${{ secrets.ORACLE_USER || 'ubuntu' }}
+          key: ${{ secrets.ORACLE_SSH_KEY }}
+          port: ${{ secrets.ORACLE_PORT || 22 }}
+          script: |
+            cd /home/ubuntu/UrbanFlow
+            git fetch origin main
+            git reset --hard origin/main
+            docker compose up -d --build
+            docker image prune -f
