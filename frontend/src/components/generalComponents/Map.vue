@@ -26,7 +26,7 @@ const mapInit = () => {
     // preferCanvas: true,
   }).setView([46.0679, 11.123], 15);
   L.tileLayer(
-    "https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}{r}.png"
+    "https://basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}.png?key=cb1_4c4g_1_48c5b4264a6a0f6bb63b1f23"
   ).addTo(map);
   mapRef.value = map;
   filterHandler();

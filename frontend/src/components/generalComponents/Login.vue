@@ -29,9 +29,19 @@
         </div>
     </form>
 
-      <p class="text-sm text-center text-gray-500 mt-4">
-        login test: email:test@test.it, pwd:test
-      </p>
+      <div class="text-xs text-center text-gray-500 mt-5 space-y-1">
+        <p class="font-semibold text-gray-700">Account demo</p>
+        <p>
+          <span class="font-mono text-gray-700">mario.rossi@example.com</span> ·
+          <span class="font-mono">password_mario</span>
+          <span class="text-gray-400">(admin)</span>
+        </p>
+        <p>
+          <span class="font-mono text-gray-700">luca.bianchi@example.com</span> ·
+          <span class="font-mono">password_luca</span>
+          <span class="text-gray-400">(operatore)</span>
+        </p>
+      </div>
       
       <!-- Toast error con condizione di visualizzazione -->
       <div 
