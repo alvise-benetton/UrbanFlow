@@ -209,6 +209,24 @@ To let CI perform this deploy automatically, add the repository secrets `ORACLE_
 `ORACLE_USER`, `ORACLE_SSH_KEY` (and optionally `ORACLE_PORT`); the `deploy-api` job is skipped
 when `ORACLE_SSH_KEY` is unset.
 
+### DNS keepalive (DuckDNS)
+
+`ab-urbanflow.duckdns.org` is kept pointed at the instance by `~/duckdns/duckdns-update.sh`,
+driven by the `duckdns-update.timer` systemd unit (every 5 minutes). The token is read from
+`~/.duckdns-token` (mode 600) and handed to curl via `-K -`, so it never appears in the process
+list, in the script, or in any committed file. DuckDNS deletes records that go ~30 days without an
+update, hence the timer.
+
+Seed the token once — it is deliberately **not** stored in the repository:
+
+```bash
+ssh oracle
+read -rs DUCKDNS_TOKEN              # paste when prompted; nothing is echoed
+printf '%s' "$DUCKDNS_TOKEN" > ~/.duckdns-token
+chmod 600 ~/.duckdns-token && unset DUCKDNS_TOKEN
+~/duckdns/duckdns-update.sh && tail -1 ~/duckdns/duckdns.log   # expect: "... OK ip=..."
+```
+
 The build sets `VITE_BASE_PATH=/<repo-name>/` so every bundle URL resolves under
 `…github.io/UrbanFlow/`, and `frontend/public/404.html` handles SPA deep links on Pages.
 

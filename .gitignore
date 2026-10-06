@@ -1,10 +1,11 @@
 # Dependencies
 node_modules/
 
-# Environment variables
+# Environment variables — never commit real values, only *.example templates
 .env
-.env.local
-.env.*.local
+.env.*
+!.env.example
+!*.env.example
 
 # Build output
 dist/
