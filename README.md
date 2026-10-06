@@ -3,6 +3,7 @@
 > Real-time pedestrian flow monitoring and management platform for the historic centre of Trento.
 
 [![CI](https://github.com/alvise-benetton/UrbanFlow/actions/workflows/ci.yml/badge.svg)](https://github.com/alvise-benetton/UrbanFlow/actions/workflows/ci.yml)
+[![Deploy](https://github.com/alvise-benetton/UrbanFlow/actions/workflows/deploy.yml/badge.svg)](https://github.com/alvise-benetton/UrbanFlow/actions/workflows/deploy.yml)
 ![Tests](https://img.shields.io/badge/tests-52%20passed-brightgreen?logo=jest&logoColor=white)
 ![Vue.js](https://img.shields.io/badge/Vue.js-3-4FC08D?logo=vue.js&logoColor=white)
 ![Express](https://img.shields.io/badge/Express-4-000000?logo=express&logoColor=white)
@@ -120,7 +121,7 @@ Spin up the complete stack (MongoDB 7.0, API, and Frontend with Nginx) with a si
 docker compose up --build -d
 ```
 
-- Web App: [http://localhost:8080](http://localhost:8080)
+- Web App: [http://localhost](http://localhost)
 - REST API: [http://localhost:3000](http://localhost:3000)
 - MongoDB: `localhost:27017`
 
@@ -144,9 +145,72 @@ npm --prefix api test
 ```
 
 ### CI Pipeline
-Every push and pull request to `main` triggers automated GitHub Actions workflows:
-- Backend test validation across Node.js versions
-- Frontend TypeScript / Vite production build verification
+Every push and pull request to `main` triggers `.github/workflows/ci.yml`:
+- Backend Jest / Supertest suite against an isolated in-memory MongoDB
+- Frontend Vite production build verification (with the real base path and API URL)
+
+---
+
+## 🚀 Deployment
+
+Continuous integration and continuous delivery are split into two workflows:
+
+| Workflow | Trigger | Purpose |
+|---|---|---|
+| [`ci.yml`](.github/workflows/ci.yml) | push / PR to `main` | Jest suite + production Vite build verification |
+| [`deploy.yml`](.github/workflows/deploy.yml) | push to `main` | Publishes the SPA to GitHub Pages, redeploys the API to Oracle Cloud |
+
+### Frontend → GitHub Pages
+
+The SPA is published with the official GitHub Actions (`actions/deploy-pages`) at
+**https://alvise-benetton.github.io/UrbanFlow/**.
+
+Backend endpoint: the build injects `VITE_API_URL`, which defaults to the live Oracle endpoint
+**`https://ab-urbanflow.duckdns.org`**. The workflow expression is
+`secrets.VITE_API_URL || vars.VITE_API_URL || 'https://ab-urbanflow.duckdns.org'`, so:
+
+- it works out of the box with the committed default, and
+- a repository **secret** or **variable** named `VITE_API_URL` overrides it without any code change.
+
+> The value must be HTTPS and must **not** include a trailing slash or the `/api` suffix — the
+> client appends `/api/...` itself. GitHub Pages is HTTPS-only and browsers block mixed-content
+> calls from an HTTPS page to an `http://` API, which is why the backend is served through
+> Caddy + Let's Encrypt on the DuckDNS domain.
+
+Required one-time repository setting:
+
+1. **Settings → Pages → Build and deployment → Source: `GitHub Actions`.**
+
+### Backend → Oracle Cloud VPS
+
+The API and MongoDB run on an Oracle Cloud Always Free ARM64 instance behind Caddy
+(TLS termination) and are orchestrated with Docker Compose:
+
+```
+Internet ──HTTPS──▶ Caddy :443 ──▶ 127.0.0.1:3000 (api) ──▶ mongodb:27017 (docker network)
+```
+
+`docker-compose.yml` therefore publishes the API on `127.0.0.1:3000` only — Caddy owns ports
+80/443 — and stores MongoDB data in the named volume `urbanflow-mongo-data`. The SPA container
+is behind the `full` compose profile and is not used in production.
+
+Deploy/update the backend:
+
+```bash
+ssh oracle
+cd ~/urbanflow && git fetch origin main && git reset --hard origin/main
+docker compose up -d --build
+```
+
+Secrets live in `~/urbanflow/.env` (git-ignored, generated with `openssl rand -hex 32`):
+`MONGO_INITDB_ROOT_PASSWORD`, `DB_URL`, `SUPER_SECRET`.
+
+To let CI perform this deploy automatically, add the repository secrets `ORACLE_HOST`,
+`ORACLE_USER`, `ORACLE_SSH_KEY` (and optionally `ORACLE_PORT`); the `deploy-api` job is skipped
+when `ORACLE_SSH_KEY` is unset.
+
+The build sets `VITE_BASE_PATH=/<repo-name>/` so every bundle URL resolves under
+`…github.io/UrbanFlow/`, and `frontend/public/404.html` handles SPA deep links on Pages.
 
 ---
 
@@ -154,7 +218,9 @@ Every push and pull request to `main` triggers automated GitHub Actions workflow
 
 ```
 UrbanFlow/
-├── .github/workflows/ci.yml       # GitHub Actions CI pipeline
+├── .github/workflows/
+│   ├── ci.yml                      # Continuous integration (tests + build check)
+│   └── deploy.yml                  # CD: GitHub Pages + Oracle Cloud API deploy
 ├── api/                           # Express REST API
 │   ├── middleware/                # JWT auth, RBAC admin guard, request logger
 │   ├── models/                    # Mongoose schemas (User, Session, Zone, Event, CameraData)

@@ -1,0 +1,91 @@
+name: Deploy
+
+on:
+  push:
+    branches: [ main ]
+  workflow_dispatch:
+
+# Required by actions/deploy-pages: publish to Pages with a short-lived OIDC token.
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+# Never run two Pages deployments at once; let an in-flight one finish.
+concurrency:
+  group: pages
+  cancel-in-progress: false
+
+jobs:
+  build:
+    name: Build frontend
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: npm
+          cache-dependency-path: frontend/package-lock.json
+
+      - name: Install dependencies
+        run: npm --prefix frontend ci
+
+      - name: Build SPA
+        run: npm --prefix frontend run build
+        env:
+          # Project GitHub Pages are served under /<repo-name>/, so assets must
+          # be referenced with that base path or they 404 on the deployed site.
+          VITE_BASE_PATH: /${{ github.event.repository.name }}/
+          # Live Oracle backend endpoint, injected from repository secrets or
+          # variables. Must be HTTPS: GitHub Pages is served over HTTPS and
+          # browsers block mixed-content (http) requests.
+          VITE_API_URL: "${{ secrets.VITE_API_URL || vars.VITE_API_URL || 'https://ab-urbanflow.duckdns.org' }}"
+
+      - name: Configure Pages
+        uses: actions/configure-pages@v5
+
+      - name: Upload Pages artifact
+        uses: actions/upload-pages-artifact@v3
+        with:
+          path: frontend/dist
+
+  deploy:
+    name: Deploy to GitHub Pages
+    needs: build
+    runs-on: ubuntu-latest
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - name: Deploy to GitHub Pages
+        id: deployment
+        uses: actions/deploy-pages@v4
+
+  deploy-api:
+    name: Deploy API to Oracle Cloud
+    needs: build
+    if: github.ref == 'refs/heads/main' && github.event_name == 'push'
+    runs-on: ubuntu-latest
+    steps:
+      - name: Execute remote deploy via SSH
+        uses: appleboy/ssh-action@v1.2.0
+        env:
+          SSH_KEY: ${{ secrets.ORACLE_SSH_KEY }}
+        if: env.SSH_KEY != ''
+        with:
+          # All connection details come from repository secrets — no plaintext
+          # host/IP is committed to the repository.
+          host: ${{ secrets.ORACLE_HOST }}
+          username: ${{ secrets.ORACLE_USER }}
+          key: ${{ secrets.ORACLE_SSH_KEY }}
+          port: ${{ secrets.ORACLE_PORT || 22 }}
+          script: |
+            cd /home/ubuntu/urbanflow
+            git fetch origin main
+            git reset --hard origin/main
+            docker compose up -d --build
+            docker image prune -f

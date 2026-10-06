@@ -11,6 +11,7 @@ import UserButtons from "./UserButtons.vue";
 import EventsList from "./EventsList.vue";
 import ZonesAlertsList from "./ZonesAlertsList.vue";
 import { authFetch } from "../utility/router";
+import { API_BASE_URL as API_URL } from "@/services/apiConfig";
 
 const user = inject("user");
 const loadUser = inject("loadUser");
@@ -22,8 +23,6 @@ const zonesData = ref([]);
 const measureData = ref([]);
 const eventsData = ref([]);
 const isInit = ref(false);
-
-const API_URL = import.meta.env.VITE_API_URL;
 
 const loadZones = async () => {
   try {

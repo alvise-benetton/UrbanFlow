@@ -6,6 +6,7 @@ import DatePicker from "./DatePicker.vue";
 import ChartSmallMirror from "./ChartSmallMirror.vue";
 import { TrashIcon } from "@heroicons/vue/24/solid";
 import router, { authFetch } from "../utility/router";
+import { API_BASE_URL as API_URL } from "@/services/apiConfig";
 
 
 /* const event = inject("singleEvent"); */
@@ -39,7 +40,6 @@ const isCurrent = computed(() => {
 });
 
 
-const API_URL = import.meta.env.VITE_API_URL;
 const notyf = inject("notyf");
 
 watch([listaEventi, urlId], () => {

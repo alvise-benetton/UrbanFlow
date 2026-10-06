@@ -1,4 +1,5 @@
 import { createRouter, createWebHistory } from 'vue-router';
+import { API_BASE_URL } from '@/services/apiConfig';
 import Home from '@/components/generalComponents/Home.vue';
 import Login from '@/components/generalComponents/Login.vue';
 import UserView from "@/components/generalComponents/UserView.vue";
@@ -85,7 +86,7 @@ export function isTokenValid(token) {
 }
 
 export async function authFetch(url, options = {}) {
-  const baseUrl = import.meta.env.VITE_API_URL || 'http://localhost:3000';
+  const baseUrl = API_BASE_URL;
   const targetUrl = url.startsWith('http')
     ? url
     : `${baseUrl}${url.startsWith('/') ? '' : '/'}${url}`;

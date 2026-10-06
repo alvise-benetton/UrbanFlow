@@ -2,6 +2,7 @@
 import { UserIcon } from "@heroicons/vue/24/solid";
 import router, { authFetch } from "../utility/router";
 import { inject, computed } from "vue";
+import { API_BASE_URL as API_URL } from "@/services/apiConfig";
 
 const user = inject("user");
 
@@ -17,7 +18,6 @@ const userRole = computed(() => {
 });
 
 async function logout() {
-  const API_URL = import.meta.env.VITE_API_URL || "http://localhost:3000";
   const token = localStorage.getItem("JWT");
 
   try {

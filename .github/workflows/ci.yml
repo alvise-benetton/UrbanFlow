@@ -28,6 +28,7 @@ jobs:
         run: npm --prefix api test
         env:
           PORT: 3000
+          # Test-only fixture secret — the suite runs against an in-memory Mongo.
           SUPER_SECRET: test_jwt_super_secret_for_ci_pipeline_2025
           JWT_SECRET: test_jwt_super_secret_for_ci_pipeline_2025
 
@@ -51,27 +52,5 @@ jobs:
       - name: Build Vue SPA
         run: npm --prefix frontend run build
         env:
-          VITE_API_URL: http://localhost:3000
-
-  deploy-oracle:
-    name: Deploy to Oracle Server
-    needs: [test-api, build-frontend]
-    if: github.ref == 'refs/heads/main' && github.event_name == 'push'
-    runs-on: ubuntu-latest
-    steps:
-      - name: Execute remote deploy via SSH
-        uses: appleboy/ssh-action@v1.2.0
-        env:
-          SSH_KEY: ${{ secrets.ORACLE_SSH_KEY }}
-        if: env.SSH_KEY != ''
-        with:
-          host: ${{ secrets.ORACLE_HOST || '130.162.248.23' }}
-          username: ${{ secrets.ORACLE_USER || 'ubuntu' }}
-          key: ${{ secrets.ORACLE_SSH_KEY }}
-          port: ${{ secrets.ORACLE_PORT || 22 }}
-          script: |
-            cd /home/ubuntu/UrbanFlow
-            git fetch origin main
-            git reset --hard origin/main
-            docker compose up -d --build
-            docker image prune -f
+          VITE_BASE_PATH: /${{ github.event.repository.name }}/
+          VITE_API_URL: "${{ secrets.VITE_API_URL || vars.VITE_API_URL || 'https://ab-urbanflow.duckdns.org' }}"

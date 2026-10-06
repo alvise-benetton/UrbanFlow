@@ -1,6 +1,7 @@
 <script setup>
 import { ref, inject } from "vue";
 import { XMarkIcon } from "@heroicons/vue/20/solid";
+import { API_BASE_URL as API_URL } from "@/services/apiConfig";
 
 const pswModal = ref(null);
 
@@ -23,7 +24,6 @@ async function cambiaPass() {
   }
   
   try {
-    const API_URL = import.meta.env.VITE_API_URL || "http://localhost:3000";
     const response = await fetch(`${API_URL}/api/users/${user.value._id}`, {
       method: "PUT",
       headers: {

@@ -2,6 +2,7 @@
 import { ref, inject, computed } from "vue";
 import { PencilIcon, TrashIcon } from "@heroicons/vue/20/solid";
 import { authFetch } from "../utility/router";
+import { API_BASE_URL as API_URL } from "@/services/apiConfig";
 
 const props = defineProps({
   searchTerm: {
@@ -40,7 +41,6 @@ async function deleteUser() {
   if (!focusedUser.value?._id) return;
   const id = focusedUser.value._id;
   try {
-    const API_URL = import.meta.env.VITE_API_URL || "http://localhost:3000";
     const response = await authFetch(`${API_URL}/api/users/${id}`, {
       method: "DELETE",
       headers: {

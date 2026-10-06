@@ -3,6 +3,7 @@ import { ref, provide, onBeforeMount, onMounted, inject, watch, computed } from 
 import { MagnifyingGlassIcon } from "@heroicons/vue/20/solid";
 import UsersList from "@/components/generalComponents/UsersList.vue";
 import { authFetch } from "../utility/router";
+import { API_BASE_URL as API_URL } from "@/services/apiConfig";
 
 
 const notyf = inject("notyf");
@@ -44,7 +45,7 @@ watch(focusedUser, (newValue) => {
 onBeforeMount(async () => {
 
   try {
-    const res = await authFetch(`${import.meta.env.VITE_API_URL}/api/users`, {
+    const res = await authFetch(`${API_URL}/api/users`, {
       method: "GET",
       headers: {
         "x-access-token": localStorage.getItem("JWT"),
@@ -77,7 +78,6 @@ const handleEditUser = (id) => {
 
 async function saveUser(){
   console.log("Salvataggio utente", focusedUser.value);
-  const API_URL = import.meta.env.VITE_API_URL;
   const token = localStorage.getItem("JWT");
 
   const body = JSON.stringify(focusedUser.value);

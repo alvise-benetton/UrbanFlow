@@ -4,10 +4,14 @@ info:
   description: Docs ufficiali per le API utilizzate nel progetto UrbanFlow.
   version: 0.5.3
 servers:
-  - url: https://progetto-igsw-backend.onrender.com/api
-    description: Server di produzione.
-  - url: http://localhost:3000/v1
-    description: Server di staging per test.
+  - url: https://{host}/api
+    description: Server di produzione (endpoint pubblico Oracle Cloud, HTTPS).
+    variables:
+      host:
+        default: api.urbanflow.example
+        description: Dominio pubblico del backend UrbanFlow (da impostare al deploy).
+  - url: http://localhost:3000/api
+    description: Server locale di sviluppo.
 tags:
   - name: User
     description: Endpoints relativi a un oggetto utente.

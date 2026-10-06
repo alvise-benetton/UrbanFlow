@@ -1,7 +1,6 @@
 import { ref } from 'vue';
 import { authFetch } from './router';
-
-const API_URL = import.meta.env.VITE_API_URL;
+import { API_BASE_URL as API_URL } from '@/services/apiConfig';
 
 const filters = {
   filters: ref([]),

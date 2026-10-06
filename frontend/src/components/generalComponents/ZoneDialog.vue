@@ -7,6 +7,7 @@ import {
 } from "@heroicons/vue/20/solid";
 import { computed, inject, ref, watch } from "vue";
 import router, { authFetch } from "../utility/router";
+import { API_BASE_URL as API_URL } from "@/services/apiConfig";
 const zone = defineModel("selectedZone");
 const misurazioni = inject("listaMisurazioni");
 const eventi = inject("listaEventi");
@@ -15,7 +16,6 @@ const alert = ref({ active: false, increment_pcent: 0 });
 
 
 const eventiZona = ref([]);
-const API_URL = import.meta.env.VITE_API_URL;
 
 function closeCard(){
   zone.value = null;

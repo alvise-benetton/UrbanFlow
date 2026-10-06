@@ -10,6 +10,7 @@ import { Notyf } from "notyf";
 import { jwtDecode } from 'jwt-decode';
 import "notyf/notyf.min.css";
 import { authFetch } from "./components/utility/router";
+import { API_BASE_URL as API_URL } from "@/services/apiConfig";
 
 export default {
   setup() {
@@ -38,7 +39,6 @@ export default {
       }
 
       let ris = {};
-      const API_URL = import.meta.env.VITE_API_URL;
       await authFetch(`${API_URL}/api/users/${data.id}`, {
         method: "GET",
         headers: { "x-access-token": token }

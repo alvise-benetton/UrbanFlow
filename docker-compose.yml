@@ -1,48 +1,61 @@
 services:
+  # --- Database -------------------------------------------------------------
   mongodb:
     image: mongo:7.0
     container_name: urbanflow-mongo
     restart: unless-stopped
+    # Bound to host loopback only: reachable from this host (e.g. Compass) and
+    # from the compose network, never from the public internet.
     ports:
-      - "27017:27017"
+      - "127.0.0.1:27017:27017"
     environment:
       - MONGO_INITDB_ROOT_USERNAME=${MONGO_INITDB_ROOT_USERNAME:-urbanflow_admin}
-      - MONGO_INITDB_ROOT_PASSWORD=${MONGO_INITDB_ROOT_PASSWORD:-36a8f7b2c9129c99019565917d12acb1}
+      - MONGO_INITDB_ROOT_PASSWORD=${MONGO_INITDB_ROOT_PASSWORD:?MONGO_INITDB_ROOT_PASSWORD is required (see .env.example)}
       - MONGO_INITDB_DATABASE=urbanflow
     volumes:
-      - ${MONGO_DATA_DIR:-/opt/urbanflow/mongo-data}:/data/db
+      - mongo-data:/data/db
     networks:
       - default
 
+  # --- REST API -------------------------------------------------------------
   api:
     build:
       context: ./api
       dockerfile: Dockerfile
     container_name: urbanflow-api
     restart: unless-stopped
+    # Caddy terminates TLS on 80/443 and reverse-proxies to 127.0.0.1:3000,
+    # so the API itself is never exposed publicly.
     ports:
-      - "3000:3000"
+      - "127.0.0.1:3000:3000"
     environment:
       - PORT=3000
-      - DB_URL=${DB_URL:-mongodb://urbanflow_admin:36a8f7b2c9129c99019565917d12acb1@mongodb:27017/urbanflow?authSource=admin}
-      - SUPER_SECRET=${SUPER_SECRET:-urbanflow_super_secret_jwt_key_2025_prod_secure}
-      - JWT_SECRET=${JWT_SECRET:-urbanflow_super_secret_jwt_key_2025_prod_secure}
+      - NODE_ENV=${NODE_ENV:-production}
+      - DB_URL=${DB_URL:?DB_URL is required (see .env.example)}
+      # The API signs and verifies JWTs with SUPER_SECRET.
+      - SUPER_SECRET=${SUPER_SECRET:?SUPER_SECRET is required (see .env.example)}
     depends_on:
       - mongodb
     networks:
       - default
 
+  # --- Optional local full stack -------------------------------------------
+  # The SPA is deployed to GitHub Pages, so this service is NOT started by
+  # default (a container on :80 would also clash with Caddy on the VPS).
+  # Run the complete stack locally with:
+  #   docker compose --profile full up --build
   frontend:
+    profiles: ["full"]
     build:
       context: ./frontend
       dockerfile: Dockerfile
       args:
         - VITE_BASE_PATH=/
-        - VITE_API_URL=
+        - VITE_API_URL=${VITE_API_URL:-}
     container_name: urbanflow-frontend
     restart: unless-stopped
     ports:
-      - "80:80"
+      - "8080:80"
     depends_on:
       - api
     networks:
@@ -50,7 +63,7 @@ services:
 
 volumes:
   mongo-data:
-    driver: local
+    name: urbanflow-mongo-data
 
 networks:
   default:

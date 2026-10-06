@@ -62,6 +62,7 @@
 import { ref, inject } from 'vue';
 import { useRouter } from 'vue-router';
 import { authFetch } from '../utility/router';
+import { API_BASE_URL as API_URL } from '@/services/apiConfig';
 
 const router = useRouter();
 
@@ -72,8 +73,6 @@ const loading = ref(false);
 const showError = ref(false);
 const errorMessage = ref('');
 const loadAll = inject('loadAll');
-
-const API_URL = import.meta.env.VITE_API_URL;
 
 const user = inject('user');
 
