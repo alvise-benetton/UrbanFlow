@@ -26,7 +26,13 @@ const mapInit = () => {
     // preferCanvas: true,
   }).setView([46.0679, 11.123], 15);
   L.tileLayer(
-    "https://basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}.png?key=cb1_4c4g_1_48c5b4264a6a0f6bb63b1f23"
+    "https://basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}{r}.png?key=cb1_4c4g_1_48c5b4264a6a0f6bb63b1f23",
+    {
+      // Required by the OpenStreetMap and CARTO tile usage terms.
+      attribution:
+        '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors &copy; <a href="https://carto.com/attributions">CARTO</a>',
+      maxZoom: 20,
+    }
   ).addTo(map);
   mapRef.value = map;
   filterHandler();
