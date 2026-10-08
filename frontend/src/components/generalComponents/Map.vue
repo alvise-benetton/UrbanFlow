@@ -1,6 +1,8 @@
 <script setup>
 import { inject, onMounted, ref, watch } from "vue";
+import { useRoute } from "vue-router";
 import ZoomPane from "../mapComponents/ZoomPane.vue";
+import MapLegend from "../mapComponents/MapLegend.vue";
 import eventBus from "../utility/eventBus";
 import ZoneTooltip from "../mapComponents/ZoneTooltip.vue";
 import router from "../utility/router";
@@ -17,6 +19,26 @@ const gradientLayer = ref(null);
 
 const hoveredZone = ref(null);
 const hoveredEvents = ref(null);
+
+const route = useRoute();
+
+function focusSelectedZone() {
+  if (!mapRef.value || !listaZone?.value) return;
+  const pathParts = route.path.slice(1).split("/");
+  if (pathParts[0] === "Zone" && pathParts[1]) {
+    const targetId = pathParts[1];
+    const targetZone = listaZone.value.find((z) => String(z._id) === String(targetId));
+    if (targetZone && Array.isArray(targetZone.coordinates) && targetZone.coordinates.length > 0) {
+      const bounds = L.polygon(targetZone.coordinates).getBounds();
+      mapRef.value.fitBounds(bounds, {
+        padding: [60, 60],
+        maxZoom: 16,
+        animate: true,
+        duration: 0.75,
+      });
+    }
+  }
+}
 
 const mapInit = () => {
   const map = L.map("map", {
@@ -43,12 +65,16 @@ const mapInit = () => {
     if (listaZone.value && listaMisurazioni.value && !zonesAdded.value) {
       // in teoria viene fatto solo una volta
       addZones(mapRef.value, listaZone.value, listaMisurazioni.value);
+      focusSelectedZone();
     } else {
       // se ci sono già le zone, aggiorna solo i colori
       updateGradient(mapRef.value, listaMisurazioni.value);
     }
   });
 
+  watch(() => route.path, () => {
+    focusSelectedZone();
+  });
 };
 // gestione dello zoom
 const zoomLevel = ref(15);
@@ -138,6 +164,7 @@ function mouseHandler(e) {
 // gestisce il click delle zone
 function clickHandler(zona) {
   router.push(`/Zone/${zona}`);
+  focusSelectedZone();
 }
 
 function addZones(map, zone, misurazioni) {
@@ -228,8 +255,9 @@ onMounted(mapInit);
       </defs>
     </svg>
     <div id="map"></div>
-    <div class="flex gap-5 fixed bottom-5 left-5">
+    <div class="flex items-end gap-3 fixed bottom-5 left-5 z-[400]">
       <ZoomPane v-model="zoomLevel"></ZoomPane>
+      <MapLegend></MapLegend>
     </div>
     <ZoneTooltip
       v-if="hoveredZone != null"

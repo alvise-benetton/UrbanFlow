@@ -1,67 +1,105 @@
 <template>
-  <div class="min-h-screen flex items-center justify-center bg-gray-100">
-    <div class="bg-white shadow-lg rounded-lg p-8 w-96">
-      <h2 class="text-2xl font-bold text-center text-gray-800">Accedi</h2>
-      <p class="text-center text-gray-500 mb-6">Inserisci le tue credenziali</p>
-      <form>
+  <div class="min-h-screen flex items-center justify-center bg-base-200 p-4">
+    <div class="bg-base-100 border border-base-300 shadow-xl rounded-2xl p-8 w-full max-w-md">
+      <div class="text-center mb-6">
+        <div class="inline-flex items-center justify-center w-12 h-12 rounded-xl bg-primary text-white font-bold text-xl mb-3 shadow">
+          UF
+        </div>
+        <h2 class="text-2xl font-bold text-base-content tracking-tight">UrbanFlow Trento</h2>
+        <p class="text-sm text-gray-500 mt-1">Monitoraggio flussi pedonali centro storico</p>
+      </div>
+
+      <form @submit.prevent="login">
         <div class="space-y-4">
-        
+          <div class="form-control">
+            <label class="label py-1">
+              <span class="label-text font-medium text-xs text-gray-600">Email operatore</span>
+            </label>
             <input 
               v-model="email" 
-              type="text" 
-              placeholder="Email" 
-              class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+              type="email" 
+              placeholder="nome@comune.trento.it" 
+              required
+              class="input input-bordered w-full focus:input-primary"
             />
-            <input 
-              v-model="password" 
-              type="password" 
-              placeholder="Password" 
-              class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
-            />
+          </div>
 
-            <button 
-              @click="login" 
-              class="w-full bg-blue-500 text-white py-2 rounded-lg hover:bg-blue-600 transition"
-              :disabled="loading"
-            >
-              {{ loading ? 'Caricamento...' : 'Accedi' }}
-            </button>
+          <div class="form-control">
+            <label class="label py-1">
+              <span class="label-text font-medium text-xs text-gray-600">Password</span>
+            </label>
+            <div class="relative">
+              <input 
+                v-model="password" 
+                :type="showPassword ? 'text' : 'password'" 
+                placeholder="••••••••" 
+                required
+                class="input input-bordered w-full pr-10 focus:input-primary"
+              />
+              <button
+                type="button"
+                @click="showPassword = !showPassword"
+                class="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600 text-xs"
+              >
+                {{ showPassword ? 'Nascondi' : 'Mostra' }}
+              </button>
+            </div>
+          </div>
+
+          <button 
+            type="submit" 
+            class="btn btn-primary w-full shadow text-white"
+            :disabled="loading"
+          >
+            <span v-if="loading" class="loading loading-spinner loading-sm"></span>
+            <span>{{ loading ? 'Autenticazione in corso...' : 'Accedi' }}</span>
+          </button>
         </div>
-    </form>
+      </form>
 
-      <div class="text-xs text-center text-gray-500 mt-5 space-y-1">
-        <p class="font-semibold text-gray-700">Account demo</p>
-        <p>
-          <span class="font-mono text-gray-700">mario.rossi@example.com</span> ·
-          <span class="font-mono">password_mario</span>
-          <span class="text-gray-400">(admin)</span>
-        </p>
-        <p>
-          <span class="font-mono text-gray-700">luca.bianchi@example.com</span> ·
-          <span class="font-mono">password_luca</span>
-          <span class="text-gray-400">(operatore)</span>
-        </p>
+      <!-- Accesso rapido account demo -->
+      <div class="mt-6 pt-5 border-t border-base-200 flex flex-col gap-2.5">
+        <span class="text-xs font-bold text-gray-500 uppercase tracking-wider text-center">
+          Accesso Rapido Demo
+        </span>
+        <div class="grid grid-cols-1 sm:grid-cols-2 gap-2">
+          <button
+            type="button"
+            class="btn btn-sm btn-outline btn-primary flex justify-between items-center text-xs"
+            :disabled="loading"
+            @click="quickLogin('mario.rossi@example.com', 'password_mario')"
+          >
+            <span>Admin</span>
+            <span class="badge badge-primary badge-xs text-white">mario.rossi</span>
+          </button>
+          <button
+            type="button"
+            class="btn btn-sm btn-outline btn-neutral flex justify-between items-center text-xs"
+            :disabled="loading"
+            @click="quickLogin('luca.bianchi@example.com', 'password_luca')"
+          >
+            <span>Operatore</span>
+            <span class="badge badge-neutral badge-xs">luca.bianchi</span>
+          </button>
+        </div>
       </div>
-      
-      <!-- Toast error con condizione di visualizzazione -->
+
+      <!-- Errore notifica -->
       <div 
         v-if="showError"
-        id="toast-error" 
-        class="flex items-center w-full max-w-xs p-4 mb-4 text-gray-500 bg-white rounded-lg shadow-sm mt-4"
+        class="alert alert-error mt-4 shadow-sm py-2 px-3 text-xs text-white flex justify-between"
       >
-        <div class="inline-flex items-center justify-center shrink-0 w-8 h-8 text-red-500 bg-red-100 rounded-lg">
-          <svg class="w-5 h-5" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" fill="currentColor" viewBox="0 0 20 20">
+        <div class="flex items-center gap-2">
+          <svg class="w-4 h-4 shrink-0" fill="currentColor" viewBox="0 0 20 20">
             <path d="M10 .5a9.5 9.5 0 1 0 9.5 9.5A9.51 9.51 0 0 0 10 .5Zm3.707 11.793a1 1 0 1 1-1.414 1.414L10 11.414l-2.293 2.293a1 1 0 0 1-1.414-1.414L8.586 10 6.293 7.707a1 1 0 0 1 1.414-1.414L10 8.586l2.293-2.293a1 1 0 0 1 1.414 1.414L11.414 10l2.293 2.293Z"/>
           </svg>
+          <span>{{ errorMessage }}</span>
         </div>
-        <div class="ms-3 text-sm font-normal">{{ errorMessage }}</div>
         <button 
           @click="showError = false" 
-          class="ms-auto -mx-1.5 -my-1.5 bg-white text-gray-400 hover:text-gray-900 rounded-lg focus:ring-2 focus:ring-gray-300 p-1.5 hover:bg-gray-100 inline-flex items-center justify-center h-8 w-8"
+          class="btn btn-ghost btn-xs btn-circle text-white"
         >
-          <svg class="w-3 h-3" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 14 14">
-            <path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="m1 1 6 6m0 0 6 6M7 7l6-6M7 7l-6 6"/>
-          </svg>
+          ✕
         </button>
       </div>
     </div>
@@ -69,23 +107,19 @@
 </template>
 
 <script setup>
-import { ref, inject } from 'vue';
+import { ref } from 'vue';
 import { useRouter } from 'vue-router';
 import { authFetch } from '../utility/router';
 import { API_BASE_URL as API_URL } from '@/services/apiConfig';
 
 const router = useRouter();
 
-// Stati reattivi
 const email = ref('');
 const password = ref('');
+const showPassword = ref(false);
 const loading = ref(false);
 const showError = ref(false);
 const errorMessage = ref('');
-const loadAll = inject('loadAll');
-
-const user = inject('user');
-
 
 const login = async () => {
   try {
@@ -96,25 +130,27 @@ const login = async () => {
       method: "POST",
       body: JSON.stringify({ email: email.value, password: password.value }),
       headers: { "Content-Type": "application/json" }
-    }).then((resp) => {
-      if (!resp.ok) {
-        throw new Error('Credenziali non valide');
-      }
-      return resp;
     });
+
+    if (!response.ok) {
+      throw new Error('Credenziali non valide');
+    }
+
     const data = await response.json();
     localStorage.setItem('JWT', data.JWT);
-    
-    //loadAll();
     await router.push('/');
-
-  }catch (error) {
+  } catch (error) {
     showError.value = true;
     errorMessage.value = error.message;
     console.error('Login error:', error);
-  }finally {
+  } finally {
     loading.value = false;
   }
 };
 
+const quickLogin = (demoEmail, demoPassword) => {
+  email.value = demoEmail;
+  password.value = demoPassword;
+  login();
+};
 </script>

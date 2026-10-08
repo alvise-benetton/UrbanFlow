@@ -8,9 +8,12 @@ import {
 import { computed, inject, ref, watch } from "vue";
 import router, { authFetch } from "../utility/router";
 import { API_BASE_URL as API_URL } from "@/services/apiConfig";
+import ChartSmallMirror from "./ChartSmallMirror.vue";
+
 const zone = defineModel("selectedZone");
 const misurazioni = inject("listaMisurazioni");
 const eventi = inject("listaEventi");
+const notyf = inject("notyf");
 const localZone = ref({...zone.value});
 const alert = ref({ active: false, increment_pcent: 0 });
 
@@ -99,6 +102,12 @@ const saveChanges = async () => {
 
 const thresholdInput = ref(null);
 const thresholdDialog = ref(null);
+
+function segnalaAllerta() {
+  if (notyf) {
+    notyf.success(`Allerta per ${localZone.value?.name || "la zona"} presa in carico.`);
+  }
+}
 </script>
 <template>
   <div
@@ -193,10 +202,20 @@ const thresholdDialog = ref(null);
         >
         <span class="stat-value">+{{ alert.increment_pcent }}%</span>
       </div>
-      <button class="btn border-none bg-red-700 hover:bg-red-800 text-white">
-        Segnala
+      <button
+        class="btn border-none bg-red-700 hover:bg-red-800 text-white"
+        @click="segnalaAllerta"
+      >
+        Segnala presa in carico
       </button>
     </div>
+    <!-- Grafico storico ultime 24h -->
+    <ChartSmallMirror
+      v-model:zone="localZone"
+      :class="{
+        'opacity-50 grayscale-[50%] pointer-events-none': isEditing,
+      }"
+    ></ChartSmallMirror>
     <!-- Lista eventi -->
     <div
       class="flex flex-col gap-2 p-3 bg-base-200 rounded-box items-center"
