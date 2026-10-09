@@ -16,13 +16,27 @@ export default {
   setup() {
     const notyf = new Notyf(); 
     const user = ref(null);
+    const theme = ref(localStorage.getItem('theme') || 'light');
 
-    loadUser()
+    function setTheme(newTheme) {
+      theme.value = newTheme;
+      localStorage.setItem('theme', newTheme);
+      if (typeof document !== 'undefined') {
+        document.documentElement.setAttribute('data-theme', newTheme);
+      }
+    }
 
-    provide('notyf',notyf);// servizio per i toast
-    provide('user',user);// servizio per l'utente
-    provide('loadUser',loadUser);
-    return { user };
+    setTheme(theme.value);
+
+    loadUser();
+
+    provide('notyf', notyf);
+    provide('user', user);
+    provide('loadUser', loadUser);
+    provide('theme', theme);
+    provide('setTheme', setTheme);
+
+    return { user, theme, setTheme };
     
 
     async function loadUser(){

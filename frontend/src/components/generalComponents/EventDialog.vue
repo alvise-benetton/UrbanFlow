@@ -1,253 +1,303 @@
 <script setup>
-import { PencilIcon, XMarkIcon } from "@heroicons/vue/20/solid";
-import { ref, computed, onBeforeMount, reactive, onMounted, inject, watch, provide } from "vue";
+import { computed, inject, ref, watch } from "vue";
+import { useRouter, useRoute } from "vue-router";
+import {
+  PencilIcon,
+  TrashIcon,
+  CheckIcon,
+  XMarkIcon,
+  CalendarDaysIcon,
+} from "@heroicons/vue/20/solid";
 import ZonesPicker from "./ZonesPicker.vue";
 import DatePicker from "./DatePicker.vue";
 import ChartSmallMirror from "./ChartSmallMirror.vue";
-import { TrashIcon } from "@heroicons/vue/24/solid";
-import router, { authFetch } from "../utility/router";
+import { authFetch } from "../utility/router";
 import { API_BASE_URL as API_URL } from "@/services/apiConfig";
 
-
-/* const event = inject("singleEvent"); */
-const urlId = defineModel("id");
-const listaEventi = inject("listaEventi");
-const zoneList = inject("listaZone");
-const isEditing = defineModel("isEditing");
-
-const event = ref(null);
-if (urlId.value === 'nuovo') {
-  console.log("Creating new event");
-  event.value = {
-    title: "",
-    zones: [],
-    startDate: new Date(),
-    endDate: new Date(new Date().getTime() + 24 * 60 * 60 * 1000), // 1 day
-  }
-  isEditing.value = true;
-} else {
-  event.value = listaEventi.value.find((e) => e._id === urlId.value);
-}
-
-const localEvent = ref({...event.value});
-
-const deleteEventModal = ref(null);
-const isCurrent = computed(() => {
-  const now = new Date();
-  const startDate = new Date(localEvent.startDate);
-  const endDate = new Date(localEvent.endDate);
-  return startDate <= now && endDate >= now;
+const props = defineProps({
+  id: {
+    type: String,
+    default: null,
+  },
 });
 
+const router = useRouter();
+const route = useRoute();
 
+const urlId = computed(() => {
+  return props.id || route.params.id || route.path.slice(1).split("/")[1] || null;
+});
+
+const listaEventi = inject("listaEventi", ref([]));
+const zoneList = inject("listaZone", ref([]));
 const notyf = inject("notyf");
 
+const isEditing = ref(false);
+const isSaving = ref(false);
+const deleteEventModal = ref(null);
+
+const event = ref(null);
+
+function initializeEvent() {
+  if (urlId.value === "nuovo") {
+    event.value = {
+      title: "",
+      zones: [],
+      startDate: new Date(),
+      endDate: new Date(Date.now() + 24 * 60 * 60 * 1000),
+    };
+    isEditing.value = true;
+  } else if (listaEventi.value && urlId.value) {
+    event.value = listaEventi.value.find((e) => String(e._id) === String(urlId.value)) || null;
+    isEditing.value = false;
+  }
+}
+
 watch([listaEventi, urlId], () => {
+  initializeEvent();
+}, { immediate: true });
 
-  event.value = listaEventi.value.find((e) => e._id === urlId.value);
+const localEvent = ref({ ...event.value });
 
+watch(
+  event,
+  (newVal) => {
+    localEvent.value = newVal ? { ...newVal } : null;
+  },
+  { deep: true, immediate: true }
+);
+
+const isCurrent = computed(() => {
+  if (!localEvent.value?.startDate || !localEvent.value?.endDate) return false;
+  const now = new Date();
+  const s = new Date(localEvent.value.startDate);
+  const e = new Date(localEvent.value.endDate);
+  return s <= now && e >= now;
 });
 
-watch(event, (newVal) => { 
-  localEvent.value = { ...newVal }; // Aggiorna localZone quando zone cambia
-}, { deep: true });
-
-const abortChanges = () => {
-  if (urlId === 'nuovo'){
-    event.value = null;
-  }
-  localEvent.value = {...event.value};
-  isEditing.value = false;
-  router.back();
-};
-const saveChanges = async () => {
-  
-  if (JSON.stringify(event.value) === JSON.stringify(localEvent.value) ) {
-    event.value = null;
-  }else if(urlId.value === 'nuovo'){ // nuovo evento
-      await authFetch(`${API_URL}/api/events/`,{
-      headers:{
-        "x-access-token":localStorage.getItem("JWT"),
-        "Content-Type": "application/json"
-      },
-      body: JSON.stringify({
-        title: localEvent.value.title,
-        zones: localEvent.value.zones.filter(z=>z!==null).map(z=>z._id),
-        startDate: localEvent.value.startDate,
-        endDate: localEvent.value.endDate
-      }),
-      method:"POST"}).then((res)=>{
-      if(!res.ok){
-        notyf.error("Errore nella creazione dell'evento " + res.err);
-        throw new Error("errore nella creazione evento");
-      }
-      return res;
-    }).then(()=>{
-      notyf.success("Evento creato con successo!");
-      event.value = {...event.value};
-      isEditing.value = false;
-      router.back();
-    })
-    
-  }else{ // modifica
-
-    await authFetch(`${API_URL}/api/events/${event.value._id}`,{
-    headers:{
-      "x-access-token":localStorage.getItem("JWT"),
-      "Content-Type": "application/json"
-    },
-    body: JSON.stringify({
-      title: localEvent.value.title,
-      zones: localEvent.value.zones.map(z=>z._id),
-      startDate: localEvent.value.startDate,
-      endDate: localEvent.value.endDate
-    }),
-    method:"PUT"}).then((res)=>{
-    if(!res.ok){
-      notyf.error("Errore nella modifica dell'evento " + res.err);
-      throw new Error("errore nella modifica evento");
-    }
-    return res;
-  }).then(()=>{
-    notyf.success("Evento modificato con successo!");
-    event.value = {...localEvent.value};
+function abortChanges() {
+  if (urlId.value === "nuovo") {
+    router.push("/Eventi");
+  } else {
+    localEvent.value = { ...event.value };
     isEditing.value = false;
-  })
+  }
+}
 
+async function saveChanges() {
+  if (!localEvent.value?.title || localEvent.value.title.trim() === "") {
+    if (notyf) notyf.error("Inserisci un titolo per l'evento");
+    return;
+  }
+
+  isSaving.value = true;
+  const token = localStorage.getItem("JWT");
+
+  const zonesIds = (localEvent.value.zones || [])
+    .filter(Boolean)
+    .map((z) => String(z._id || z));
+
+  const payload = {
+    title: localEvent.value.title,
+    zones: zonesIds,
+    startDate: localEvent.value.startDate,
+    endDate: localEvent.value.endDate,
   };
-}
 
-async function deleteEvent(){
+  try {
+    if (urlId.value === "nuovo") {
+      const res = await authFetch(`${API_URL}/api/events`, {
+        method: "POST",
+        headers: {
+          "x-access-token": token,
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify(payload),
+      });
 
-  await authFetch(`${API_URL}/api/events/${event.value._id}`,{
-    headers:{
-      "x-access-token":localStorage.getItem("JWT"),
-    },
-    method:"DELETE"}).then((res)=>{
-    if(!res.ok){
-      notyf.error("Errore nella eliminazione dell'evento " + res.err);
-      throw new Error("errore nell'eliminazione evento");
+      if (!res.ok) throw new Error("Errore durante la creazione dell'evento");
+      const created = await res.json();
+      listaEventi.value.push(created);
+      if (notyf) notyf.success("Evento creato con successo!");
+      router.push(`/Eventi/${created._id}`);
+    } else {
+      const res = await authFetch(`${API_URL}/api/events/${event.value._id}`, {
+        method: "PUT",
+        headers: {
+          "x-access-token": token,
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify(payload),
+      });
+
+      if (!res.ok) throw new Error("Errore durante la modifica dell'evento");
+      const updated = await res.json();
+      const index = listaEventi.value.findIndex((e) => String(e._id) === String(event.value._id));
+      if (index !== -1) {
+        listaEventi.value[index] = updated;
+      }
+      event.value = { ...localEvent.value };
+      isEditing.value = false;
+      if (notyf) notyf.success("Evento modificato con successo!");
     }
-    return res;
-  }).then(()=>{
-    notyf.success("Evento eliminato con successo!");
-    listaEventi.value = listaEventi.value.filter(e=>e._id != event.value._id); 
-    event.value = null;
-    router.back();
-  })
-};
-
-function closeEvent(){
-  event.value = null;
-  router.back();
+  } catch (err) {
+    if (notyf) notyf.error(err.message);
+  } finally {
+    isSaving.value = false;
+  }
 }
 
-</script>
-<template>
-  <div>
-    <div class="eventDialog flex flex-col bg-base-100 p-5 rounded-box gap-5 shadow-md">
-      <div class="flex flex-row gap-2 items-center absolute" v-if="isCurrent">
-        <div class="indicator absolute opacity-75 animate-ping"></div>
-        <div class="indicator scale-75"></div>
-        <span class="text-red-500">LIVE</span>
-      </div>
-      <div
-        class="flex flex-row justify-end gap-2 bg-base-100"
-        v-if="!isEditing && urlId!== 'nuovo'"
-      >
-        <!-- Modifica evento -->
-        <button class="btn btn-square btn-sm" @click="isEditing = true; localEvent = {...event}">
-          <PencilIcon class="size-4"></PencilIcon>
-        </button>
-        <!-- Chiudi card evento -->
-        <button class="btn btn-square btn-sm" @click="closeEvent()">
-          <XMarkIcon class="size-4"></XMarkIcon>
-        </button>
-        <!-- Elimina evento -->
-        <button
-          class="btn btn-square btn-sm btn-error text-white"
-          @click="deleteEventModal.showModal()"
-        >
-          <TrashIcon class="size-4"></TrashIcon>
-        </button>
-      </div>
-      <div class="flex flex-row justify-end gap-2" v-else>
-        <!-- Annulla modifiche -->
-        <button class="btn btn-sm btn-error text-white" @click="abortChanges()">
-          Annulla
-        </button>
-        <!-- Salva modifiche -->
-        <button
-          class="btn btn-sm btn-primary"
-          :disabled=" JSON.stringify(event) === JSON.stringify(localEvent) || localEvent.title == '' "
-          @click="saveChanges()"
-        >
-          Salva
-        </button>
-      </div>
-      <!-- Titolo evento -->
-      <div>
-        <span
-          v-if="!isEditing && urlId !== 'nuovo'"
-          class="titleSpan font-bold card-title w-full"
-          >{{ localEvent.title }}
-        </span>
+async function deleteEvent() {
+  if (!event.value?._id) return;
+  try {
+    const res = await authFetch(`${API_URL}/api/events/${event.value._id}`, {
+      method: "DELETE",
+      headers: { "x-access-token": localStorage.getItem("JWT") },
+    });
 
-        <input
+    if (!res.ok) throw new Error("Errore durante l'eliminazione dell'evento");
+
+    listaEventi.value = listaEventi.value.filter((e) => String(e._id) !== String(event.value._id));
+    if (notyf) notyf.success("Evento eliminato con successo!");
+    deleteEventModal.value?.close();
+    router.push("/Eventi");
+  } catch (err) {
+    if (notyf) notyf.error(err.message);
+  }
+}
+</script>
+
+<template>
+  <div v-if="localEvent" class="flex flex-col gap-4 w-full">
+    <!-- Header e Azioni -->
+    <div class="flex items-center justify-between pb-3 border-b border-base-300">
+      <div class="flex items-center gap-2">
+        <span
+          v-if="isCurrent"
+          class="badge badge-info text-white font-bold text-xs gap-1 animate-pulse"
+        >
+          ● IN CORSO
+        </span>
+        <span
+          v-else-if="urlId === 'nuovo'"
+          class="badge badge-primary text-white font-bold text-xs"
+        >
+          NUOVO
+        </span>
+        <span
           v-else
-          type="text"
-          v-model="localEvent.title"
-          class="font-bold card-title pb-2 border-b-2 border-primary text-primary text-wrap outline-none w-full"
-          placeholder="Aggiungi un titolo..."
-        />
+          class="badge badge-ghost text-gray-500 font-mono text-xs"
+        >
+          PROGRAMMATO
+        </span>
       </div>
-      <!-- Zone evento -->
-      <ZonesPicker v-if="localEvent.zones"
+
+      <!-- Barra pulsanti: Modifica / Salva / Elimina -->
+      <div class="flex items-center gap-1.5">
+        <template v-if="!isEditing && urlId !== 'nuovo'">
+          <button
+            class="btn btn-sm btn-ghost btn-square"
+            @click="isEditing = true"
+            title="Modifica evento"
+          >
+            <PencilIcon class="size-4" />
+          </button>
+          <button
+            class="btn btn-sm btn-ghost btn-square text-error hover:bg-error/10"
+            @click="deleteEventModal?.showModal()"
+            title="Elimina evento"
+          >
+            <TrashIcon class="size-4" />
+          </button>
+        </template>
+        <template v-else>
+          <button
+            class="btn btn-xs btn-ghost"
+            @click="abortChanges"
+            :disabled="isSaving"
+          >
+            Annulla
+          </button>
+          <button
+            class="btn btn-xs btn-primary text-white gap-1 font-bold shadow-sm"
+            @click="saveChanges"
+            :disabled="isSaving || !localEvent.title"
+          >
+            <CheckIcon class="size-3.5" />
+            <span>{{ isSaving ? 'Salvataggio...' : 'Salva' }}</span>
+          </button>
+        </template>
+      </div>
+    </div>
+
+    <!-- Titolo Evento -->
+    <div class="flex flex-col gap-1">
+      <label class="text-[11px] uppercase font-bold text-gray-400">Titolo Evento</label>
+      <input
+        v-if="isEditing"
+        v-model="localEvent.title"
+        type="text"
+        placeholder="Es. Mercatini di Natale, Notte Bianca..."
+        class="input input-sm input-bordered w-full font-bold focus:input-primary"
+      />
+      <h2 v-else class="text-lg font-bold text-base-content leading-snug">
+        {{ localEvent.title }}
+      </h2>
+    </div>
+
+    <!-- Zone Coinvolte -->
+    <div class="flex flex-col gap-1.5">
+      <label class="text-[11px] uppercase font-bold text-gray-400">Zone Coinvolte</label>
+      <ZonesPicker
+        v-if="localEvent.zones"
         v-model:isEditing="isEditing"
         v-model:event="localEvent"
-      ></ZonesPicker>
-      <!-- Data evento -->
+      />
+    </div>
+
+    <!-- Date e Orari -->
+    <div class="flex flex-col gap-1.5">
+      <label class="text-[11px] uppercase font-bold text-gray-400">Data e Durata</label>
       <DatePicker
         v-if="localEvent && localEvent.startDate && localEvent.endDate"
         v-model:event="localEvent"
         v-model:isEditing="isEditing"
-      ></DatePicker>
-      <!-- Dati storici -->
+      />
+    </div>
+
+    <!-- Grafico Storico dell'Evento -->
+    <div v-if="urlId !== 'nuovo'" class="flex flex-col gap-1.5 mt-2">
+      <label class="text-[11px] uppercase font-bold text-gray-400">Trend Flusso Pedonale</label>
       <ChartSmallMirror
-        v-if="urlId !== 'nuovo'"
         v-model:event="localEvent"
         v-model:zones="zoneList"
-        :class="{
-          'opacity-50 grayscale-[50%] pointer-events-none': isEditing,
-        }"
-      ></ChartSmallMirror>
+        :class="{ 'opacity-50 pointer-events-none': isEditing }"
+      />
     </div>
-    <dialog class="modal" ref="deleteEventModal">
-      <div class="modal-box flex flex-col gap-2 items-center w-fit">
-        <p class="font-bold">Elimina evento?</p>
-        <div class="flex flex-col items-center">
-          <p>Sei sicuro di voler eliminare l'evento?</p>
-          <p>Non puoi annullare l'azione</p>
-        </div>
-        <form class="flex flex-row gap-2 w-full modal-action" method="dialog">
-          <button class="btn btn-primary flex-grow">Annulla</button>
-          <button class="btn btn-error text-white flex-grow" @click="deleteEvent()">
+
+    <!-- Modal Conferma Eliminazione -->
+    <dialog ref="deleteEventModal" class="modal">
+      <div class="modal-box p-5 max-w-sm">
+        <h3 class="font-bold text-base text-error mb-2">Eliminare questo evento?</h3>
+        <p class="text-xs text-gray-500 leading-relaxed mb-4">
+          Sei sicuro di voler eliminare "{{ localEvent.title }}"? Questa operazione non può essere annullata.
+        </p>
+        <div class="flex justify-end gap-2">
+          <button class="btn btn-sm btn-ghost" @click="deleteEventModal?.close()">
+            Annulla
+          </button>
+          <button class="btn btn-sm btn-error text-white font-bold" @click="deleteEvent">
             Elimina
           </button>
-        </form>
+        </div>
       </div>
     </dialog>
   </div>
+
+  <div v-else class="flex flex-col items-center justify-center p-12 text-gray-400 text-xs">
+    <span>Evento non trovato o rimosso.</span>
+  </div>
 </template>
-<style>
-.eventDialog {
-  min-width: 250pt;
-  width: 25vw;
-  max-width: 30vw;
-  max-height: calc(100vh - 1.25rem * 2);
-  overflow: scroll;
-}
-.indicator {
-  @apply w-3 h-3 rounded-full bg-red-500;
-}
+
+<style scoped>
 </style>

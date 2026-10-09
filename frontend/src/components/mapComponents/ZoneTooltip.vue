@@ -58,7 +58,7 @@ onUnmounted(() => {
   <div
     v-if="zone"
     id="tooltip"
-    class="fixed pointer-events-none bg-base-100/90 backdrop-blur-md p-3.5 rounded-box flex flex-col gap-2 shadow-xl border border-base-300 z-50 min-w-56"
+    class="fixed pointer-events-none bg-base-100 p-3.5 rounded-lg flex flex-col gap-2 shadow-xl border border-base-300 z-50 min-w-56"
     ref="tooltip"
   >
     <div class="flex justify-between items-center gap-3">

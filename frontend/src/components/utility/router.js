@@ -1,26 +1,12 @@
 import { createRouter, createWebHistory } from 'vue-router';
 import { API_BASE_URL } from '@/services/apiConfig';
-import Home from '@/components/generalComponents/Home.vue';
-import Login from '@/components/generalComponents/Login.vue';
-import UserView from "@/components/generalComponents/UserView.vue";
-import UserInfo from "@/components/generalComponents/UserInfo.vue";
-import UserManage from "@/components/generalComponents/UserManage.vue";
 import { jwtDecode } from 'jwt-decode';
 
-
-const routes = [
-  {
-    path: '/',
-    name: 'Home',
-    component: Home,
-    meta: { requiresAuth: true } // Protegge questa route
-  },
-  {
-    path: '/login',
-    name: 'Login',
-    component: Login
-  }
-];
+const Home = () => import('@/components/generalComponents/Home.vue');
+const Login = () => import('@/components/generalComponents/Login.vue');
+const UserView = () => import('@/components/generalComponents/UserView.vue');
+const UserInfo = () => import('@/components/generalComponents/UserInfo.vue');
+const UserManage = () => import('@/components/generalComponents/UserManage.vue');
 
 const router = createRouter({
   history: createWebHistory(import.meta.env.BASE_URL),
@@ -37,9 +23,7 @@ const router = createRouter({
       path: "/AreaRiservata", name: "AreaRiservata", component: UserView, children: [
         { path: "info", component: UserInfo , meta: { requiresAuth: true } },
         { path: "manage", component: UserManage, meta: { requiresAuth: true } },
-        
     ]},
-    {path:"/AreaRiservata", redirect:"/AreaRiservata/info"},
     { path: "/:pathMatch(.*)*", name: "NotFound", component: { template: "<h1>404 Page Not Found</h1>" } }
   ]
 });

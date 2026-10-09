@@ -1,276 +1,301 @@
 <script setup>
+import { computed, inject, ref, watch } from "vue";
+import { useRouter, useRoute } from "vue-router";
 import {
   ExclamationTriangleIcon,
   PencilIcon,
-  QuestionMarkCircleIcon,
+  CheckIcon,
   XMarkIcon,
+  CalendarDaysIcon,
 } from "@heroicons/vue/20/solid";
-import { computed, inject, ref, watch } from "vue";
-import router, { authFetch } from "../utility/router";
+import { authFetch } from "../utility/router";
 import { API_BASE_URL as API_URL } from "@/services/apiConfig";
 import ChartSmallMirror from "./ChartSmallMirror.vue";
 
-const zone = defineModel("selectedZone");
-const misurazioni = inject("listaMisurazioni");
-const eventi = inject("listaEventi");
+const props = defineProps({
+  id: {
+    type: String,
+    default: null,
+  },
+});
+
+const emit = defineEmits(["close"]);
+const router = useRouter();
+const route = useRoute();
+
+const listaZone = inject("listaZone", ref([]));
+const misurazioni = inject("listaMisurazioni", ref([]));
+const eventi = inject("listaEventi", ref([]));
 const notyf = inject("notyf");
-const localZone = ref({...zone.value});
-const alert = ref({ active: false, increment_pcent: 0 });
 
+const zoneId = computed(() => {
+  return props.id || route.params.id || route.path.slice(1).split("/")[1] || null;
+});
 
-const eventiZona = ref([]);
+const currentZone = computed(() => {
+  if (!listaZone?.value || !zoneId.value) return null;
+  return listaZone.value.find((z) => String(z._id) === String(zoneId.value)) || null;
+});
 
-function closeCard(){
-  zone.value = null;
-  router.back();
-}
+const localThreshold = ref(100);
+const isEditing = ref(false);
+const isSaving = ref(false);
 
-const eventiAttuali = computed(() => {
+watch(
+  currentZone,
+  (newZone) => {
+    if (newZone) {
+      localThreshold.value = newZone.threshold || 100;
+      isEditing.value = false;
+    }
+  },
+  { immediate: true }
+);
+
+const currentDensity = computed(() => {
+  if (!currentZone.value || !misurazioni.value) return 0;
+  const m = misurazioni.value.find((item) => String(item.zone) === String(currentZone.value._id));
+  return m?.data?.[0]?.density ?? 0;
+});
+
+const saturationPercent = computed(() => {
+  const t = localThreshold.value;
+  if (!t || t <= 0) return 0;
+  return Math.round((currentDensity.value / t) * 100);
+});
+
+const isAlert = computed(() => {
+  return currentDensity.value > localThreshold.value;
+});
+
+const overThresholdPercent = computed(() => {
+  return Math.max(0, saturationPercent.value - 100);
+});
+
+// Eventi attivi in questa specifica zona
+const activeZoneEvents = computed(() => {
+  if (!eventi.value || !currentZone.value) return [];
   const now = new Date();
-  return eventi.value.filter((event) => {
-    const startDate = new Date(event.startDate);
-    const endDate = new Date(event.endDate);
-    return startDate <= now && now <= endDate;
+  return eventi.value.filter((ev) => {
+    const isMatchingZone = Array.isArray(ev.zones) && ev.zones.some((z) => z && String(z._id || z) === String(currentZone.value._id));
+    const s = new Date(ev.startDate);
+    const e = new Date(ev.endDate);
+    return isMatchingZone && s <= now && e >= now;
   });
 });
 
+async function saveThreshold() {
+  if (!currentZone.value) return;
+  try {
+    isSaving.value = true;
+    const response = await authFetch(`${API_URL}/api/zones/${currentZone.value._id}`, {
+      method: "PUT",
+      headers: {
+        "x-access-token": localStorage.getItem("JWT"),
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({ threshold: Number(localThreshold.value) }),
+    });
 
-const getDensity = (zone) => {
-  if(zone)
-  return misurazioni.value.find((m) => m.zone === zone._id)?.data[0]
-    .density;
-};
-if(zone.value){
-  alert.value.active = getDensity(zone.value) > zone.value.threshold;
-  alert.value.increment_pcent = Math.floor(
-  ((getDensity(zone.value) -  zone.value.threshold) /  zone.value.threshold) * 100);
+    if (!response.ok) {
+      throw new Error("Errore durante l'aggiornamento della soglia");
+    }
 
+    currentZone.value.threshold = Number(localThreshold.value);
+    isEditing.value = false;
+    if (notyf) notyf.success("Soglia di sicurezza aggiornata con successo");
+  } catch (err) {
+    if (notyf) notyf.error(err.message);
+  } finally {
+    isSaving.value = false;
+  }
 }
 
-
-watch(
-  zone,
-  (newVal) => {
-    if(newVal === null){
-      localZone.value = null;
-      alert.value.active = false;
-      alert.value.increment_pcent = 0;
-      return;
-    }
-    localZone.value = { ...newVal }; // Aggiorna localZone quando zone cambia
-  
-    alert.value.active = getDensity(newVal) > newVal.threshold;
-    alert.value.increment_pcent = Math.floor(
-    ((getDensity(newVal) - newVal.threshold) / newVal.threshold) * 100);
-    eventiZona.value = eventiAttuali.value.filter((ev) => ev.zones.includes(newVal._id));
-  },
-  
-  { deep: true }
-);
-
-const isEditing = ref(false);
-const isNewEvent = ref(false);
-
-const abortChanges = () => {
+function cancelEdit() {
+  if (currentZone.value) {
+    localThreshold.value = currentZone.value.threshold || 100;
+  }
   isEditing.value = false;
-  localZone.value.threshold = zone.value.threshold;
-};
-const saveChanges = async () => {
-  await authFetch(`${API_URL}/api/zones/${zone.value._id}`, {
-    headers: {
-      "x-access-token": localStorage.getItem("JWT"),
-      "Content-Type": "application/json",
-    },
-    body: JSON.stringify({ threshold: localZone.value.threshold }),
-    method: "PUT",
-  })
-    .then((res) => {
-      if (!res.ok) {
-        throw new Error("errore nel modificare la zona");
-      }
-      return res;
-    })
-    .then(() => {
-      zone.value.threshold = localZone.value.threshold;
-      alert.value.active = getDensity(zone.value) > zone.value.threshold;
-      alert.value.increment_pcent = Math.floor(
-        ((getDensity(zone.value) - zone.value.threshold) / zone.value.threshold) * 100
-      );
-    });
-  isEditing.value = false;
-};
+}
 
-const thresholdInput = ref(null);
-const thresholdDialog = ref(null);
-
-function segnalaAllerta() {
-  if (notyf) {
-    notyf.success(`Allerta per ${localZone.value?.name || "la zona"} presa in carico.`);
+function acknowledgeAlert() {
+  if (notyf && currentZone.value) {
+    notyf.success(`Allerta per ${currentZone.value.name} registrata e notificata alla sala operativa.`);
   }
 }
 </script>
+
 <template>
-  <div
-    class="dialog flex flex-col bg-base-100 p-5 rounded-box gap-5 shadow-md"
-    v-if="localZone"
-  >
-    <div
-      class="flex flex-row justify-end gap-2 bg-base-100"
-      v-if="!isEditing && !isNewEvent"
-    >
-      <!-- Chiudi card zona -->
-      <button class="btn btn-square btn-sm" @click="closeCard">
-        <XMarkIcon class="size-4"></XMarkIcon>
-      </button>
-    </div>
-    <div class="flex flex-row justify-end gap-2" v-else>
-      <!-- Annulla modifiche -->
-      <button class="btn btn-sm btn-error text-white" @click="abortChanges">
-        Annulla
-      </button>
-      <!-- Salva modifiche -->
-      <button
-        class="btn btn-sm btn-primary"
-        :disabled="JSON.stringify(zone) === JSON.stringify(localZone)"
-        @click="saveChanges"
-      >
-        Salva
-      </button>
-    </div>
-    <!-- Titolo evento -->
-    <span class="font-bold card-title w-full">{{ localZone.name }} </span>
-    <!-- Limite e modifica limite -->
-    <div class="flex flex-row items-align gap-2">
-      <div class="btn-sm bg-base-200 rounded-md flex items-center gap-1">
-        <QuestionMarkCircleIcon
-          class="size-4"
-          @click="thresholdDialog.showModal()"
-        ></QuestionMarkCircleIcon>
-        <span>Limite:</span>
+  <div v-if="currentZone" class="flex flex-col gap-4 w-full">
+    <!-- Header Zona -->
+    <div class="flex items-center justify-between pb-3 border-b border-base-300">
+      <div>
+        <h2 class="text-lg font-bold text-base-content leading-tight">{{ currentZone.name }}</h2>
+        <span class="text-xs text-gray-500 font-mono">ID Settore: {{ currentZone._id }}</span>
       </div>
-      <input
-        v-model="localZone.threshold"
-        ref="thresholdInput"
-        type="number"
-        pattern="[1-9][0-9]*"
-        class="btn-sm bg-transparent w-full outline-none border-[1px] rounded-md"
-        :class="{
-          'text-primary border-primary': isEditing,
-        }"
-        :disabled="!isEditing"
-        placeholder="imposta un valore"
-      />
-      <button
-        v-if="!isEditing"
-        class="btn btn-sm btn-square btn-primary btn-outline"
-        @click="
-          () => {
-            isEditing = true;
-            $nextTick(() => {
-              thresholdInput.focus();
-            });
-          }
-        "
+
+      <span
+        v-if="isAlert"
+        class="badge badge-error text-white font-bold gap-1 text-xs py-3 px-2.5 animate-pulse"
       >
-        <PencilIcon class="size-4"></PencilIcon>
-      </button>
+        <ExclamationTriangleIcon class="size-4" />
+        ALLERTA
+      </span>
+      <span
+        v-else
+        class="badge badge-success text-white font-semibold text-xs py-3 px-2.5"
+      >
+        REGOLARE
+      </span>
     </div>
-    <!-- Card dati SENZA allerta -->
-    <p>
-      All'ultima rilevazione, il numero di pedoni rilevati in
-      {{ localZone.name }} è stato di
-      <span class="font-semibold">{{ getDensity(localZone) }}</span
-      >.
-    </p>
-    <!-- Card allerta -->
-    <div
-      v-if="alert && alert.active"
-      class="bg-red-500 text-white rounded-box p-5 flex flex-col gap-4"
-      :class="{
-        unfocus: isEditing,
-      }"
-    >
-      <ExclamationTriangleIcon class="size-10"></ExclamationTriangleIcon>
-      <p>
-        Il numero di pedoni rilevati
-        in {{ localZone.name }} è stato superiore al limite impostato di
-        {{ zone.threshold }}.
-      </p>
-      <div class="flex flex-row justify-between">
-        <span class="stat-value"
-          >{{ getDensity(localZone) }}<span class="text-sm">pedoni</span></span
+
+    <!-- Griglia KPI (3 Colonne) -->
+    <div class="grid grid-cols-3 gap-2">
+      <!-- KPI 1: Densità Rilevata -->
+      <div class="bg-base-200/70 border border-base-300 rounded-xl p-3 flex flex-col items-center text-center">
+        <span class="text-[10px] uppercase font-bold text-gray-400">Rilevati</span>
+        <span class="text-xl font-bold font-mono text-base-content mt-0.5">
+          {{ currentDensity }}
+        </span>
+        <span class="text-[10px] text-gray-500">pedoni/m²</span>
+      </div>
+
+      <!-- KPI 2: Soglia Attuale -->
+      <div class="bg-base-200/70 border border-base-300 rounded-xl p-3 flex flex-col items-center text-center">
+        <span class="text-[10px] uppercase font-bold text-gray-400">Soglia Max</span>
+        <span class="text-xl font-bold font-mono text-base-content mt-0.5">
+          {{ currentZone.threshold }}
+        </span>
+        <span class="text-[10px] text-gray-500">limite</span>
+      </div>
+
+      <!-- KPI 3: Saturazione Capacità -->
+      <div class="bg-base-200/70 border border-base-300 rounded-xl p-3 flex flex-col items-center text-center">
+        <span class="text-[10px] uppercase font-bold text-gray-400">Saturazione</span>
+        <span
+          class="text-xl font-bold font-mono mt-0.5"
+          :class="isAlert ? 'text-error' : saturationPercent > 70 ? 'text-warning' : 'text-success'"
         >
-        <span class="stat-value">+{{ alert.increment_pcent }}%</span>
+          {{ saturationPercent }}%
+        </span>
+        <span class="text-[10px] text-gray-500">capacità</span>
       </div>
+    </div>
+
+    <!-- Banner Critico Allerta (se attivo) -->
+    <div
+      v-if="isAlert"
+      class="bg-error/15 border border-error/40 text-error-content rounded-xl p-4 flex flex-col gap-2.5"
+    >
+      <div class="flex items-center gap-2">
+        <ExclamationTriangleIcon class="size-5 text-error shrink-0" />
+        <span class="font-bold text-xs text-error">
+          Soglia superata del +{{ overThresholdPercent }}%
+        </span>
+      </div>
+      <p class="text-xs text-gray-700 dark:text-gray-300 leading-relaxed">
+        L'affluenza istantanea supera la capacità massima consentita per {{ currentZone.name }}.
+      </p>
       <button
-        class="btn border-none bg-red-700 hover:bg-red-800 text-white"
-        @click="segnalaAllerta"
+        class="btn btn-sm btn-error text-white font-bold w-full shadow-sm"
+        @click="acknowledgeAlert"
       >
-        Segnala presa in carico
+        Protocolla Presa in Carico
       </button>
     </div>
-    <!-- Grafico storico ultime 24h -->
-    <ChartSmallMirror
-      v-model:zone="localZone"
-      :class="{
-        'opacity-50 grayscale-[50%] pointer-events-none': isEditing,
-      }"
-    ></ChartSmallMirror>
-    <!-- Lista eventi -->
-    <div
-      class="flex flex-col gap-2 p-3 bg-base-200 rounded-box items-center"
-      :class="{
-        unfocus: isEditing, 
-      }"
-    >
-      <a
-        v-for="event in eventiZona"
-        class="btn btn-sm bg-base-100 justify-between w-full"
-      >
-        <span @click="$router.push(`/Eventi/${event._id}`)"> {{ event.title }}</span>
-        <div v-if="event.isCurrent" class="indicator relative">
-          <div class="indicator absolute top-0 left-0 animate-ping"></div>
+
+    <!-- Editor Rapido Soglia di Sicurezza -->
+    <div class="bg-base-200/60 border border-base-300 rounded-xl p-3.5 flex flex-col gap-2.5">
+      <div class="flex items-center justify-between">
+        <span class="text-xs font-bold text-base-content">Regola Soglia di Sicurezza</span>
+        <button
+          v-if="!isEditing"
+          @click="isEditing = true"
+          class="btn btn-ghost btn-xs text-primary gap-1"
+        >
+          <PencilIcon class="size-3" />
+          <span>Modifica</span>
+        </button>
+      </div>
+
+      <div v-if="isEditing" class="flex flex-col gap-2.5 pt-1">
+        <div class="flex items-center gap-3">
+          <input
+            type="range"
+            min="20"
+            max="300"
+            step="5"
+            v-model="localThreshold"
+            class="range range-xs range-primary flex-1"
+          />
+          <span class="font-mono font-bold text-sm text-primary w-12 text-right">
+            {{ localThreshold }}
+          </span>
         </div>
-      </a>
-      <small
-        v-if="!eventiZona || eventiZona.length <= 0"
-        class="text-gray-500"
-      >
-        Nessun evento in corso nella zona
-      </small>
+
+        <div class="flex justify-between items-center text-[11px] text-gray-500 font-mono">
+          <span>Nuova saturazione stimata:</span>
+          <span :class="currentDensity > localThreshold ? 'text-error font-bold' : 'text-success font-bold'">
+            {{ Math.round((currentDensity / localThreshold) * 100) }}%
+          </span>
+        </div>
+
+        <div class="flex items-center justify-end gap-2 pt-1">
+          <button
+            class="btn btn-xs btn-ghost"
+            @click="cancelEdit"
+            :disabled="isSaving"
+          >
+            Annulla
+          </button>
+          <button
+            class="btn btn-xs btn-primary text-white gap-1"
+            @click="saveThreshold"
+            :disabled="isSaving || Number(localThreshold) === Number(currentZone.threshold)"
+          >
+            <CheckIcon class="size-3" />
+            <span>{{ isSaving ? 'Salvataggio...' : 'Conferma' }}</span>
+          </button>
+        </div>
+      </div>
+      <div v-else class="text-xs text-gray-500">
+        Limite attuale: <strong class="text-base-content font-mono">{{ currentZone.threshold }}</strong> pedoni.
+      </div>
+    </div>
+
+    <!-- Grafico Storico Temporale (Ultime 24h) -->
+    <div class="flex flex-col gap-1.5">
+      <ChartSmallMirror v-model:zone="currentZone" />
+    </div>
+
+    <!-- Eventi Associati alla Zona -->
+    <div class="flex flex-col gap-2">
+      <div class="flex items-center gap-1.5 text-xs font-bold text-base-content">
+        <CalendarDaysIcon class="size-4 text-primary" />
+        <span>Eventi in Corso nel Settore</span>
+      </div>
+
+      <div v-if="activeZoneEvents.length > 0" class="flex flex-col gap-1.5">
+        <div
+          v-for="ev in activeZoneEvents"
+          :key="ev._id"
+          @click="router.push(`/Eventi/${ev._id}`)"
+          class="p-2.5 rounded-lg border border-base-300 bg-base-100 hover:bg-base-200 cursor-pointer flex items-center justify-between text-xs"
+        >
+          <span class="font-semibold text-base-content">{{ ev.title }}</span>
+          <span class="badge badge-info badge-xs text-white">Live</span>
+        </div>
+      </div>
+      <div v-else class="text-[11px] text-gray-400 italic bg-base-200/40 p-2.5 rounded-lg text-center">
+        Nessun evento culturale o pubblico programmato al momento in questo settore.
+      </div>
     </div>
   </div>
-  <dialog class="modal" ref="thresholdDialog">
-    <div class="modal-box flex flex-col gap-2 w-fit">
-      <form class="flex flex-row justify-end gap-2" method="dialog">
-        <button class="btn btn-circle btn-sm">
-          <XMarkIcon class="size-4"></XMarkIcon>
-        </button>
-      </form>
-      <h2 class="card-title">Cos'è un'allerta? Cos'è un limite?</h2>
-      <p>
-        L'applicazione UrbanFlow permette di impostare un limite di pedoni per
-        ogni zona, oltre il quale viene generata un'allerta.
-      </p>
-      <p>
-        L'allerta può segnalare un'affluenza improvvisa, specialmente quando
-        alla zona in esame non è associato nessun evento attualmente in corso.
-      </p>
-    </div>
-  </dialog>
+
+  <div v-else class="flex flex-col items-center justify-center p-12 text-gray-400 text-xs">
+    <span>Caricamento dati della zona in corso...</span>
+  </div>
 </template>
-<style>
-.dialog {
-  min-width: 250pt;
-  width: 25vw;
-  max-width: 30vw;
-  max-height: calc(100vh - 1.25rem * 2);
-  overflow-y: scroll;
-}
-.indicator {
-  @apply w-2 h-2 bg-primary rounded-full;
-}
-.unfocus {
-  @apply opacity-30 pointer-events-none;
-}
+
+<style scoped>
 </style>
