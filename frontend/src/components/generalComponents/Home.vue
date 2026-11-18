@@ -388,7 +388,7 @@ watch([appSection, currentId], () => {
       <div
         v-if="appSection === 'Mappa' && isSearchDrawerOpen"
         id="appleSearchCard"
-        class="hidden md:flex flex-col w-[390px] h-full bg-base-100/70 backdrop-blur-2xl uf-apple-card-shadow border-r border-base-300/60 pointer-events-auto p-5 gap-4 overflow-y-auto"
+        class="hidden md:flex flex-col w-[390px] h-full flex-1 bg-base-100/70 backdrop-blur-2xl uf-apple-card-shadow border-r border-base-300/60 pointer-events-auto p-5 gap-4 overflow-y-auto"
       >
         <div class="flex items-center justify-between">
           <h2 class="text-xl font-bold tracking-tight">Cerca</h2>
@@ -413,7 +413,8 @@ watch([appSection, currentId], () => {
 
     <!-- Contenitore pannelli Zone/Eventi (drawer laterale full-height su desktop, bottom sheet su mobile) -->
     <div
-      class="fixed bottom-3 inset-x-3 md:static pointer-events-auto flex flex-col-reverse md:flex-col gap-2 md:gap-0 bg-base-100/95 md:bg-transparent backdrop-blur-xl md:backdrop-blur-none border border-base-300/80 md:border-none rounded-[18px] md:rounded-none uf-panel-shadow md:shadow-none p-2 md:p-0 md:h-full"
+      class="fixed bottom-3 inset-x-3 md:static pointer-events-auto flex flex-col-reverse md:flex-col gap-2 md:gap-0 bg-base-100/95 md:bg-transparent backdrop-blur-xl md:backdrop-blur-none border border-base-300/80 md:border-none rounded-[18px] md:rounded-none uf-panel-shadow md:shadow-none p-2 md:p-0"
+      :class="appSection === 'Mappa' ? 'md:hidden' : 'md:h-full'"
     >
       <div id="rootBox" class="w-full md:hidden">
         <SectionsBar v-model="appSection" />
