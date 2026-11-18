@@ -19,6 +19,7 @@ const event = ref(null);
 const localEvent = ref({});
 
 function initEventFromUrl() {
+  if (!urlId.value) return;
   if (urlId.value === "nuovo") {
     event.value = {
       title: "",
@@ -167,7 +168,6 @@ async function deleteEvent() {
 }
 
 function closeEvent() {
-  event.value = null;
   isEditing.value = false;
   router.push("/Eventi");
 }

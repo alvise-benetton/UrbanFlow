@@ -24,8 +24,10 @@ const thresholdDialog = ref(null);
 watch(
   zone,
   (newVal) => {
-    localZone.value = newVal ? { ...newVal } : null;
-    isEditing.value = false;
+    if (newVal) {
+      localZone.value = { ...newVal };
+      isEditing.value = false;
+    }
   },
   { deep: true }
 );
@@ -67,7 +69,6 @@ const alert = computed(() => {
 });
 
 function closeCard() {
-  zone.value = null;
   router.push("/Zone");
 }
 
@@ -124,10 +125,11 @@ function reportAlert() {
 </script>
 
 <template>
-  <div
-    class="w-full md:w-80 lg:w-96 max-h-[58dvh] md:max-h-[calc(100vh-2.5rem)] overflow-y-auto flex flex-col bg-base-100 p-4 sm:p-5 rounded-box gap-4 shadow-md"
-    v-if="localZone"
-  >
+  <div>
+    <div
+      class="w-full md:w-80 lg:w-96 max-h-[58dvh] md:max-h-[calc(100vh-2.5rem)] overflow-y-auto flex flex-col bg-base-100 p-4 sm:p-5 rounded-box gap-4 shadow-md"
+      v-if="localZone"
+    >
     <div
       class="flex flex-row justify-end gap-2 bg-base-100"
       v-if="!isEditing"
@@ -272,6 +274,7 @@ function reportAlert() {
       </p>
     </div>
   </dialog>
+  </div>
 </template>
 
 <style scoped>
