@@ -195,28 +195,29 @@ function reportAlert() {
       </div>
 
       <!-- Azioni principali e modifica limite inline -->
-      <div v-if="!isEditing" class="flex flex-wrap items-center gap-2">
+      <div v-if="!isEditing" class="flex items-center gap-2">
         <button
           v-if="alert.active"
           type="button"
-          class="btn btn-sm h-auto min-h-10 py-2.5 px-3.5 btn-error text-white flex-1 touch-manipulation"
+          class="btn h-10 min-h-10 px-3.5 rounded-lg btn-error text-white flex-1 inline-flex items-center justify-center gap-1.5 text-sm font-medium whitespace-nowrap touch-manipulation"
+          aria-label="Segnala superamento limite"
+          title="Segnala superamento limite"
           @click="reportAlert"
         >
-          Segnala alla centrale
+          Segnala
         </button>
         <button
           type="button"
-          class="btn btn-sm h-auto min-h-10 py-2.5 px-3.5 btn-outline border-base-300 gap-1.5 touch-manipulation"
-          :class="{ 'flex-1': !alert.active }"
+          class="btn h-10 min-h-10 px-3.5 rounded-lg btn-outline border-base-300 flex-1 inline-flex items-center justify-center gap-1.5 text-sm font-medium whitespace-nowrap touch-manipulation"
           aria-label="Modifica limite"
           @click="startEditing"
         >
-          <PencilIcon class="size-3.5" />
+          <PencilIcon class="size-3.5 shrink-0" />
           <span>Modifica limite</span>
         </button>
         <button
           type="button"
-          class="btn btn-square h-auto min-h-10 w-10 btn-ghost text-base-content/60 touch-manipulation"
+          class="btn btn-square h-10 min-h-10 w-10 shrink-0 rounded-lg btn-ghost border border-base-300 text-base-content/70 inline-flex items-center justify-center touch-manipulation"
           aria-label="Informazioni su limite e allerta"
           @click="thresholdDialog.showModal()"
         >
@@ -233,12 +234,12 @@ function reportAlert() {
             ref="thresholdInput"
             type="number"
             min="1"
-            class="input input-sm input-bordered w-full text-base md:text-sm tabular-nums bg-base-100"
+            class="input input-bordered h-10 min-h-10 w-full text-base md:text-sm tabular-nums bg-base-100"
             placeholder="Imposta un valore"
           />
           <button
             type="button"
-            class="btn btn-sm h-auto min-h-10 py-2.5 px-3.5 btn-primary text-white shrink-0"
+            class="btn h-10 min-h-10 px-3.5 rounded-lg btn-primary text-white text-sm font-medium whitespace-nowrap shrink-0"
             :disabled="Number(zone?.threshold) === Number(localZone?.threshold)"
             @click="saveChanges"
           >
@@ -246,7 +247,7 @@ function reportAlert() {
           </button>
           <button
             type="button"
-            class="btn btn-sm h-auto min-h-10 py-2.5 px-3.5 btn-ghost shrink-0"
+            class="btn h-10 min-h-10 px-3.5 rounded-lg btn-ghost border border-base-300 text-sm font-medium whitespace-nowrap shrink-0"
             @click="abortChanges"
           >
             Annulla
