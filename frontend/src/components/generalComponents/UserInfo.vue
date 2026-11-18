@@ -80,7 +80,7 @@ async function cambiaPass() {
             {{ user?.name }} {{ user?.surname }}
           </span>
           <span
-            class="badge badge-sm font-medium w-fit mt-1"
+            class="badge h-auto py-1 px-2.5 font-medium text-xs w-fit mt-1.5"
             :class="user?.role == 'admin' ? 'badge-primary text-white' : 'badge-neutral'"
           >
             {{ user?.role == "admin" ? "Amministratore" : "Operatore base" }}
@@ -114,7 +114,7 @@ async function cambiaPass() {
     <button
       type="button"
       @click="pswModal?.showModal()"
-      class="btn btn-primary text-white w-fit touch-manipulation"
+      class="btn h-auto min-h-11 py-2.5 px-5 btn-primary text-white w-fit touch-manipulation"
     >
       Cambia password
     </button>

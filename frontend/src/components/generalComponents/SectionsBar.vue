@@ -45,7 +45,7 @@ const openAlertsTab = () => {
       <button
         type="button"
         :class="{ active: section.name === model }"
-        class="cursor-pointer min-h-10 px-3 sm:px-4 transition-transform active:scale-95 flex items-center gap-1.5 font-medium"
+        class="cursor-pointer h-auto min-h-11 py-2.5 px-4 transition-transform active:scale-95 flex items-center gap-2 font-medium"
         :aria-current="section.name === model ? 'page' : undefined"
         @click="setActive(section.name)"
       >
@@ -55,7 +55,7 @@ const openAlertsTab = () => {
           v-if="section.name === 'Zone' && activeAlertsCount > 0"
           role="button"
           tabindex="0"
-          class="badge badge-error badge-xs text-white font-bold cursor-pointer hover:scale-110 transition-transform tabular-nums"
+          class="badge h-auto py-0.5 px-2 badge-error text-white font-bold cursor-pointer hover:scale-110 transition-transform tabular-nums"
           title="Vai alle allerte attive"
           :aria-label="`Vai alle ${activeAlertsCount} allerte attive`"
           @click.stop="openAlertsTab"

@@ -166,12 +166,14 @@ function reportAlert() {
           </div>
           <span
             v-if="alert.active"
-            class="badge badge-error text-white font-semibold tabular-nums"
+            class="badge h-auto py-1.5 px-3 gap-1.5 badge-error text-white font-semibold tabular-nums"
           >
-            Oltre il limite · +{{ alert.increment_pcent }}%
+            <span class="w-2 h-2 rounded-full bg-white/90 shrink-0"></span>
+            <span>Oltre il limite · +{{ alert.increment_pcent }}%</span>
           </span>
-          <span v-else class="badge badge-ghost text-base-content/70">
-            Nella norma
+          <span v-else class="badge h-auto py-1.5 px-3 gap-1.5 badge-ghost text-base-content/70">
+            <span class="w-2 h-2 rounded-full bg-success shrink-0"></span>
+            <span>Nella norma</span>
           </span>
         </div>
 
@@ -197,14 +199,14 @@ function reportAlert() {
         <button
           v-if="alert.active"
           type="button"
-          class="btn btn-sm btn-error text-white flex-1 touch-manipulation"
+          class="btn btn-sm h-auto min-h-10 py-2.5 px-3.5 btn-error text-white flex-1 touch-manipulation"
           @click="reportAlert"
         >
           Segnala alla centrale
         </button>
         <button
           type="button"
-          class="btn btn-sm btn-outline border-base-300 gap-1.5 touch-manipulation"
+          class="btn btn-sm h-auto min-h-10 py-2.5 px-3.5 btn-outline border-base-300 gap-1.5 touch-manipulation"
           :class="{ 'flex-1': !alert.active }"
           aria-label="Modifica limite"
           @click="startEditing"
@@ -214,7 +216,7 @@ function reportAlert() {
         </button>
         <button
           type="button"
-          class="btn btn-sm btn-square btn-ghost text-base-content/60 touch-manipulation"
+          class="btn btn-square h-auto min-h-10 w-10 btn-ghost text-base-content/60 touch-manipulation"
           aria-label="Informazioni su limite e allerta"
           @click="thresholdDialog.showModal()"
         >
@@ -236,13 +238,17 @@ function reportAlert() {
           />
           <button
             type="button"
-            class="btn btn-sm btn-primary text-white shrink-0"
+            class="btn btn-sm h-auto min-h-10 py-2.5 px-3.5 btn-primary text-white shrink-0"
             :disabled="Number(zone?.threshold) === Number(localZone?.threshold)"
             @click="saveChanges"
           >
             Salva
           </button>
-          <button type="button" class="btn btn-sm btn-ghost shrink-0" @click="abortChanges">
+          <button
+            type="button"
+            class="btn btn-sm h-auto min-h-10 py-2.5 px-3.5 btn-ghost shrink-0"
+            @click="abortChanges"
+          >
             Annulla
           </button>
         </div>

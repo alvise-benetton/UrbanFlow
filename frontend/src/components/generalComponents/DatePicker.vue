@@ -53,14 +53,15 @@ const eventStatus = computed(() => {
       </div>
       <span
         v-if="eventStatus"
-        class="badge badge-xs font-semibold shrink-0"
+        class="badge h-auto py-1 px-2.5 gap-1.5 text-xs font-semibold shrink-0"
         :class="eventStatus.badgeClass"
       >
-        {{ eventStatus.label }}
+        <span class="w-1.5 h-1.5 rounded-full bg-current opacity-85 shrink-0"></span>
+        <span>{{ eventStatus.label }}</span>
       </span>
     </div>
     <div class="grid grid-cols-[auto_1fr] items-center gap-2 w-full">
-      <span class="bg-base-200 rounded-md px-2.5 py-1.5 text-xs font-semibold text-center">
+      <span class="bg-base-200 rounded-md px-2.5 py-2 text-xs font-semibold text-center">
         Inizio:
       </span>
       <input
@@ -77,12 +78,12 @@ const eventStatus = computed(() => {
       />
       <span
         v-else
-        class="bg-base-200/80 border border-base-300 rounded-lg px-3 py-1.5 text-xs tabular-nums flex items-center justify-center w-full"
+        class="bg-base-200/80 border border-base-300 rounded-lg px-3 py-2 text-xs tabular-nums flex items-center justify-center w-full"
       >
         {{ changeDateFormat(event.startDate) }}
       </span>
 
-      <span class="bg-base-200 rounded-md px-2.5 py-1.5 text-xs font-semibold text-center">
+      <span class="bg-base-200 rounded-md px-2.5 py-2 text-xs font-semibold text-center">
         Fine:
       </span>
       <input
@@ -95,7 +96,7 @@ const eventStatus = computed(() => {
       />
       <span
         v-else
-        class="bg-base-200/80 border border-base-300 rounded-lg px-3 py-1.5 text-xs tabular-nums flex items-center justify-center w-full"
+        class="bg-base-200/80 border border-base-300 rounded-lg px-3 py-2 text-xs tabular-nums flex items-center justify-center w-full"
       >
         {{ changeDateFormat(event.endDate) }}
       </span>

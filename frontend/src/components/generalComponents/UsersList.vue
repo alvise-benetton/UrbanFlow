@@ -80,7 +80,7 @@ const deleteDialog = ref(null);
               {{ user.name }} {{ user.surname }}
             </h2>
             <span
-              class="badge badge-success badge-sm text-white font-medium shrink-0"
+              class="badge h-auto py-1 px-2.5 badge-success text-white text-xs font-medium shrink-0"
               v-if="user._id === myID"
             >
               Sei tu
@@ -91,7 +91,7 @@ const deleteDialog = ref(null);
           </h3>
           <div class="flex flex-row gap-1 mt-2">
             <span
-              class="badge badge-sm p-2.5 text-xs font-medium"
+              class="badge h-auto py-1 px-2.5 text-xs font-medium"
               :class="user.role === 'admin' ? 'badge-primary text-white' : 'badge-neutral'"
             >
               {{ user.role === "admin" ? "Amministratore" : "Operatore base" }}

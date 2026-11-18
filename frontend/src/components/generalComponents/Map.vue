@@ -462,13 +462,13 @@ onUnmounted(() => {
       </button>
     </div>
     <div
-      class="flex items-end gap-2 fixed bottom-20 left-3 md:bottom-5 md:left-5 z-10"
+      class="flex items-end gap-2.5 fixed bottom-20 left-3 md:bottom-5 md:left-5 z-10"
       :class="{ 'max-md:hidden': hasOpenPanel }"
     >
       <ZoomPane v-model="zoomLevel" @reset="resetView"></ZoomPane>
       <button
         type="button"
-        class="sm:hidden btn btn-sm btn-square bg-base-100/95 border border-base-300 uf-panel-shadow touch-manipulation"
+        class="sm:hidden btn btn-square min-h-10 h-10 w-10 bg-base-100/95 border border-base-300 uf-panel-shadow touch-manipulation"
         :class="{ 'btn-primary text-white border-primary': showMobileLegend }"
         aria-label="Mostra legenda densità"
         :aria-expanded="showMobileLegend"
@@ -477,15 +477,15 @@ onUnmounted(() => {
         <InformationCircleIcon class="size-4" />
       </button>
       <div
-        class="items-center gap-2 sm:gap-2.5 flex-wrap max-w-[70vw] sm:max-w-none bg-base-100/95 backdrop-blur px-3 py-2 rounded-box uf-panel-shadow border border-base-300 text-xs text-base-content/85 select-none tabular-nums"
+        class="items-center gap-3 flex-wrap max-w-[72vw] sm:max-w-none bg-base-100/95 backdrop-blur px-3.5 py-2.5 sm:py-3 rounded-box uf-panel-shadow border border-base-300 text-xs text-base-content/85 select-none tabular-nums"
         :class="showMobileLegend ? 'flex' : 'hidden sm:flex'"
         aria-label="Legenda densità"
       >
-        <span class="flex items-center gap-1"><span class="w-2.5 h-2.5 rounded-full bg-[#2feb0e]"></span>&lt;50%</span>
-        <span class="flex items-center gap-1"><span class="w-2.5 h-2.5 rounded-full bg-[#83f30d]"></span>50–70%</span>
-        <span class="flex items-center gap-1"><span class="w-2.5 h-2.5 rounded-full bg-[#ffef02]"></span>70–100%</span>
-        <span class="flex items-center gap-1"><span class="w-2.5 h-2.5 rounded-full bg-[#ff7900]"></span>100–150%</span>
-        <span class="flex items-center gap-1"><span class="w-2.5 h-2.5 rounded-full bg-[#ff0000]"></span>≥150%</span>
+        <span class="flex items-center gap-1.5 py-0.5"><span class="w-3 h-3 rounded-full bg-[#2feb0e]"></span>&lt;50%</span>
+        <span class="flex items-center gap-1.5 py-0.5"><span class="w-3 h-3 rounded-full bg-[#83f30d]"></span>50–70%</span>
+        <span class="flex items-center gap-1.5 py-0.5"><span class="w-3 h-3 rounded-full bg-[#ffef02]"></span>70–100%</span>
+        <span class="flex items-center gap-1.5 py-0.5"><span class="w-3 h-3 rounded-full bg-[#ff7900]"></span>100–150%</span>
+        <span class="flex items-center gap-1.5 py-0.5"><span class="w-3 h-3 rounded-full bg-[#ff0000]"></span>≥150%</span>
       </div>
     </div>
     <ZoneTooltip

@@ -106,7 +106,7 @@ function setEvent(ev) {
               :key="ev._id"
               type="button"
               @click="setEvent(ev)"
-              class="btn h-auto py-2.5 px-3 bg-base-100 border border-base-300/80 justify-start text-left touch-manipulation"
+              class="btn h-auto py-3 px-3.5 bg-base-100 border border-base-300/80 justify-start text-left touch-manipulation"
             >
               <div class="flex flex-col items-start min-w-0 w-full gap-0.5">
                 <span class="truncate w-full font-medium text-sm">{{ ev.title }}</span>

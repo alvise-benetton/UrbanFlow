@@ -215,12 +215,12 @@ function closeEvent() {
           </button>
         </div>
         <div class="flex flex-row items-center gap-1.5 shrink-0" v-else>
-          <button type="button" class="btn btn-sm btn-ghost" @click="abortChanges()">
+          <button type="button" class="btn btn-sm h-auto min-h-9 py-2 px-3 btn-ghost" @click="abortChanges()">
             Annulla
           </button>
           <button
             type="button"
-            class="btn btn-sm btn-primary text-white"
+            class="btn btn-sm h-auto min-h-9 py-2 px-3 btn-primary text-white"
             :disabled="(urlId !== 'nuovo' && JSON.stringify(event) === JSON.stringify(localEvent)) || !localEvent.title?.trim()"
             @click="saveChanges()"
           >
@@ -229,12 +229,14 @@ function closeEvent() {
         </div>
       </div>
 
-      <div class="flex flex-row gap-2 items-center" v-if="isCurrent">
-        <div class="relative flex items-center justify-center">
-          <div class="indicator absolute opacity-75 animate-ping"></div>
-          <div class="indicator scale-75"></div>
-        </div>
-        <span class="text-error text-xs font-semibold">Evento in corso</span>
+      <div v-if="isCurrent" class="flex items-center">
+        <span class="badge h-auto py-1 px-2.5 gap-1.5 badge-error text-white text-xs font-semibold">
+          <span class="relative flex items-center justify-center">
+            <span class="w-2 h-2 rounded-full bg-white/80 absolute animate-ping"></span>
+            <span class="w-2 h-2 rounded-full bg-white"></span>
+          </span>
+          <span>Evento in corso</span>
+        </span>
       </div>
 
       <!-- Zone evento -->
@@ -271,7 +273,7 @@ function closeEvent() {
       >
         <button
           type="button"
-          class="btn btn-sm btn-ghost text-error hover:bg-error/10 w-full justify-center gap-1.5 touch-manipulation"
+          class="btn btn-sm h-auto min-h-10 py-2.5 px-3.5 btn-ghost text-error hover:bg-error/10 w-full justify-center gap-1.5 touch-manipulation"
           aria-label="Elimina evento"
           @click="deleteEventModal?.showModal()"
         >

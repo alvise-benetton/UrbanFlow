@@ -121,7 +121,7 @@ watch(
           <li>
             <button
               type="button"
-              class="text-base-content/60 min-h-9 touch-manipulation"
+              class="text-base-content/60 h-auto min-h-10 py-2 px-3.5 touch-manipulation"
               :class="{ active: inFocus.zones }"
               @click="changeFocusedList(true, false)"
             >
@@ -131,14 +131,14 @@ watch(
           <li>
             <button
               type="button"
-              class="text-base-content/60 min-h-9 flex items-center gap-1.5 touch-manipulation"
+              class="text-base-content/60 h-auto min-h-10 py-2 px-3.5 flex items-center gap-1.5 touch-manipulation"
               :class="{ active: inFocus.alerts }"
               @click="changeFocusedList(false, true)"
             >
               <span>Allerte</span>
               <span
                 v-if="alertList.length > 0"
-                class="badge badge-error badge-xs text-white font-bold"
+                class="badge h-auto py-0.5 px-2 badge-error text-white font-bold tabular-nums"
               >
                 {{ alertList.length }}
               </span>
@@ -152,10 +152,10 @@ watch(
           class="flex items-center justify-between gap-2 text-xs"
         >
           <span class="text-base-content/60">Ordina:</span>
-          <div class="flex gap-1 bg-base-100 rounded-lg p-0.5">
+          <div class="flex gap-1 bg-base-100 rounded-lg p-1">
             <button
               type="button"
-              class="btn btn-xs border-none"
+              class="btn btn-xs h-auto min-h-8 py-1.5 px-2.5 border-none"
               :class="sortBy === 'name' ? 'btn-primary text-white' : 'btn-ghost text-base-content/70'"
               @click="sortBy = 'name'"
             >
@@ -163,7 +163,7 @@ watch(
             </button>
             <button
               type="button"
-              class="btn btn-xs border-none"
+              class="btn btn-xs h-auto min-h-8 py-1.5 px-2.5 border-none"
               :class="sortBy === 'density' ? 'btn-primary text-white' : 'btn-ghost text-base-content/70'"
               @click="sortBy = 'density'"
             >
@@ -171,7 +171,7 @@ watch(
             </button>
             <button
               type="button"
-              class="btn btn-xs border-none"
+              class="btn btn-xs h-auto min-h-8 py-1.5 px-2.5 border-none"
               :class="sortBy === 'ratio' ? 'btn-primary text-white' : 'btn-ghost text-base-content/70'"
               @click="sortBy = 'ratio'"
             >
@@ -191,7 +191,7 @@ watch(
             v-for="zone in filteredZones"
             :key="zone._id"
             type="button"
-            class="btn h-auto py-2.5 px-3 bg-base-100 border border-base-300/80 w-full flex items-center justify-between gap-2.5 touch-manipulation"
+            class="btn h-auto py-3 px-3.5 bg-base-100 border border-base-300/80 w-full flex items-center justify-between gap-2.5 touch-manipulation"
             @click="goToZone(zone._id)"
           >
             <div class="flex flex-col flex-1 min-w-0 gap-1.5 text-left">
@@ -217,7 +217,7 @@ watch(
             </div>
             <span
               v-if="getDensity(zone._id) !== null && getDensity(zone._id) > zone.threshold"
-              class="badge badge-error badge-sm text-white shrink-0"
+              class="badge h-auto py-1 px-2 badge-error text-white shrink-0"
             >
               <ExclamationTriangleIcon class="size-3.5" />
             </span>
@@ -239,13 +239,13 @@ watch(
               v-for="zone in alertList"
               :key="zone._id"
               type="button"
-              class="btn btn-error text-white w-full flex justify-between min-h-11 touch-manipulation"
+              class="btn h-auto py-3 px-3.5 btn-error text-white w-full flex justify-between min-h-11 touch-manipulation"
               @click="goToZone(zone._id)"
             >
               <span class="truncate text-left">{{ zone.name }}</span>
 
               <div class="flex gap-2 shrink-0 items-center tabular-nums">
-                <div class="badge bg-black/20 border-none text-white font-semibold">
+                <div class="badge h-auto py-1 px-2.5 bg-black/20 border-none text-white font-semibold">
                   +{{ getOverThresholdPercent(zone) }}%
                 </div>
                 <ExclamationTriangleIcon class="size-4 shrink-0" />

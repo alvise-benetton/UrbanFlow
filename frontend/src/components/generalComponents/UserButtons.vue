@@ -61,7 +61,7 @@ async function logout() {
   <div class="flex gap-5">
     <details ref="dropdownRef" class="dropdown">
       <summary
-        class="btn min-h-11 h-11 md:h-auto bg-base-100 uf-panel-shadow flex items-center gap-2 px-2 md:px-3.5 py-1.5 md:py-2 border border-base-300 rounded-box cursor-pointer hover:bg-base-200 transition-colors touch-manipulation"
+        class="btn h-auto min-h-11 bg-base-100 uf-panel-shadow flex items-center gap-2 px-2.5 md:px-4 py-2 border border-base-300 rounded-box cursor-pointer hover:bg-base-200 transition-colors touch-manipulation"
         aria-label="Menu account"
       >
         <div class="avatar placeholder">
@@ -72,7 +72,7 @@ async function logout() {
         <span class="hidden md:inline font-medium text-sm">{{ userName }}</span>
         <span
           v-if="user?.role"
-          class="hidden md:inline-flex badge badge-sm font-medium text-xs"
+          class="hidden md:inline-flex badge h-auto py-1 px-2.5 font-medium text-xs"
           :class="user.role === 'admin' ? 'badge-primary text-white' : 'badge-neutral'"
         >
           {{ userRole }}
