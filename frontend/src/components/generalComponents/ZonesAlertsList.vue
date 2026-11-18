@@ -1,10 +1,8 @@
 <script setup>
 import { ExclamationTriangleIcon } from "@heroicons/vue/20/solid";
-import { inject, provide, reactive, ref, watch,computed } from "vue";
+import { inject, reactive, ref, watch, computed } from "vue";
 import ZoneDialog from "./ZoneDialog.vue";
 import router from "../utility/router";
-
-
 
 const inFocus = reactive({
   zones: true,
@@ -16,37 +14,24 @@ const zonesList = inject("listaZone", ref([]));
 const listaMisurazioni = inject("listaMisurazioni", ref([]));
 const selectedZone = ref(zonesList?.value ? zonesList.value.find((z) => z._id === id.value) : null);
 
-watch(selectedZone, (newValue) => {
-  const searchBar = document.getElementById("searchBar");
-  if (!searchBar) return;
-  if (newValue === null) {
-    searchBar.classList.remove("hidden");
-  } else {
-    searchBar.classList.add("hidden");
-  }
-});
-
 const searchTerm = defineModel("searchTerm");
 
 const filteredZones = computed(() => {
   if (!zonesList?.value) return [];
   if (!searchTerm.value) {
     return zonesList.value;
-  } else {
-    let words = searchTerm.value.toLowerCase().trim().split(" ");
-    return zonesList.value.filter((z) => {
-      return words.every((word) => {
-        return (z.name || "").toLowerCase().includes(word);
-      });
-    });
   }
+  const words = searchTerm.value.toLowerCase().trim().split(/\s+/);
+  return zonesList.value.filter((z) =>
+    words.every((word) => (z.name || "").toLowerCase().includes(word))
+  );
 });
 
 const alertList = computed(() => {
   if (!zonesList?.value || !listaMisurazioni?.value) return [];
   return zonesList.value.filter((z) => {
     const density = getDensity(z._id);
-    return density != null && density > z.threshold;
+    return density != null && z.threshold && density > z.threshold;
   });
 });
 
@@ -76,95 +61,131 @@ function goToZone(urlId) {
   router.push(`/Zone/${urlId}`);
 }
 
-const visible = ref(false);
-
 const changeFocusedList = (z, a) => {
   inFocus.zones = z;
   inFocus.alerts = a;
 };
 </script>
+
 <template>
-  <div class="dialog flex flex-col">
-    <div
-      class="flex flex-col gap-5 rounded-box p-5 bg-base-200 shadow-md overflow-y-scroll"
-      v-if="!id"
-    >
-      <!-- Selettore Zone-Allerte -->
-      <ul
-        class="menu menu-horizontal bg-base-100 rounded-xl flex gap-1 w-fit m-auto"
-      >
-        <li @click="changeFocusedList(true, false)">
-          <a class="text-gray-400" :class="{ active: inFocus.zones }">Zone</a>
-        </li>
-        <li @click="changeFocusedList(false, true)">
-          <a class="text-gray-400" :class="{ active: inFocus.alerts }"
-            >Allerte</a
-          >
-        </li>
-      </ul>
-      <!-- Lista zone -->
+  <div class="w-full md:w-80 lg:w-96 flex flex-col">
+    <Transition name="card-fade" mode="out-in">
       <div
-        v-if="inFocus.zones && zonesList.length > 0"
-        class="flex flex-col gap-3"
+        v-if="!id"
+        key="zones-list"
+        class="flex flex-col gap-4 rounded-box p-4 sm:p-5 bg-base-200 shadow-md max-h-[55dvh] md:max-h-[calc(100vh-7rem)] overflow-y-auto"
       >
-      
-        <button
-          class="btn bg-base-100 w-full flex justify-between"
-          v-for="zone in filteredZones"
-          @click="goToZone(zone._id)"
-        >
-          <span>{{ zone.name }}</span>
-          <div
-            v-if="getDensity(zone._id) !== null"
-            class="flex gap-2"
-          >
-            <div class="badge">
-              {{ getDensity(zone._id) }}
-            </div>
-            <div
-              class="badge badge-error text-white"
-              v-if="getDensity(zone._id) > zone.threshold"
+        <!-- Selettore Zone-Allerte -->
+        <ul class="menu menu-horizontal bg-base-100 rounded-xl flex gap-1 w-fit m-auto p-1">
+          <li>
+            <button
+              type="button"
+              class="text-base-content/60 min-h-9 touch-manipulation"
+              :class="{ active: inFocus.zones }"
+              @click="changeFocusedList(true, false)"
             >
-              <ExclamationTriangleIcon class="size-4"></ExclamationTriangleIcon>
-            </div>
-          </div>
-        </button>
-      
-      </div>
-      <!-- Lista allerte -->
-      <div v-if="inFocus.alerts" class="flex flex-col gap-2">
-        <small>In tempo reale:</small>
+              Zone
+            </button>
+          </li>
+          <li>
+            <button
+              type="button"
+              class="text-base-content/60 min-h-9 flex items-center gap-1.5 touch-manipulation"
+              :class="{ active: inFocus.alerts }"
+              @click="changeFocusedList(false, true)"
+            >
+              <span>Allerte</span>
+              <span
+                v-if="alertList.length > 0"
+                class="badge badge-error badge-xs text-white font-bold"
+              >
+                {{ alertList.length }}
+              </span>
+            </button>
+          </li>
+        </ul>
 
-        <button
-          class="btn w-full flex justify-between bg-red-600 hover:bg-red-800"
-          v-for="zone in alertList"
-          @click="goToZone(zone._id)"
+        <!-- Lista zone -->
+        <div v-if="inFocus.zones && filteredZones.length > 0" class="flex flex-col gap-2.5">
+          <button
+            v-for="zone in filteredZones"
+            :key="zone._id"
+            type="button"
+            class="btn bg-base-100 w-full flex justify-between min-h-11 touch-manipulation"
+            @click="goToZone(zone._id)"
+          >
+            <span class="truncate text-left">{{ zone.name }}</span>
+            <div v-if="getDensity(zone._id) !== null" class="flex gap-2 shrink-0">
+              <div class="badge">
+                {{ getDensity(zone._id) }}
+              </div>
+              <div
+                class="badge badge-error text-white"
+                v-if="getDensity(zone._id) > zone.threshold"
+              >
+                <ExclamationTriangleIcon class="size-4" />
+              </div>
+            </div>
+          </button>
+        </div>
+        <p
+          v-else-if="inFocus.zones"
+          class="text-sm text-base-content/60 text-center py-4"
         >
-          <span class="text-white">{{ zone.name }}</span>
+          Nessuna zona trovata
+        </p>
 
-          <div class="flex gap-2">
-            <div class="badge">
-              +{{ getOverThresholdPercent(zone) }}%
-            </div>
-            <div class="badge badge-error text-white">
-              <ExclamationTriangleIcon class="size-4"></ExclamationTriangleIcon>
-            </div>
-          </div>
-        </button>
+        <!-- Lista allerte -->
+        <div v-if="inFocus.alerts" class="flex flex-col gap-2">
+          <small class="text-base-content/70">In tempo reale:</small>
+
+          <template v-if="alertList.length > 0">
+            <button
+              v-for="zone in alertList"
+              :key="zone._id"
+              type="button"
+              class="btn w-full flex justify-between bg-red-600 hover:bg-red-800 border-none min-h-11 touch-manipulation"
+              @click="goToZone(zone._id)"
+            >
+              <span class="text-white truncate text-left">{{ zone.name }}</span>
+
+              <div class="flex gap-2 shrink-0">
+                <div class="badge">
+                  +{{ getOverThresholdPercent(zone) }}%
+                </div>
+                <div class="badge badge-error text-white">
+                  <ExclamationTriangleIcon class="size-4" />
+                </div>
+              </div>
+            </button>
+          </template>
+          <p v-else class="text-sm text-base-content/60 text-center py-4">
+            Nessuna allerta attiva al momento
+          </p>
+        </div>
       </div>
-    </div>
-    <div v-else>
-      <ZoneDialog v-model:selectedZone="selectedZone"></ZoneDialog>
-    </div>
+
+      <ZoneDialog v-else :key="id" v-model:selectedZone="selectedZone" />
+    </Transition>
   </div>
 </template>
 
 <style scoped>
-.dialog {
-  min-width: 250pt;
-  width: 25vw;
-  max-width: 30vw;
-  max-height: calc(100vh - 7rem);
-  overflow: scroll;
+.card-fade-enter-active {
+  transition: transform 0.16s cubic-bezier(0.16, 1, 0.3, 1), opacity 0.16s ease-out;
+}
+.card-fade-leave-active {
+  transition: transform 0.11s ease-in, opacity 0.11s ease-in;
+}
+.card-fade-enter-from,
+.card-fade-leave-to {
+  opacity: 0;
+  transform: translateY(6px);
+}
+@media (prefers-reduced-motion: reduce) {
+  .card-fade-enter-active,
+  .card-fade-leave-active {
+    transition: none;
+  }
 }
 </style>

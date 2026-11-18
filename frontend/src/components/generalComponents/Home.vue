@@ -73,7 +73,7 @@ const loadAll = ()=>{
   loadEvents();
   loadZones();
   loadCameraData();
-  user.value = loadUser();
+  loadUser();
   isInit.value = true;
 }
 
@@ -82,6 +82,8 @@ provide("listaZone", zonesData);
 provide("listaMisurazioni", measureData);
 provide("listaEventi", eventsData);
 provide("loadAll", loadAll);
+provide("loadEvents", loadEvents);
+provide("loadZones", loadZones);
 
 onMounted(()=>{
   loadAll();
@@ -151,49 +153,86 @@ const currentId = computed(() => {
 </script>
 
 <template>
+  <section id="mapBox" class="relative">
+    <Map
+      v-model:events="eventsData"
+      :selectedZoneId="appSection === 'Zone' ? currentId : null"
+      :hasOpenPanel="appSection !== 'Mappa'"
+    ></Map>
+  </section>
+
+  <!-- SectionsBar: top-center su desktop, bottom pill su mobile -->
   <section
     id="rootBox"
-    class="fixed top-5 flex justify-evenly w-full z-10 pointer-events-none"
+    class="fixed bottom-4 md:bottom-auto md:top-5 inset-x-0 flex justify-center w-full z-20 pointer-events-none"
   >
-  <SectionsBar v-model="appSection" class="shadow-md pointer-events-auto"></SectionsBar>
+    <SectionsBar v-model="appSection" class="shadow-md pointer-events-auto"></SectionsBar>
   </section>
-  <section id="mapBox" class="relative">
-    <Map v-model:events="eventsData"></Map>
+
+  <!-- UserButtons: top-left (avatar compatto su mobile, esteso su desktop) -->
+  <section
+    id="leftSideBox"
+    v-if="appSection !== 'User'"
+    class="fixed top-3 left-3 md:top-5 md:left-5 flex gap-5 z-30"
+  >
+    <UserButtons></UserButtons>
   </section>
+
+  <!-- Search + Liste/Dialoghi: top-right su desktop, search bar in alto + bottom sheet su mobile -->
   <section
     id="rightSideBox"
-    class="fixed top-5 right-5 flex flex-col items-end gap-5 z-10"
+    class="fixed top-3 right-3 left-16 md:left-auto md:top-5 md:right-5 flex flex-col items-stretch md:items-end gap-3 md:gap-5 z-20 pointer-events-none"
   >
     <MapSearchBar
+      v-show="!currentId"
       v-model:appSection="appSection"
       v-model:searchTerm="searchTerm"
       v-model:zones="zonesData"
       v-model:events="eventsData"
-      class="shadow-md"
+      class="shadow-md pointer-events-auto"
     ></MapSearchBar>
-<!--     <MapFilterList
+    <!-- <MapFilterList
       v-if="appSection === 'Mappa'"
-      class="boxFadeIn shadow-md"
+      class="boxFadeIn shadow-md pointer-events-auto"
     ></MapFilterList> -->
-    <EventsList
-      v-if="appSection === 'Eventi'"
-      v-model:events="eventsData"
-      v-model:searchTerm="searchTerm"
-      v-model:id ="currentId"
-    ></EventsList>
-    <ZonesAlertsList
-      v-else-if="appSection === 'Zone'"
-      v-model:searchTerm="searchTerm"
-      v-model:id ="currentId"
-    ></ZonesAlertsList>
-  </section>
-  <section
-    id="leftSideBox"
-    v-if="appSection !== 'User'"
-    class="fixed top-5 left-5 flex gap-5 z-10"
-  >
-    <UserButtons></UserButtons>
+    <Transition name="panel-slide" mode="out-in">
+      <div
+        v-if="appSection === 'Eventi' || appSection === 'Zone'"
+        :key="appSection"
+        class="fixed bottom-20 inset-x-3 md:static pointer-events-auto"
+      >
+        <EventsList
+          v-if="appSection === 'Eventi'"
+          v-model:events="eventsData"
+          v-model:searchTerm="searchTerm"
+          v-model:id="currentId"
+        ></EventsList>
+        <ZonesAlertsList
+          v-else-if="appSection === 'Zone'"
+          v-model:searchTerm="searchTerm"
+          v-model:id="currentId"
+        ></ZonesAlertsList>
+      </div>
+    </Transition>
   </section>
 </template>
 
-<style scoped></style>
+<style scoped>
+.panel-slide-enter-active {
+  transition: transform 0.18s cubic-bezier(0.16, 1, 0.3, 1), opacity 0.18s ease-out;
+}
+.panel-slide-leave-active {
+  transition: transform 0.12s ease-in, opacity 0.12s ease-in;
+}
+.panel-slide-enter-from,
+.panel-slide-leave-to {
+  opacity: 0;
+  transform: translateY(8px);
+}
+@media (prefers-reduced-motion: reduce) {
+  .panel-slide-enter-active,
+  .panel-slide-leave-active {
+    transition: none;
+  }
+}
+</style>

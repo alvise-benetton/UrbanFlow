@@ -14,6 +14,11 @@ const VOYAGER_STYLE_URL = "https://basemaps.cartocdn.com/gl/voyager-gl-style/sty
 const WARN_ICON_URL =
   "data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAyNCAyNCIgZmlsbD0iI2U1NGE0YSIgY2xhc3M9InNpemUtNiI+CiAgPGRlZnM+CiAgICA8ZmlsdGVyIGlkPSJzaGFkb3ciIHg9Ii01MCUiIHk9Ii01MCUiIHdpZHRoPSIyMDAlIiBoZWlnaHQ9IjIwMCUiPgogICAgICA8ZmVEcm9wU2hhZG93IGR4PSIwIiBkeT0iMCIgc3RkRGV2aWF0aW9uPSIyIiBmbG9vZC1jb2xvcj0iIzdhNzk3OSIgZmxvb2Qtb3BhY2l0eT0iMC41Ii8+CiAgICA8L2ZpbHRlcj4KICA8L2RlZnM+CiAgPGNpcmNsZSBjeD0iMTIiIGN5PSIxMiIgcj0iOCIgZmlsbD0id2hpdGUiIGZpbHRlcj0idXJsKCNzaGFkb3cpIi8+CiAgPHBhdGggZmlsbC1ydWxlPSJldmVub2RkIiBkPSJNMi4yNSAxMmMwLTUuMzg1IDQuMzY1LTkuNzUgOS43NS05Ljc1czkuNzUgNC4zNjUgOS43NSA5Ljc1LTQuMzY1IDkuNzUtOS43NSA5Ljc1UzIuMjUgMTcuMzg1IDIuMjUgMTJaTTEyIDguMjVhLjc1Ljc1IDAgMCAxIC43NS43NXYzLjc1YS43NS43NSAwIDAgMS0xLjUgMFY5YS43NS43NSAwIDAgMSAuNzUtLjc1Wm0wIDguMjVhLjc1Ljc1IDAgMSAwIDAtMS41Ljc1Ljc1IDAgMCAwIDAgMS41WiIgY2xpcC1ydWxlPSJldmVub2RkIiAvPgo8L3N2Zz4K";
 
+const props = defineProps({
+  selectedZoneId: { type: String, default: null },
+  hasOpenPanel: { type: Boolean, default: false },
+});
+
 const listaZone = inject("listaZone");
 const listaEventi = inject("listaEventi");
 const listaMisurazioni = inject("listaMisurazioni");
@@ -22,9 +27,13 @@ const mapContainer = ref(null);
 let map = null;
 let resizeObserver = null;
 let syncingZoomFromMap = false;
+let lastFocusedZoneId = null;
 
 const zoomLevel = ref(15);
 const zonesVisible = ref(true);
+const isTouchDevice = ref(
+  typeof window !== "undefined" && Boolean(window.matchMedia?.("(pointer: coarse)")?.matches)
+);
 
 const hoveredZone = ref(null);
 const hoveredEvents = ref(null);
@@ -34,6 +43,11 @@ const warnMarkers = ref([]);
 const hoveredPolygon = computed(() => {
   if (!hoveredZone.value) return null;
   return projectedPolygons.value.find((p) => p.id === String(hoveredZone.value._id)) || null;
+});
+
+const selectedPolygon = computed(() => {
+  if (!props.selectedZoneId) return null;
+  return projectedPolygons.value.find((p) => p.id === String(props.selectedZoneId)) || null;
 });
 
 function colorGradient(densityRatio) {
@@ -148,7 +162,32 @@ function updateOverlays() {
 }
 
 function clickHandler(zona) {
+  if (isTouchDevice.value) {
+    hoveredZone.value = null;
+    hoveredEvents.value = null;
+  }
   router.push(`/Zone/${zona}`);
+}
+
+function focusZone(zoneId) {
+  if (!map || !zoneId || !listaZone?.value) return;
+  const targetZone = listaZone.value.find((z) => String(z._id) === String(zoneId));
+  if (!targetZone || !Array.isArray(targetZone.coordinates) || targetZone.coordinates.length === 0) {
+    return;
+  }
+  const bounds = new maplibregl.LngLatBounds();
+  targetZone.coordinates.forEach(([lat, lng]) => {
+    bounds.extend([lng, lat]);
+  });
+  const isMobile = typeof window !== "undefined" && window.innerWidth < 768;
+  map.fitBounds(bounds, {
+    padding: isMobile
+      ? { top: 70, bottom: 320, left: 40, right: 40 }
+      : { top: 80, bottom: 80, left: 80, right: 380 },
+    maxZoom: 16.5,
+    duration: 650,
+  });
+  lastFocusedZoneId = String(zoneId);
 }
 
 function syncLayers() {
@@ -262,6 +301,9 @@ const mapInit = () => {
   map.on("load", () => {
     syncLayers();
     updateOverlays();
+    if (props.selectedZoneId) {
+      focusZone(props.selectedZoneId);
+    }
   });
 
   map.on("render", updateOverlays);
@@ -274,6 +316,19 @@ const mapInit = () => {
       syncingZoomFromMap = false;
     });
   });
+
+  watch(
+    [() => props.selectedZoneId, listaZone],
+    ([newId]) => {
+      if (!newId) {
+        lastFocusedZoneId = null;
+        return;
+      }
+      if (String(newId) !== lastFocusedZoneId || !lastFocusedZoneId) {
+        focusZone(newId);
+      }
+    }
+  );
 
   watch(
     [listaZone, listaMisurazioni],
@@ -332,7 +387,16 @@ onUnmounted(() => {
         />
       </g>
       <polygon
-        v-if="hoveredPolygon"
+        v-if="selectedPolygon"
+        :points="selectedPolygon.points"
+        fill="transparent"
+        stroke="rgb(80,80,80)"
+        stroke-width="2.5"
+        stroke-linecap="round"
+        stroke-linejoin="round"
+      />
+      <polygon
+        v-if="hoveredPolygon && hoveredPolygon.id !== selectedPolygon?.id"
         :points="hoveredPolygon.points"
         fill="transparent"
         stroke="rgb(80,80,80)"
@@ -354,11 +418,11 @@ onUnmounted(() => {
         :style="{ left: marker.x + 'px', top: marker.y + 'px' }"
       />
     </div>
-    <div class="flex gap-5 fixed bottom-5 left-5 z-10">
+    <div class="flex gap-5 fixed bottom-20 left-3 md:bottom-5 md:left-5 z-10">
       <ZoomPane v-model="zoomLevel"></ZoomPane>
     </div>
     <ZoneTooltip
-      v-if="hoveredZone != null"
+      v-if="hoveredZone != null && !isTouchDevice"
       v-model:hoveredZone="hoveredZone"
       v-model:hoveredEvents="hoveredEvents"
     ></ZoneTooltip>

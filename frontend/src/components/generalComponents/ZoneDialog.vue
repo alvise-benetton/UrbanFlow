@@ -5,249 +5,276 @@ import {
   QuestionMarkCircleIcon,
   XMarkIcon,
 } from "@heroicons/vue/20/solid";
-import { computed, inject, ref, watch } from "vue";
+import { computed, inject, nextTick, ref, watch } from "vue";
 import router, { authFetch } from "../utility/router";
 import { API_BASE_URL as API_URL } from "@/services/apiConfig";
+import ChartSmallMirror from "./ChartSmallMirror.vue";
+
 const zone = defineModel("selectedZone");
-const misurazioni = inject("listaMisurazioni");
-const eventi = inject("listaEventi");
-const localZone = ref({...zone.value});
-const alert = ref({ active: false, increment_pcent: 0 });
+const misurazioni = inject("listaMisurazioni", ref([]));
+const eventi = inject("listaEventi", ref([]));
+const notyf = inject("notyf");
+const loadZones = inject("loadZones", null);
 
+const localZone = ref(zone.value ? { ...zone.value } : null);
+const isEditing = ref(false);
+const thresholdInput = ref(null);
+const thresholdDialog = ref(null);
 
-const eventiZona = ref([]);
-
-function closeCard(){
-  zone.value = null;
-  router.back();
-}
+watch(
+  zone,
+  (newVal) => {
+    localZone.value = newVal ? { ...newVal } : null;
+    isEditing.value = false;
+  },
+  { deep: true }
+);
 
 const eventiAttuali = computed(() => {
   const now = new Date();
-  return eventi.value.filter((event) => {
+  return (eventi.value || []).filter((event) => {
     const startDate = new Date(event.startDate);
     const endDate = new Date(event.endDate);
     return startDate <= now && now <= endDate;
   });
 });
 
+const eventiZona = computed(() => {
+  if (!localZone.value?._id || !eventiAttuali.value) return [];
+  return eventiAttuali.value.filter(
+    (ev) =>
+      Array.isArray(ev.zones) &&
+      ev.zones.some((z) => String(z?._id || z) === String(localZone.value._id))
+  );
+});
 
-const getDensity = (zone) => {
-  if(zone)
-  return misurazioni.value.find((m) => m.zone === zone._id)?.data[0]
-    .density;
-};
-if(zone.value){
-  alert.value.active = getDensity(zone.value) > zone.value.threshold;
-  alert.value.increment_pcent = Math.floor(
-  ((getDensity(zone.value) -  zone.value.threshold) /  zone.value.threshold) * 100);
+const currentDensity = computed(() => {
+  if (!localZone.value?._id || !misurazioni?.value) return null;
+  const m = misurazioni.value.find((item) => String(item.zone) === String(localZone.value._id));
+  return m?.data?.[0]?.density ?? null;
+});
 
+const alert = computed(() => {
+  if (currentDensity.value == null || !zone.value?.threshold) {
+    return { active: false, increment_pcent: 0 };
+  }
+  return {
+    active: currentDensity.value > zone.value.threshold,
+    increment_pcent: Math.floor(
+      ((currentDensity.value - zone.value.threshold) / zone.value.threshold) * 100
+    ),
+  };
+});
+
+function closeCard() {
+  zone.value = null;
+  router.push("/Zone");
 }
 
+function startEditing() {
+  isEditing.value = true;
+  nextTick(() => {
+    thresholdInput.value?.focus();
+  });
+}
 
-watch(
-  zone,
-  (newVal) => {
-    if(newVal === null){
-      localZone.value = null;
-      alert.value.active = false;
-      alert.value.increment_pcent = 0;
-      return;
-    }
-    localZone.value = { ...newVal }; // Aggiorna localZone quando zone cambia
-  
-    alert.value.active = getDensity(newVal) > newVal.threshold;
-    alert.value.increment_pcent = Math.floor(
-    ((getDensity(newVal) - newVal.threshold) / newVal.threshold) * 100);
-    eventiZona.value = eventiAttuali.value.filter((ev) => ev.zones.includes(newVal._id));
-  },
-  
-  { deep: true }
-);
-
-const isEditing = ref(false);
-const isNewEvent = ref(false);
-
-const abortChanges = () => {
+function abortChanges() {
   isEditing.value = false;
-  localZone.value.threshold = zone.value.threshold;
-};
-const saveChanges = async () => {
-  await authFetch(`${API_URL}/api/zones/${zone.value._id}`, {
-    headers: {
-      "x-access-token": localStorage.getItem("JWT"),
-      "Content-Type": "application/json",
-    },
-    body: JSON.stringify({ threshold: localZone.value.threshold }),
-    method: "PUT",
-  })
-    .then((res) => {
-      if (!res.ok) {
-        throw new Error("errore nel modificare la zona");
-      }
-      return res;
-    })
-    .then(() => {
-      zone.value.threshold = localZone.value.threshold;
-      alert.value.active = getDensity(zone.value) > zone.value.threshold;
-      alert.value.increment_pcent = Math.floor(
-        ((getDensity(zone.value) - zone.value.threshold) / zone.value.threshold) * 100
-      );
+  if (localZone.value && zone.value) {
+    localZone.value.threshold = zone.value.threshold;
+  }
+}
+
+async function saveChanges() {
+  const numericThreshold = Number(localZone.value?.threshold);
+  if (!Number.isFinite(numericThreshold) || numericThreshold <= 0) {
+    notyf?.error("Inserisci un limite maggiore di 0");
+    return;
+  }
+
+  try {
+    const res = await authFetch(`${API_URL}/api/zones/${zone.value._id}`, {
+      headers: {
+        "x-access-token": localStorage.getItem("JWT"),
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({ threshold: numericThreshold }),
+      method: "PUT",
     });
-  isEditing.value = false;
-};
 
-const thresholdInput = ref(null);
-const thresholdDialog = ref(null);
+    if (!res.ok) {
+      throw new Error("errore nel modificare la zona");
+    }
+
+    zone.value.threshold = numericThreshold;
+    localZone.value.threshold = numericThreshold;
+    if (loadZones) {
+      await loadZones();
+    }
+    notyf?.success("Limite aggiornato con successo!");
+    isEditing.value = false;
+  } catch (err) {
+    notyf?.error("Errore durante l'aggiornamento del limite");
+  }
+}
+
+function reportAlert() {
+  notyf?.success("Segnalazione inviata alla centrale operativa");
+}
 </script>
+
 <template>
   <div
-    class="dialog flex flex-col bg-base-100 p-5 rounded-box gap-5 shadow-md"
+    class="w-full md:w-80 lg:w-96 max-h-[58dvh] md:max-h-[calc(100vh-2.5rem)] overflow-y-auto flex flex-col bg-base-100 p-4 sm:p-5 rounded-box gap-4 shadow-md"
     v-if="localZone"
   >
     <div
       class="flex flex-row justify-end gap-2 bg-base-100"
-      v-if="!isEditing && !isNewEvent"
+      v-if="!isEditing"
     >
-      <!-- Chiudi card zona -->
-      <button class="btn btn-square btn-sm" @click="closeCard">
-        <XMarkIcon class="size-4"></XMarkIcon>
+      <button
+        type="button"
+        class="btn btn-square btn-sm touch-manipulation"
+        aria-label="Chiudi scheda zona"
+        @click="closeCard"
+      >
+        <XMarkIcon class="size-4" />
       </button>
     </div>
     <div class="flex flex-row justify-end gap-2" v-else>
-      <!-- Annulla modifiche -->
-      <button class="btn btn-sm btn-error text-white" @click="abortChanges">
+      <button type="button" class="btn btn-sm btn-error text-white" @click="abortChanges">
         Annulla
       </button>
-      <!-- Salva modifiche -->
       <button
-        class="btn btn-sm btn-primary"
-        :disabled="JSON.stringify(zone) === JSON.stringify(localZone)"
+        type="button"
+        class="btn btn-sm btn-primary text-white"
+        :disabled="Number(zone?.threshold) === Number(localZone?.threshold)"
         @click="saveChanges"
       >
         Salva
       </button>
     </div>
-    <!-- Titolo evento -->
-    <span class="font-bold card-title w-full">{{ localZone.name }} </span>
+
+    <span class="font-bold card-title w-full">{{ localZone.name }}</span>
+
     <!-- Limite e modifica limite -->
-    <div class="flex flex-row items-align gap-2">
-      <div class="btn-sm bg-base-200 rounded-md flex items-center gap-1">
-        <QuestionMarkCircleIcon
-          class="size-4"
-          @click="thresholdDialog.showModal()"
-        ></QuestionMarkCircleIcon>
+    <div class="flex flex-row items-center gap-2">
+      <button
+        type="button"
+        class="btn btn-sm bg-base-200 border-none rounded-md flex items-center gap-1 touch-manipulation"
+        aria-label="Informazioni su limite e allerta"
+        @click="thresholdDialog.showModal()"
+      >
+        <QuestionMarkCircleIcon class="size-4" />
         <span>Limite:</span>
-      </div>
+      </button>
       <input
-        v-model="localZone.threshold"
+        v-model.number="localZone.threshold"
         ref="thresholdInput"
         type="number"
-        pattern="[1-9][0-9]*"
-        class="btn-sm bg-transparent w-full outline-none border-[1px] rounded-md"
+        min="1"
+        class="input input-sm bg-transparent w-full text-base md:text-sm outline-none border rounded-md"
         :class="{
           'text-primary border-primary': isEditing,
+          'border-base-300': !isEditing,
         }"
         :disabled="!isEditing"
-        placeholder="imposta un valore"
+        placeholder="Imposta un valore"
       />
       <button
         v-if="!isEditing"
-        class="btn btn-sm btn-square btn-primary btn-outline"
-        @click="
-          () => {
-            isEditing = true;
-            $nextTick(() => {
-              thresholdInput.focus();
-            });
-          }
-        "
+        type="button"
+        class="btn btn-sm btn-square btn-primary btn-outline touch-manipulation"
+        aria-label="Modifica limite"
+        @click="startEditing"
       >
-        <PencilIcon class="size-4"></PencilIcon>
+        <PencilIcon class="size-4" />
       </button>
     </div>
-    <!-- Card dati SENZA allerta -->
-    <p>
+
+    <!-- Dati densità -->
+    <p class="text-sm">
       All'ultima rilevazione, il numero di pedoni rilevati in
       {{ localZone.name }} è stato di
-      <span class="font-semibold">{{ getDensity(localZone) }}</span
-      >.
+      <span class="font-semibold">{{ currentDensity !== null ? currentDensity : "--" }}</span>.
     </p>
+
     <!-- Card allerta -->
     <div
-      v-if="alert && alert.active"
-      class="bg-red-500 text-white rounded-box p-5 flex flex-col gap-4"
-      :class="{
-        unfocus: isEditing,
-      }"
+      v-if="alert.active"
+      class="bg-red-500 text-white rounded-box p-4 sm:p-5 flex flex-col gap-3"
+      :class="{ unfocus: isEditing }"
     >
-      <ExclamationTriangleIcon class="size-10"></ExclamationTriangleIcon>
-      <p>
-        Il numero di pedoni rilevati
-        in {{ localZone.name }} è stato superiore al limite impostato di
-        {{ zone.threshold }}.
+      <ExclamationTriangleIcon class="size-8" />
+      <p class="text-sm">
+        Il numero di pedoni rilevati in {{ localZone.name }} è stato superiore al limite impostato di
+        {{ zone?.threshold }}.
       </p>
-      <div class="flex flex-row justify-between">
-        <span class="stat-value"
-          >{{ getDensity(localZone) }}<span class="text-sm">pedoni</span></span
-        >
-        <span class="stat-value">+{{ alert.increment_pcent }}%</span>
+      <div class="flex flex-row items-baseline justify-between gap-2">
+        <span class="stat-value text-2xl">
+          {{ currentDensity }} <span class="text-sm font-normal">pedoni</span>
+        </span>
+        <span class="stat-value text-2xl">+{{ alert.increment_pcent }}%</span>
       </div>
-      <button class="btn border-none bg-red-700 hover:bg-red-800 text-white">
+      <button
+        type="button"
+        class="btn btn-sm sm:btn-md border-none bg-red-700 hover:bg-red-800 text-white touch-manipulation"
+        @click="reportAlert"
+      >
         Segnala
       </button>
     </div>
-    <!-- Lista eventi -->
+
+    <!-- Lista eventi in corso nella zona -->
     <div
       class="flex flex-col gap-2 p-3 bg-base-200 rounded-box items-center"
-      :class="{
-        unfocus: isEditing, 
-      }"
+      :class="{ unfocus: isEditing }"
     >
-      <a
+      <button
         v-for="event in eventiZona"
-        class="btn btn-sm bg-base-100 justify-between w-full"
+        :key="event._id"
+        type="button"
+        class="btn btn-sm bg-base-100 justify-between w-full min-h-10 touch-manipulation"
+        @click="router.push(`/Eventi/${event._id}`)"
       >
-        <span @click="$router.push(`/Eventi/${event._id}`)"> {{ event.title }}</span>
-        <div v-if="event.isCurrent" class="indicator relative">
+        <span class="truncate">{{ event.title }}</span>
+        <div class="indicator relative shrink-0">
           <div class="indicator absolute top-0 left-0 animate-ping"></div>
         </div>
-      </a>
-      <small
-        v-if="!eventiZona || eventiZona.length <= 0"
-        class="text-gray-500"
-      >
+      </button>
+      <small v-if="eventiZona.length === 0" class="text-base-content/60">
         Nessun evento in corso nella zona
       </small>
     </div>
+
+    <!-- Grafico andamento densità -->
+    <ChartSmallMirror
+      v-model:zone="localZone"
+      :class="{ unfocus: isEditing }"
+    />
   </div>
+
   <dialog class="modal" ref="thresholdDialog">
-    <div class="modal-box flex flex-col gap-2 w-fit">
+    <div class="modal-box flex flex-col gap-3 max-w-md">
       <form class="flex flex-row justify-end gap-2" method="dialog">
-        <button class="btn btn-circle btn-sm">
-          <XMarkIcon class="size-4"></XMarkIcon>
+        <button class="btn btn-circle btn-sm" aria-label="Chiudi finestra informativa">
+          <XMarkIcon class="size-4" />
         </button>
       </form>
-      <h2 class="card-title">Cos'è un'allerta? Cos'è un limite?</h2>
-      <p>
+      <h2 class="card-title text-base">Cos'è un'allerta? Cos'è un limite?</h2>
+      <p class="text-sm">
         L'applicazione UrbanFlow permette di impostare un limite di pedoni per
         ogni zona, oltre il quale viene generata un'allerta.
       </p>
-      <p>
+      <p class="text-sm">
         L'allerta può segnalare un'affluenza improvvisa, specialmente quando
         alla zona in esame non è associato nessun evento attualmente in corso.
       </p>
     </div>
   </dialog>
 </template>
-<style>
-.dialog {
-  min-width: 250pt;
-  width: 25vw;
-  max-width: 30vw;
-  max-height: calc(100vh - 1.25rem * 2);
-  overflow-y: scroll;
-}
+
+<style scoped>
 .indicator {
   @apply w-2 h-2 bg-primary rounded-full;
 }

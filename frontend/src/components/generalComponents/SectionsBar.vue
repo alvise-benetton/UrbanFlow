@@ -1,33 +1,62 @@
 <script setup>
-import { ref } from "vue";
+import { computed, inject, ref } from "vue";
 import router from "../utility/router";
 
 const model = defineModel({ default: "Mappa" });
 const sectionsList = ref(["Zone", "Mappa", "Eventi"]);
+
+const listaZone = inject("listaZone", ref([]));
+const listaMisurazioni = inject("listaMisurazioni", ref([]));
+
+const activeAlertsCount = computed(() => {
+  if (!listaZone?.value || !listaMisurazioni?.value) return 0;
+  return listaZone.value.filter((zone) => {
+    const m = listaMisurazioni.value.find((item) => String(item.zone) === String(zone._id));
+    const density = m?.data?.[0]?.density ?? 0;
+    return zone.threshold && density > zone.threshold;
+  }).length;
+});
+
 const setActive = (section) => {
   model.value = section;
   router.push(`/${section}`);
-  const searchBar = document.getElementById("searchBar");
-  if (searchBar) {
-    searchBar.classList.remove("hidden");
-  }
 };
 </script>
+
 <template>
-  <ul class="menu menu-horizontal bg-base-200 rounded-box gap-2 pl-2.5 pr-2.5">
+  <ul
+    class="menu menu-horizontal bg-base-200 rounded-box gap-1.5 sm:gap-2 px-2.5 shadow-md touch-manipulation select-none"
+    role="navigation"
+    aria-label="Sezioni principali"
+  >
     <li v-for="section in sectionsList" :key="section">
-      <a
+      <button
+        type="button"
         :class="{ active: section === model }"
-        class="cursor-pointer"
+        class="cursor-pointer min-h-10 px-3.5 sm:px-4 transition-transform active:scale-95 flex items-center gap-1.5"
+        :aria-current="section === model ? 'page' : undefined"
         @click="setActive(section)"
       >
-        {{ section }}
-      </a>
+        <span>{{ section }}</span>
+        <span
+          v-if="section === 'Zone' && activeAlertsCount > 0"
+          class="badge badge-error badge-xs text-white font-bold"
+          :aria-label="`${activeAlertsCount} allerte attive`"
+        >
+          {{ activeAlertsCount }}
+        </span>
+      </button>
     </li>
   </ul>
 </template>
+
 <style scoped>
-a.active {
-  transform: scale(1.1);
+button.active {
+  transform: scale(1.06);
+}
+@media (prefers-reduced-motion: reduce) {
+  button.active {
+    transform: none;
+  }
 }
 </style>

@@ -7,6 +7,7 @@ const chartCanvas = ref(null);
 let chartInstance = null;
 
 const event = defineModel("event");
+const zone = defineModel("zone");
 const zones = defineModel("zoneList");
 const misurazioni = inject("listaMisurazioni", ref([]));
 
@@ -15,7 +16,9 @@ const chartPoints = computed(() => {
 
   // Extract zone IDs to inspect
   let targetZoneIds = [];
-  if (event.value && Array.isArray(event.value.zones)) {
+  if (zone.value && (zone.value._id || typeof zone.value === "string")) {
+    targetZoneIds = [String(zone.value._id || zone.value)];
+  } else if (event.value && Array.isArray(event.value.zones)) {
     targetZoneIds = event.value.zones.map((z) => String(z._id || z)).filter(Boolean);
   }
 
@@ -113,7 +116,7 @@ onMounted(() => {
   renderChart();
 });
 
-watch([chartPoints, () => event.value], () => {
+watch([chartPoints, () => event.value, () => zone?.value], () => {
   renderChart();
 }, { deep: true });
 
