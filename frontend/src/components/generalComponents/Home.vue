@@ -166,6 +166,20 @@ const selectedEventZoneIds = computed(() => {
   return ev.zones.filter(Boolean).map((z) => String(z._id || z));
 });
 
+const activeAlertsCount = computed(() => {
+  if (!zonesData.value || !measureData.value) return 0;
+  return zonesData.value.filter((zone) => {
+    const m = measureData.value.find((item) => String(item.zone) === String(zone._id));
+    const density = m?.data?.[0]?.density ?? 0;
+    return zone.threshold && density > zone.threshold;
+  }).length;
+});
+
+function openAlertsFromSummary() {
+  zoneTabFocus.value = "alerts";
+  router.push("/Zone");
+}
+
 watch([appSection, currentId], () => {
   isSheetCollapsed.value = false;
 });
@@ -182,27 +196,19 @@ watch([appSection, currentId], () => {
     ></Map>
   </section>
 
-  <!-- SectionsBar: top-center su desktop, bottom pill su mobile -->
-  <section
-    id="rootBox"
-    class="fixed bottom-4 md:bottom-auto md:top-5 inset-x-0 flex justify-center w-full z-20 pointer-events-none"
-  >
-    <SectionsBar v-model="appSection" class="shadow-md pointer-events-auto"></SectionsBar>
-  </section>
-
-  <!-- UserButtons: top-left (avatar compatto su mobile, esteso su desktop) -->
+  <!-- Account pill top-right (stile Apple Maps Web) -->
   <section
     id="leftSideBox"
     v-if="appSection !== 'User'"
-    class="fixed top-3 left-3 md:top-5 md:left-5 flex gap-5 z-30"
+    class="fixed top-3 right-3 md:top-4 md:right-4 flex gap-5 z-30"
   >
     <UserButtons></UserButtons>
   </section>
 
-  <!-- Search + Liste/Dialoghi: top-right su desktop, search bar in alto + bottom sheet su mobile -->
+  <!-- Dock laterale sinistro su desktop (maps.apple.com) + ricerca in alto e sheet in basso su mobile -->
   <section
     id="rightSideBox"
-    class="fixed top-3 right-3 left-16 md:left-auto md:top-5 md:right-5 flex flex-col items-stretch md:items-end gap-3 md:gap-5 z-20 pointer-events-none"
+    class="fixed top-3 left-3 right-16 md:right-auto md:top-4 md:left-4 md:w-[380px] z-20 pointer-events-none flex flex-col md:bg-base-100/90 md:backdrop-blur-xl md:border md:border-base-300/80 md:rounded-[18px] md:uf-panel-shadow md:p-3 md:gap-2.5"
   >
     <MapSearchBar
       v-show="!currentId"
@@ -210,44 +216,70 @@ watch([appSection, currentId], () => {
       v-model:searchTerm="searchTerm"
       v-model:zones="zonesData"
       v-model:events="eventsData"
-      class="shadow-md pointer-events-auto"
+      class="pointer-events-auto"
     ></MapSearchBar>
-    <!-- <MapFilterList
-      v-if="appSection === 'Mappa'"
-      class="boxFadeIn shadow-md pointer-events-auto"
-    ></MapFilterList> -->
-    <Transition name="panel-slide" mode="out-in">
-      <div
-        v-if="appSection === 'Eventi' || appSection === 'Zone'"
-        :key="appSection"
-        class="fixed bottom-20 inset-x-3 md:static pointer-events-auto flex flex-col items-stretch"
-      >
-        <div class="md:hidden flex justify-center mb-1.5">
-          <button
-            type="button"
-            class="btn btn-xs bg-base-200/95 backdrop-blur border border-base-300 shadow-md rounded-full px-3 gap-1 touch-manipulation"
-            @click="isSheetCollapsed = !isSheetCollapsed"
-          >
-            <ChevronUpIcon v-if="isSheetCollapsed" class="size-3.5" />
-            <ChevronDownIcon v-else class="size-3.5" />
-            <span>{{ isSheetCollapsed ? "Espandi pannello" : "Riduci a mappa" }}</span>
-          </button>
-        </div>
-        <div :class="{ 'hidden md:block': isSheetCollapsed }">
-          <EventsList
-            v-if="appSection === 'Eventi'"
-            v-model:events="eventsData"
-            v-model:searchTerm="searchTerm"
-            v-model:id="currentId"
-          ></EventsList>
-          <ZonesAlertsList
-            v-else-if="appSection === 'Zone'"
-            v-model:searchTerm="searchTerm"
-            v-model:id="currentId"
-          ></ZonesAlertsList>
-        </div>
+
+    <div
+      class="fixed bottom-3 inset-x-3 md:static pointer-events-auto flex flex-col-reverse md:flex-col gap-2 bg-base-100/95 md:bg-transparent backdrop-blur-xl md:backdrop-blur-none border border-base-300/80 md:border-none rounded-[18px] md:rounded-none uf-panel-shadow md:shadow-none p-2 md:p-0"
+    >
+      <div id="rootBox" class="w-full">
+        <SectionsBar v-model="appSection" />
       </div>
-    </Transition>
+
+      <!-- Riepilogo stato rapido nella sidebar desktop su /Mappa -->
+      <div
+        v-if="appSection === 'Mappa' && !searchTerm.trim() && !isLoading && zonesData.length > 0"
+        class="hidden md:flex items-center justify-between gap-2 pt-2 border-t border-base-300/80 text-xs tabular-nums"
+      >
+        <span class="text-base-content/75">
+          <strong class="text-base-content">{{ zonesData.length }}</strong> zone monitorate ·
+          <span :class="activeAlertsCount > 0 ? 'text-error font-semibold' : 'text-base-content/60'">
+            {{ activeAlertsCount }} {{ activeAlertsCount === 1 ? "allerta" : "allerte" }}
+          </span>
+        </span>
+        <button
+          v-if="activeAlertsCount > 0"
+          type="button"
+          class="text-primary font-semibold hover:underline shrink-0"
+          @click="openAlertsFromSummary"
+        >
+          Mostra allerte
+        </button>
+      </div>
+
+      <Transition name="panel-slide" mode="out-in">
+        <div
+          v-if="appSection === 'Eventi' || appSection === 'Zone'"
+          :key="appSection"
+          class="flex flex-col items-stretch border-b md:border-b-0 md:border-t border-base-300/80 pb-2 md:pb-0 md:pt-2.5"
+        >
+          <div class="md:hidden flex justify-center mb-1.5">
+            <button
+              type="button"
+              class="h-6 px-3 rounded-full bg-base-200 border border-base-300 text-xs font-medium inline-flex items-center gap-1 touch-manipulation"
+              @click="isSheetCollapsed = !isSheetCollapsed"
+            >
+              <ChevronUpIcon v-if="isSheetCollapsed" class="size-3.5" />
+              <ChevronDownIcon v-else class="size-3.5" />
+              <span>{{ isSheetCollapsed ? "Espandi pannello" : "Riduci a mappa" }}</span>
+            </button>
+          </div>
+          <div :class="{ 'hidden md:block': isSheetCollapsed }">
+            <EventsList
+              v-if="appSection === 'Eventi'"
+              v-model:events="eventsData"
+              v-model:searchTerm="searchTerm"
+              v-model:id="currentId"
+            ></EventsList>
+            <ZonesAlertsList
+              v-else-if="appSection === 'Zone'"
+              v-model:searchTerm="searchTerm"
+              v-model:id="currentId"
+            ></ZonesAlertsList>
+          </div>
+        </div>
+      </Transition>
+    </div>
   </section>
 </template>
 

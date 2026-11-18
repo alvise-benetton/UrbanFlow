@@ -109,16 +109,16 @@ watch(
 </script>
 
 <template>
-  <div class="w-full md:w-80 lg:w-96 flex flex-col">
+  <div class="w-full flex flex-col">
     <Transition name="card-fade" mode="out-in">
       <div
         v-if="!id"
         key="zones-list"
-        class="flex flex-col [&>*]:shrink-0 gap-4 rounded-box p-4 sm:p-5 bg-base-200 uf-panel-shadow border border-base-300 max-h-[55dvh] md:max-h-[calc(100dvh-7rem)] overflow-y-auto overscroll-contain"
+        class="flex flex-col [&>*]:shrink-0 gap-3 max-h-[50dvh] md:max-h-[calc(100dvh-11rem)] overflow-y-auto overscroll-contain pr-0.5"
       >
         <!-- Selettore Zone-Allerte -->
         <div
-          class="grid grid-cols-2 gap-1 bg-base-100 rounded-xl p-1 border border-base-300/60 w-full"
+          class="grid grid-cols-2 gap-1 bg-base-200/80 rounded-xl p-1 border border-base-300/60 w-full"
           role="tablist"
         >
           <button
@@ -163,7 +163,7 @@ watch(
           class="flex items-center justify-between gap-2 text-xs"
         >
           <span class="text-base-content/60 shrink-0">Ordina:</span>
-          <div class="inline-grid grid-cols-3 gap-1 bg-base-100 rounded-lg p-1 border border-base-300/60">
+          <div class="inline-grid grid-cols-3 gap-1 bg-base-200/80 rounded-lg p-1 border border-base-300/60">
             <button
               type="button"
               class="h-7 px-2.5 rounded-md text-xs font-medium inline-flex items-center justify-center transition-colors"

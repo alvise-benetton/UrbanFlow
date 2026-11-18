@@ -37,7 +37,7 @@ const openAlertsTab = () => {
 
 <template>
   <nav
-    class="inline-flex items-center bg-base-100/95 backdrop-blur rounded-box p-1.5 gap-1.5 uf-panel-shadow border border-base-300 touch-manipulation select-none"
+    class="grid grid-cols-3 w-full bg-base-200/90 p-1 rounded-xl gap-1 border border-base-300/50 touch-manipulation select-none"
     role="navigation"
     aria-label="Sezioni principali"
   >
@@ -45,11 +45,11 @@ const openAlertsTab = () => {
       v-for="section in sectionsList"
       :key="section.name"
       type="button"
-      class="h-10 px-4 rounded-lg inline-flex items-center justify-center gap-2 text-sm font-medium cursor-pointer transition-colors active:scale-95"
+      class="h-9 px-2 rounded-lg inline-flex items-center justify-center gap-1.5 text-sm transition-colors active:scale-[0.98] cursor-pointer whitespace-nowrap"
       :class="
         section.name === model
-          ? 'bg-neutral text-neutral-content shadow-sm'
-          : 'text-base-content/75 hover:text-base-content hover:bg-base-200/70'
+          ? 'bg-base-100 text-base-content shadow-sm font-semibold'
+          : 'text-base-content/70 hover:text-base-content font-medium'
       "
       :aria-current="section.name === model ? 'page' : undefined"
       @click="setActive(section.name)"

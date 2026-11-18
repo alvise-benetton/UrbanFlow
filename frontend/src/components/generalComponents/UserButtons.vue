@@ -59,9 +59,9 @@ async function logout() {
 
 <template>
   <div class="flex gap-5">
-    <details ref="dropdownRef" class="dropdown">
+    <details ref="dropdownRef" class="dropdown dropdown-end">
       <summary
-        class="btn h-auto min-h-11 bg-base-100 uf-panel-shadow flex items-center gap-2 px-2.5 md:px-4 py-2 border border-base-300 rounded-box cursor-pointer hover:bg-base-200 transition-colors touch-manipulation"
+        class="btn h-11 min-h-11 bg-base-100/90 backdrop-blur-xl uf-panel-shadow flex items-center gap-2 px-2 md:px-3.5 rounded-full md:rounded-box border border-base-300/80 cursor-pointer hover:bg-base-200 transition-colors touch-manipulation"
         aria-label="Menu account"
       >
         <div class="avatar placeholder">

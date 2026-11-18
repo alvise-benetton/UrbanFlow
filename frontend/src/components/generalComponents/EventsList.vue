@@ -72,15 +72,15 @@ function setEvent(ev) {
 </script>
 
 <template>
-  <div class="w-full md:w-80 lg:w-96 flex flex-col">
+  <div class="w-full flex flex-col">
     <Transition name="card-fade" mode="out-in">
       <div
         v-if="urlId === null && urlId !== 'nuovo'"
         key="events-list"
-        class="flex flex-col [&>*]:shrink-0 gap-4 rounded-box p-4 sm:p-5 bg-base-200 uf-panel-shadow border border-base-300 max-h-[55dvh] md:max-h-[calc(100dvh-7rem)] overflow-y-auto overscroll-contain"
+        class="flex flex-col [&>*]:shrink-0 gap-3 max-h-[50dvh] md:max-h-[calc(100dvh-11rem)] overflow-y-auto overscroll-contain pr-0.5"
       >
         <div
-          class="flex items-center justify-between sticky top-0 bg-base-200 border-b border-base-300 pb-3 z-10"
+          class="flex items-center justify-between sticky top-0 bg-base-100/90 backdrop-blur-md border-b border-base-300/80 pb-2.5 z-10"
         >
           <span class="font-bold text-base">Eventi</span>
           <button

@@ -18,9 +18,9 @@ function zoomOut() {
 </script>
 
 <template>
-  <div class="flex flex-col bg-base-200 rounded-box shadow-md overflow-hidden border border-base-300">
+  <div class="flex flex-col bg-base-100/90 backdrop-blur-xl rounded-xl uf-panel-shadow overflow-hidden border border-base-300/80">
     <button
-      class="w-10 h-10 flex justify-center items-center hover:bg-base-300 transition-colors"
+      class="w-10 h-10 flex justify-center items-center hover:bg-base-200 transition-colors"
       id="zoomIn"
       @click="zoomIn"
       :disabled="model >= 17"

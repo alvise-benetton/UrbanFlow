@@ -175,9 +175,9 @@ function closeEvent() {
 
 <template>
   <div>
-    <div class="w-full md:w-80 lg:w-96 max-h-[58dvh] md:max-h-[calc(100dvh-3.5rem)] overflow-y-auto overscroll-contain flex flex-col [&>*]:shrink-0 bg-base-100 p-4 sm:p-5 rounded-box gap-3.5 uf-panel-shadow border border-base-300 relative">
+    <div class="w-full max-h-[56dvh] md:max-h-[calc(100dvh-7.5rem)] overflow-y-auto overscroll-contain flex flex-col [&>*]:shrink-0 gap-3.5 relative pr-0.5">
       <!-- Intestazione sticky con titolo e azioni -->
-      <div class="sticky top-0 bg-base-100 z-10 pb-2.5 border-b border-base-300 flex items-center justify-between gap-2">
+      <div class="sticky top-0 bg-base-100/90 backdrop-blur-md z-10 pb-2.5 border-b border-base-300 flex items-center justify-between gap-2">
         <span
           v-if="!isEditing && urlId !== 'nuovo'"
           class="titleSpan font-bold text-xl leading-tight card-title truncate"

@@ -100,11 +100,12 @@ function selectResult(path) {
 </script>
 
 <template>
-  <div class="w-full md:w-80 lg:w-96">
+  <div class="w-full">
     <label
-      class="w-full h-11 md:h-12 flex items-center gap-2 bg-base-100 rounded-box border border-base-300 uf-panel-shadow focus-within:ring-2 focus-within:ring-primary focus-within:border-primary transition-shadow px-3.5"
+      class="w-full h-10 md:h-10 flex items-center gap-2 bg-base-100/95 md:bg-base-200/85 focus-within:bg-base-100 backdrop-blur-xl md:backdrop-blur-none rounded-xl border border-base-300/80 uf-panel-shadow md:shadow-none focus-within:ring-2 focus-within:ring-primary focus-within:border-primary transition-all px-3"
       id="searchBar"
     >
+      <MagnifyingGlassIcon class="size-4 text-base-content/55 shrink-0" />
       <input
         type="text"
         class="grow min-w-0 text-base md:text-sm bg-transparent outline-none"
@@ -124,12 +125,11 @@ function selectResult(path) {
       >
         <XMarkIcon class="size-4" />
       </button>
-      <MagnifyingGlassIcon v-else class="size-5 text-base-content/60 shrink-0" />
     </label>
 
     <div
       v-if="normalizedQuery && appSection === 'Mappa'"
-      class="w-full max-h-[55dvh] md:max-h-[calc(100vh-6rem)] overflow-y-auto flex flex-col gap-3 bg-base-200 p-4 rounded-box mt-3 uf-panel-shadow border border-base-300"
+      class="w-full max-h-[50dvh] md:max-h-[calc(100dvh-13rem)] overflow-y-auto overscroll-contain flex flex-col gap-3 bg-base-100/95 md:bg-transparent backdrop-blur-xl md:backdrop-blur-none p-3.5 md:p-0 md:pt-2.5 rounded-xl md:rounded-none mt-2 md:mt-2.5 uf-panel-shadow md:shadow-none border md:border-0 md:border-t border-base-300/80"
     >
       <p class="text-xs text-base-content/70">Risultati per: "{{ searchTerm.trim() }}"</p>
 

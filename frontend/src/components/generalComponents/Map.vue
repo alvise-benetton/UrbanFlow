@@ -210,7 +210,7 @@ function focusZones(zoneIds) {
   map.fitBounds(bounds, {
     padding: isMobile
       ? { top: 70, bottom: 320, left: 40, right: 40 }
-      : { top: 80, bottom: 80, left: 80, right: 380 },
+      : { top: 80, bottom: 80, left: 420, right: 80 },
     maxZoom: 16.5,
     duration: 650,
   });
@@ -462,22 +462,11 @@ onUnmounted(() => {
       </button>
     </div>
     <div
-      class="flex items-end gap-2.5 fixed bottom-20 left-3 md:bottom-5 md:left-5 z-10"
+      class="flex items-end justify-end gap-2.5 fixed bottom-24 right-3 md:bottom-10 md:right-4 z-10"
       :class="{ 'max-md:hidden': hasOpenPanel }"
     >
-      <ZoomPane v-model="zoomLevel" @reset="resetView"></ZoomPane>
-      <button
-        type="button"
-        class="sm:hidden btn btn-square min-h-10 h-10 w-10 bg-base-100/95 border border-base-300 uf-panel-shadow touch-manipulation"
-        :class="{ 'btn-primary text-white border-primary': showMobileLegend }"
-        aria-label="Mostra legenda densità"
-        :aria-expanded="showMobileLegend"
-        @click="showMobileLegend = !showMobileLegend"
-      >
-        <InformationCircleIcon class="size-4" />
-      </button>
       <div
-        class="items-center gap-3 flex-wrap max-w-[72vw] sm:max-w-none bg-base-100/95 backdrop-blur px-3.5 py-2.5 sm:py-3 rounded-box uf-panel-shadow border border-base-300 text-xs text-base-content/85 select-none tabular-nums"
+        class="items-center gap-3 flex-wrap max-w-[66vw] sm:max-w-none bg-base-100/90 backdrop-blur-xl px-3.5 py-2.5 sm:py-3 rounded-xl uf-panel-shadow border border-base-300/80 text-xs text-base-content/85 select-none tabular-nums"
         :class="showMobileLegend ? 'flex' : 'hidden sm:flex'"
         aria-label="Legenda densità"
       >
@@ -487,6 +476,17 @@ onUnmounted(() => {
         <span class="flex items-center gap-1.5 py-0.5"><span class="w-3 h-3 rounded-full bg-[#ff7900]"></span>100–150%</span>
         <span class="flex items-center gap-1.5 py-0.5"><span class="w-3 h-3 rounded-full bg-[#ff0000]"></span>≥150%</span>
       </div>
+      <button
+        type="button"
+        class="sm:hidden btn btn-square min-h-10 h-10 w-10 bg-base-100/90 backdrop-blur-xl border border-base-300/80 uf-panel-shadow touch-manipulation"
+        :class="{ 'btn-primary text-white border-primary': showMobileLegend }"
+        aria-label="Mostra legenda densità"
+        :aria-expanded="showMobileLegend"
+        @click="showMobileLegend = !showMobileLegend"
+      >
+        <InformationCircleIcon class="size-4" />
+      </button>
+      <ZoomPane v-model="zoomLevel" @reset="resetView"></ZoomPane>
     </div>
     <ZoneTooltip
       v-if="hoveredZone != null && !isTouchDevice"
