@@ -37,8 +37,11 @@ const updateMousePosition = (event) => {
   if (rafId) return;
   rafId = requestAnimationFrame(() => {
     if (tooltip.value) {
-      tooltip.value.style.top = event.clientY + 12 + "px";
-      tooltip.value.style.left = event.clientX + 14 + "px";
+      const rect = tooltip.value.getBoundingClientRect();
+      const maxLeft = Math.max(8, window.innerWidth - rect.width - 12);
+      const maxTop = Math.max(8, window.innerHeight - rect.height - 12);
+      tooltip.value.style.top = Math.min(event.clientY + 12, maxTop) + "px";
+      tooltip.value.style.left = Math.min(event.clientX + 14, maxLeft) + "px";
     }
     rafId = null;
   });

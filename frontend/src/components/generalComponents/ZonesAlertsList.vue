@@ -12,19 +12,34 @@ const inFocus = reactive({
 const id = defineModel("id");
 const zonesList = inject("listaZone", ref([]));
 const listaMisurazioni = inject("listaMisurazioni", ref([]));
+const isLoading = inject("isLoading", ref(false));
+const zoneTabFocus = inject("zoneTabFocus", ref("zones"));
 const selectedZone = ref(zonesList?.value ? zonesList.value.find((z) => z._id === id.value) : null);
 
 const searchTerm = defineModel("searchTerm");
+const sortBy = ref("name");
 
 const filteredZones = computed(() => {
   if (!zonesList?.value) return [];
-  if (!searchTerm.value) {
-    return zonesList.value;
+  let list = zonesList.value;
+  if (searchTerm.value) {
+    const words = searchTerm.value.toLowerCase().trim().split(/\s+/);
+    list = list.filter((z) =>
+      words.every((word) => (z.name || "").toLowerCase().includes(word))
+    );
   }
-  const words = searchTerm.value.toLowerCase().trim().split(/\s+/);
-  return zonesList.value.filter((z) =>
-    words.every((word) => (z.name || "").toLowerCase().includes(word))
-  );
+  const copy = [...list];
+  if (sortBy.value === "density") {
+    return copy.sort((a, b) => (getDensity(b._id) ?? -1) - (getDensity(a._id) ?? -1));
+  }
+  if (sortBy.value === "ratio") {
+    return copy.sort((a, b) => {
+      const ra = a.threshold ? (getDensity(a._id) ?? 0) / a.threshold : 0;
+      const rb = b.threshold ? (getDensity(b._id) ?? 0) / b.threshold : 0;
+      return rb - ra;
+    });
+  }
+  return copy.sort((a, b) => (a.name || "").localeCompare(b.name || ""));
 });
 
 const alertList = computed(() => {
@@ -65,6 +80,17 @@ const changeFocusedList = (z, a) => {
   inFocus.zones = z;
   inFocus.alerts = a;
 };
+
+watch(
+  zoneTabFocus,
+  (focus) => {
+    if (focus === "alerts") {
+      changeFocusedList(false, true);
+      zoneTabFocus.value = "zones";
+    }
+  },
+  { immediate: true }
+);
 </script>
 
 <template>
@@ -105,8 +131,47 @@ const changeFocusedList = (z, a) => {
           </li>
         </ul>
 
+        <!-- Ordinamento rapido zone -->
+        <div
+          v-if="inFocus.zones && !isLoading && zonesList.length > 0"
+          class="flex items-center justify-between gap-2 text-xs"
+        >
+          <span class="text-base-content/60">Ordina:</span>
+          <div class="flex gap-1 bg-base-100 rounded-lg p-0.5">
+            <button
+              type="button"
+              class="btn btn-xs border-none"
+              :class="sortBy === 'name' ? 'btn-primary text-white' : 'btn-ghost text-base-content/70'"
+              @click="sortBy = 'name'"
+            >
+              A-Z
+            </button>
+            <button
+              type="button"
+              class="btn btn-xs border-none"
+              :class="sortBy === 'density' ? 'btn-primary text-white' : 'btn-ghost text-base-content/70'"
+              @click="sortBy = 'density'"
+            >
+              Densità ↓
+            </button>
+            <button
+              type="button"
+              class="btn btn-xs border-none"
+              :class="sortBy === 'ratio' ? 'btn-primary text-white' : 'btn-ghost text-base-content/70'"
+              @click="sortBy = 'ratio'"
+            >
+              Criticità %
+            </button>
+          </div>
+        </div>
+
+        <!-- Skeleton caricamento -->
+        <div v-if="isLoading && zonesList.length === 0" class="flex flex-col gap-2.5">
+          <div v-for="n in 4" :key="n" class="skeleton h-11 w-full rounded-btn"></div>
+        </div>
+
         <!-- Lista zone -->
-        <div v-if="inFocus.zones && filteredZones.length > 0" class="flex flex-col gap-2.5">
+        <div v-else-if="inFocus.zones && filteredZones.length > 0" class="flex flex-col gap-2.5">
           <button
             v-for="zone in filteredZones"
             :key="zone._id"

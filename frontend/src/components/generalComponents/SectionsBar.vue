@@ -7,6 +7,7 @@ const sectionsList = ref(["Zone", "Mappa", "Eventi"]);
 
 const listaZone = inject("listaZone", ref([]));
 const listaMisurazioni = inject("listaMisurazioni", ref([]));
+const zoneTabFocus = inject("zoneTabFocus", ref("zones"));
 
 const activeAlertsCount = computed(() => {
   if (!listaZone?.value || !listaMisurazioni?.value) return 0;
@@ -20,6 +21,12 @@ const activeAlertsCount = computed(() => {
 const setActive = (section) => {
   model.value = section;
   router.push(`/${section}`);
+};
+
+const openAlertsTab = () => {
+  zoneTabFocus.value = "alerts";
+  model.value = "Zone";
+  router.push("/Zone");
 };
 </script>
 
@@ -40,8 +47,13 @@ const setActive = (section) => {
         <span>{{ section }}</span>
         <span
           v-if="section === 'Zone' && activeAlertsCount > 0"
-          class="badge badge-error badge-xs text-white font-bold"
-          :aria-label="`${activeAlertsCount} allerte attive`"
+          role="button"
+          tabindex="0"
+          class="badge badge-error badge-xs text-white font-bold cursor-pointer hover:scale-110 transition-transform"
+          title="Vai alle allerte attive"
+          :aria-label="`Vai alle ${activeAlertsCount} allerte attive`"
+          @click.stop="openAlertsTab"
+          @keydown.enter.stop="openAlertsTab"
         >
           {{ activeAlertsCount }}
         </span>

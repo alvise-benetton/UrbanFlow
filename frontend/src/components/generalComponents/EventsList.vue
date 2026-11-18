@@ -6,6 +6,7 @@ import router from "../utility/router";
 
 const urlId = defineModel("id");
 const eventsData = inject("listaEventi", ref([]));
+const isLoading = inject("isLoading", ref(false));
 const searchTerm = defineModel("searchTerm");
 
 const filteredEventsData = computed(() => {
@@ -73,37 +74,43 @@ function setEvent(ev) {
           </button>
         </div>
 
-        <div v-if="currentEvents.length > 0" class="flex flex-col gap-2.5">
-          <small class="text-base-content/70">In corso:</small>
-          <button
-            v-for="currentEvent in currentEvents"
-            :key="currentEvent._id"
-            type="button"
-            @click="setEvent(currentEvent)"
-            class="btn bg-base-100 justify-start text-left min-h-11 touch-manipulation"
-          >
-            <span class="truncate w-full">{{ currentEvent.title }}</span>
-          </button>
+        <div v-if="isLoading && eventsData.length === 0" class="flex flex-col gap-2.5">
+          <div v-for="n in 4" :key="n" class="skeleton h-11 w-full rounded-btn"></div>
         </div>
 
-        <div v-if="otherEvents.length > 0" class="flex flex-col gap-2.5">
-          <small class="text-base-content/70">Altri:</small>
-          <button
-            v-for="otherEvent in otherEvents"
-            :key="otherEvent._id"
-            type="button"
-            @click="setEvent(otherEvent)"
-            class="btn bg-base-100 justify-start text-left min-h-11 touch-manipulation"
-          >
-            <span class="truncate w-full">{{ otherEvent.title }}</span>
-          </button>
-        </div>
+        <template v-else>
+          <div v-if="currentEvents.length > 0" class="flex flex-col gap-2.5">
+            <small class="text-base-content/70">In corso:</small>
+            <button
+              v-for="currentEvent in currentEvents"
+              :key="currentEvent._id"
+              type="button"
+              @click="setEvent(currentEvent)"
+              class="btn bg-base-100 justify-start text-left min-h-11 touch-manipulation"
+            >
+              <span class="truncate w-full">{{ currentEvent.title }}</span>
+            </button>
+          </div>
 
-        <div v-if="filteredEventsData.length === 0">
-          <p class="text-sm text-base-content/60 w-full text-center py-4">
-            Nessun evento trovato
-          </p>
-        </div>
+          <div v-if="otherEvents.length > 0" class="flex flex-col gap-2.5">
+            <small class="text-base-content/70">Altri:</small>
+            <button
+              v-for="otherEvent in otherEvents"
+              :key="otherEvent._id"
+              type="button"
+              @click="setEvent(otherEvent)"
+              class="btn bg-base-100 justify-start text-left min-h-11 touch-manipulation"
+            >
+              <span class="truncate w-full">{{ otherEvent.title }}</span>
+            </button>
+          </div>
+
+          <div v-if="filteredEventsData.length === 0">
+            <p class="text-sm text-base-content/60 w-full text-center py-4">
+              Nessun evento trovato
+            </p>
+          </div>
+        </template>
       </div>
 
       <EventDialog

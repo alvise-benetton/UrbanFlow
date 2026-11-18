@@ -1,7 +1,8 @@
 <script setup>
-import { MinusIcon, PlusIcon } from "@heroicons/vue/24/solid";
+import { ArrowPathIcon, MinusIcon, PlusIcon } from "@heroicons/vue/24/solid";
 
 const model = defineModel({ default: 15 });
+const emit = defineEmits(["reset"]);
 
 function zoomIn() {
   if (model.value < 17) {
@@ -38,6 +39,17 @@ function zoomOut() {
       aria-label="Rimpicciolisci mappa"
     >
       <MinusIcon class="size-4" />
+    </button>
+    <div class="h-px bg-base-300"></div>
+    <button
+      type="button"
+      class="w-10 h-10 flex justify-center items-center hover:bg-base-300 transition-colors touch-manipulation"
+      id="zoomReset"
+      @click="emit('reset')"
+      aria-label="Ricentra mappa"
+      title="Ricentra mappa"
+    >
+      <ArrowPathIcon class="size-4" />
     </button>
   </div>
 </template>

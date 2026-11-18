@@ -1,6 +1,7 @@
 <script setup>
-import { computed, ref, watch } from "vue";
+import { computed, inject, ref, watch } from "vue";
 import { MagnifyingGlassIcon, XMarkIcon } from "@heroicons/vue/24/solid";
+import { ExclamationTriangleIcon } from "@heroicons/vue/20/solid";
 import router from "../utility/router";
 
 const appSection = defineModel("appSection");
@@ -8,6 +9,9 @@ const searchTerm = defineModel("searchTerm");
 
 const zones = defineModel("zones");
 const events = defineModel("events");
+const misurazioni = inject("listaMisurazioni", ref([]));
+
+const activeIndex = ref(-1);
 
 const txt = ref("un evento o una zona");
 watch(appSection, (newValue) => {
@@ -36,8 +40,61 @@ const matchedEvents = computed(() => {
   );
 });
 
+const combinedResults = computed(() => [
+  ...matchedZones.value.map((z) => ({ path: `/Zone/${z._id}` })),
+  ...matchedEvents.value.map((e) => ({ path: `/Eventi/${e._id}` })),
+]);
+
+watch(normalizedQuery, () => {
+  activeIndex.value = -1;
+});
+
+function moveActive(delta) {
+  const len = combinedResults.value.length;
+  if (len === 0) return;
+  if (activeIndex.value === -1) {
+    activeIndex.value = delta > 0 ? 0 : len - 1;
+  } else {
+    activeIndex.value = (activeIndex.value + delta + len) % len;
+  }
+}
+
+function selectActive() {
+  if (activeIndex.value >= 0 && combinedResults.value[activeIndex.value]) {
+    selectResult(combinedResults.value[activeIndex.value].path);
+  }
+}
+
+function getZoneDensity(zoneId) {
+  const m = (misurazioni?.value || []).find((item) => String(item.zone) === String(zoneId));
+  return m?.data?.[0]?.density ?? null;
+}
+
+function isZoneAlert(zone) {
+  const d = getZoneDensity(zone._id);
+  return d != null && zone.threshold && d > zone.threshold;
+}
+
+function isEventLive(ev) {
+  if (!ev?.startDate || !ev?.endDate) return false;
+  const now = new Date();
+  return new Date(ev.startDate) <= now && now <= new Date(ev.endDate);
+}
+
+function formatEventDate(dateStr) {
+  if (!dateStr) return "";
+  const d = new Date(dateStr);
+  if (isNaN(d.getTime())) return "";
+  return new Intl.DateTimeFormat("it-IT", {
+    day: "2-digit",
+    month: "2-digit",
+    year: "numeric",
+  }).format(d);
+}
+
 function selectResult(path) {
   searchTerm.value = "";
+  activeIndex.value = -1;
   router.push(path);
 }
 </script>
@@ -54,6 +111,9 @@ function selectResult(path) {
         :placeholder="'Cerca ' + txt"
         v-model="searchTerm"
         @keydown.esc="searchTerm = ''"
+        @keydown.down.prevent="moveActive(1)"
+        @keydown.up.prevent="moveActive(-1)"
+        @keydown.enter.prevent="selectActive()"
       />
       <button
         v-if="searchTerm"
@@ -77,13 +137,20 @@ function selectResult(path) {
         <h3 class="font-bold text-sm">Zone</h3>
         <div class="flex flex-col gap-2">
           <button
-            v-for="zone in matchedZones"
+            v-for="(zone, idx) in matchedZones"
             :key="zone._id"
             type="button"
-            class="btn bg-base-100 w-full justify-start text-left min-h-11"
+            class="btn bg-base-100 w-full flex justify-between text-left min-h-11"
+            :class="{ 'ring-2 ring-primary': activeIndex === idx }"
             @click="selectResult(`/Zone/${zone._id}`)"
           >
-            {{ zone.name }}
+            <span class="truncate">{{ zone.name }}</span>
+            <span v-if="getZoneDensity(zone._id) !== null" class="flex items-center gap-1.5 shrink-0">
+              <span class="badge badge-sm">{{ getZoneDensity(zone._id) }}</span>
+              <span v-if="isZoneAlert(zone)" class="badge badge-error badge-sm text-white">
+                <ExclamationTriangleIcon class="size-3.5" />
+              </span>
+            </span>
           </button>
         </div>
       </div>
@@ -92,13 +159,20 @@ function selectResult(path) {
         <h3 class="font-bold text-sm">Eventi</h3>
         <div class="flex flex-col gap-2">
           <button
-            v-for="event in matchedEvents"
+            v-for="(event, idx) in matchedEvents"
             :key="event._id"
             type="button"
-            class="btn bg-base-100 w-full justify-start text-left min-h-11"
+            class="btn bg-base-100 w-full flex justify-between text-left min-h-11"
+            :class="{ 'ring-2 ring-primary': activeIndex === matchedZones.length + idx }"
             @click="selectResult(`/Eventi/${event._id}`)"
           >
-            {{ event.title }}
+            <span class="truncate">{{ event.title }}</span>
+            <span v-if="isEventLive(event)" class="badge badge-error badge-xs text-white font-bold shrink-0">
+              LIVE
+            </span>
+            <span v-else class="text-xs text-base-content/60 font-mono shrink-0">
+              {{ formatEventDate(event.startDate) }}
+            </span>
           </button>
         </div>
       </div>

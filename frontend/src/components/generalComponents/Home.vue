@@ -1,6 +1,7 @@
 <script setup>
-import { computed, inject, ref,provide, onMounted, onUnmounted } from "vue";
+import { computed, inject, ref, provide, onMounted, onUnmounted, watch } from "vue";
 import { useRouter, useRoute } from "vue-router";
+import { ChevronDownIcon, ChevronUpIcon } from "@heroicons/vue/20/solid";
 
 // Componenti
 import Map from "./Map.vue";
@@ -23,6 +24,9 @@ const zonesData = ref([]);
 const measureData = ref([]);
 const eventsData = ref([]);
 const isInit = ref(false);
+const isLoading = ref(true);
+const zoneTabFocus = ref("zones");
+const isSheetCollapsed = ref(false);
 
 const loadZones = async () => {
   try {
@@ -67,15 +71,17 @@ const loadEvents = async() => {
   }
 };
 
-const loadAll = ()=>{
-  if(isInit.value) // controllo di non aver già caricato
+const loadAll = async () => {
+  if (isInit.value) // controllo di non aver già caricato
     return;
-  loadEvents();
-  loadZones();
-  loadCameraData();
-  loadUser();
   isInit.value = true;
-}
+  isLoading.value = true;
+  try {
+    await Promise.allSettled([loadEvents(), loadZones(), loadCameraData(), loadUser()]);
+  } finally {
+    isLoading.value = false;
+  }
+};
 
 // Provide delle variabili e funzioni di aggiornamento
 provide("listaZone", zonesData);
@@ -84,6 +90,8 @@ provide("listaEventi", eventsData);
 provide("loadAll", loadAll);
 provide("loadEvents", loadEvents);
 provide("loadZones", loadZones);
+provide("isLoading", isLoading);
+provide("zoneTabFocus", zoneTabFocus);
 
 onMounted(()=>{
   loadAll();
@@ -149,6 +157,18 @@ const currentId = computed(() => {
   return pathParts[1] || null;
 });
 
+const selectedEventZoneIds = computed(() => {
+  if (appSection.value !== "Eventi" || !currentId.value || currentId.value === "nuovo") {
+    return [];
+  }
+  const ev = (eventsData.value || []).find((item) => String(item._id) === String(currentId.value));
+  if (!ev || !Array.isArray(ev.zones)) return [];
+  return ev.zones.filter(Boolean).map((z) => String(z._id || z));
+});
+
+watch([appSection, currentId], () => {
+  isSheetCollapsed.value = false;
+});
 
 </script>
 
@@ -157,7 +177,8 @@ const currentId = computed(() => {
     <Map
       v-model:events="eventsData"
       :selectedZoneId="appSection === 'Zone' ? currentId : null"
-      :hasOpenPanel="appSection !== 'Mappa'"
+      :highlightedZoneIds="selectedEventZoneIds"
+      :hasOpenPanel="appSection !== 'Mappa' && !isSheetCollapsed"
     ></Map>
   </section>
 
@@ -199,19 +220,32 @@ const currentId = computed(() => {
       <div
         v-if="appSection === 'Eventi' || appSection === 'Zone'"
         :key="appSection"
-        class="fixed bottom-20 inset-x-3 md:static pointer-events-auto"
+        class="fixed bottom-20 inset-x-3 md:static pointer-events-auto flex flex-col items-stretch"
       >
-        <EventsList
-          v-if="appSection === 'Eventi'"
-          v-model:events="eventsData"
-          v-model:searchTerm="searchTerm"
-          v-model:id="currentId"
-        ></EventsList>
-        <ZonesAlertsList
-          v-else-if="appSection === 'Zone'"
-          v-model:searchTerm="searchTerm"
-          v-model:id="currentId"
-        ></ZonesAlertsList>
+        <div class="md:hidden flex justify-center mb-1.5">
+          <button
+            type="button"
+            class="btn btn-xs bg-base-200/95 backdrop-blur border border-base-300 shadow-md rounded-full px-3 gap-1 touch-manipulation"
+            @click="isSheetCollapsed = !isSheetCollapsed"
+          >
+            <ChevronUpIcon v-if="isSheetCollapsed" class="size-3.5" />
+            <ChevronDownIcon v-else class="size-3.5" />
+            <span>{{ isSheetCollapsed ? "Espandi pannello" : "Riduci a mappa" }}</span>
+          </button>
+        </div>
+        <div :class="{ 'hidden md:block': isSheetCollapsed }">
+          <EventsList
+            v-if="appSection === 'Eventi'"
+            v-model:events="eventsData"
+            v-model:searchTerm="searchTerm"
+            v-model:id="currentId"
+          ></EventsList>
+          <ZonesAlertsList
+            v-else-if="appSection === 'Zone'"
+            v-model:searchTerm="searchTerm"
+            v-model:id="currentId"
+          ></ZonesAlertsList>
+        </div>
       </div>
     </Transition>
   </section>

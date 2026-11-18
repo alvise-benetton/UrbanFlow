@@ -16,6 +16,7 @@ const WARN_ICON_URL =
 
 const props = defineProps({
   selectedZoneId: { type: String, default: null },
+  highlightedZoneIds: { type: Array, default: () => [] },
   hasOpenPanel: { type: Boolean, default: false },
 });
 
@@ -27,7 +28,7 @@ const mapContainer = ref(null);
 let map = null;
 let resizeObserver = null;
 let syncingZoomFromMap = false;
-let lastFocusedZoneId = null;
+let lastFocusedKey = "";
 
 const zoomLevel = ref(15);
 const zonesVisible = ref(true);
@@ -45,10 +46,20 @@ const hoveredPolygon = computed(() => {
   return projectedPolygons.value.find((p) => p.id === String(hoveredZone.value._id)) || null;
 });
 
-const selectedPolygon = computed(() => {
-  if (!props.selectedZoneId) return null;
-  return projectedPolygons.value.find((p) => p.id === String(props.selectedZoneId)) || null;
+const highlightedIdsSet = computed(() => {
+  const ids = new Set((props.highlightedZoneIds || []).map((id) => String(id)));
+  if (props.selectedZoneId) {
+    ids.add(String(props.selectedZoneId));
+  }
+  return ids;
 });
+
+const highlightedPolygons = computed(() => {
+  if (highlightedIdsSet.value.size === 0) return [];
+  return projectedPolygons.value.filter((p) => highlightedIdsSet.value.has(p.id));
+});
+
+const activeFocusIds = computed(() => Array.from(highlightedIdsSet.value).sort());
 
 function colorGradient(densityRatio) {
   if (densityRatio >= 1.5) {
@@ -151,6 +162,7 @@ function updateOverlays() {
       const p = map.project(center);
       markers.push({
         id: String(zona._id),
+        name: zona.name,
         x: p.x,
         y: p.y,
       });
@@ -169,16 +181,29 @@ function clickHandler(zona) {
   router.push(`/Zone/${zona}`);
 }
 
-function focusZone(zoneId) {
-  if (!map || !zoneId || !listaZone?.value) return;
-  const targetZone = listaZone.value.find((z) => String(z._id) === String(zoneId));
-  if (!targetZone || !Array.isArray(targetZone.coordinates) || targetZone.coordinates.length === 0) {
-    return;
-  }
+function focusZones(zoneIds) {
+  if (!map || !listaZone?.value) return;
+  const targetIds = Array.isArray(zoneIds)
+    ? zoneIds.map(String)
+    : zoneIds
+      ? [String(zoneIds)]
+      : [];
+  if (targetIds.length === 0) return;
+
   const bounds = new maplibregl.LngLatBounds();
-  targetZone.coordinates.forEach(([lat, lng]) => {
-    bounds.extend([lng, lat]);
-  });
+  let hasPoint = false;
+  listaZone.value
+    .filter((z) => targetIds.includes(String(z._id)))
+    .forEach((targetZone) => {
+      if (Array.isArray(targetZone.coordinates)) {
+        targetZone.coordinates.forEach(([lat, lng]) => {
+          bounds.extend([lng, lat]);
+          hasPoint = true;
+        });
+      }
+    });
+  if (!hasPoint) return;
+
   const isMobile = typeof window !== "undefined" && window.innerWidth < 768;
   map.fitBounds(bounds, {
     padding: isMobile
@@ -187,7 +212,12 @@ function focusZone(zoneId) {
     maxZoom: 16.5,
     duration: 650,
   });
-  lastFocusedZoneId = String(zoneId);
+  lastFocusedKey = targetIds.slice().sort().join(",");
+}
+
+function resetView() {
+  if (!map) return;
+  map.flyTo({ center: [11.123, 46.0679], zoom: 15, duration: 550 });
 }
 
 function syncLayers() {
@@ -301,8 +331,8 @@ const mapInit = () => {
   map.on("load", () => {
     syncLayers();
     updateOverlays();
-    if (props.selectedZoneId) {
-      focusZone(props.selectedZoneId);
+    if (activeFocusIds.value.length > 0) {
+      focusZones(activeFocusIds.value);
     }
   });
 
@@ -318,14 +348,15 @@ const mapInit = () => {
   });
 
   watch(
-    [() => props.selectedZoneId, listaZone],
-    ([newId]) => {
-      if (!newId) {
-        lastFocusedZoneId = null;
+    [activeFocusIds, listaZone],
+    ([newIds]) => {
+      const nextKey = (newIds || []).join(",");
+      if (!nextKey) {
+        lastFocusedKey = "";
         return;
       }
-      if (String(newId) !== lastFocusedZoneId || !lastFocusedZoneId) {
-        focusZone(newId);
+      if (nextKey !== lastFocusedKey) {
+        focusZones(newIds);
       }
     }
   );
@@ -387,16 +418,17 @@ onUnmounted(() => {
         />
       </g>
       <polygon
-        v-if="selectedPolygon"
-        :points="selectedPolygon.points"
+        v-for="poly in highlightedPolygons"
+        :key="'hl-' + poly.id"
+        :points="poly.points"
         fill="transparent"
-        stroke="rgb(80,80,80)"
+        stroke="rgb(70,70,70)"
         stroke-width="2.5"
         stroke-linecap="round"
         stroke-linejoin="round"
       />
       <polygon
-        v-if="hoveredPolygon && hoveredPolygon.id !== selectedPolygon?.id"
+        v-if="hoveredPolygon && !highlightedIdsSet.has(hoveredPolygon.id)"
         :points="hoveredPolygon.points"
         fill="transparent"
         stroke="rgb(80,80,80)"
@@ -409,17 +441,38 @@ onUnmounted(() => {
       v-if="zonesVisible"
       class="fixed top-0 left-0 w-screen h-screen pointer-events-none z-[2]"
     >
-      <img
+      <button
         v-for="marker in warnMarkers"
         :key="marker.id"
-        :src="WARN_ICON_URL"
-        alt="Allerta"
-        class="absolute -translate-x-1/2 -translate-y-1/2 w-[25px] h-[25px]"
+        type="button"
+        class="absolute -translate-x-1/2 -translate-y-1/2 pointer-events-auto cursor-pointer group flex items-center justify-center w-8 h-8 rounded-full focus:outline-none touch-manipulation"
         :style="{ left: marker.x + 'px', top: marker.y + 'px' }"
-      />
+        :aria-label="'Allerta in ' + marker.name"
+        :title="'Allerta in ' + marker.name"
+        @click="clickHandler(marker.id)"
+      >
+        <span class="absolute w-6 h-6 rounded-full bg-red-500/40 animate-ping"></span>
+        <img
+          :src="WARN_ICON_URL"
+          alt=""
+          class="relative w-[25px] h-[25px] group-hover:scale-110 transition-transform"
+        />
+      </button>
     </div>
-    <div class="flex gap-5 fixed bottom-20 left-3 md:bottom-5 md:left-5 z-10">
-      <ZoomPane v-model="zoomLevel"></ZoomPane>
+    <div
+      class="flex items-end gap-2.5 fixed bottom-20 left-3 md:bottom-5 md:left-5 z-10"
+      :class="{ 'max-md:hidden': hasOpenPanel }"
+    >
+      <ZoomPane v-model="zoomLevel" @reset="resetView"></ZoomPane>
+      <div
+        class="hidden sm:flex items-center gap-2.5 bg-base-200/95 backdrop-blur px-3 py-2 rounded-box shadow-md border border-base-300 text-xs text-base-content/80 select-none"
+        aria-label="Legenda densità"
+      >
+        <span class="flex items-center gap-1"><span class="w-2.5 h-2.5 rounded-full bg-[#2feb0e]"></span>&lt;50%</span>
+        <span class="flex items-center gap-1"><span class="w-2.5 h-2.5 rounded-full bg-[#ffef02]"></span>&gt;70%</span>
+        <span class="flex items-center gap-1"><span class="w-2.5 h-2.5 rounded-full bg-[#ff7900]"></span>&gt;100%</span>
+        <span class="flex items-center gap-1"><span class="w-2.5 h-2.5 rounded-full bg-[#ff0000]"></span>≥150%</span>
+      </div>
     </div>
     <ZoneTooltip
       v-if="hoveredZone != null && !isTouchDevice"
