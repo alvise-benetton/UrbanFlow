@@ -175,7 +175,7 @@ function closeEvent() {
 
 <template>
   <div>
-    <div class="w-full md:w-80 lg:w-96 max-h-[58dvh] md:max-h-[calc(100vh-2.5rem)] overflow-y-auto flex flex-col bg-base-100 p-4 sm:p-5 rounded-box gap-4 shadow-md relative">
+    <div class="w-full md:w-80 lg:w-96 max-h-[58dvh] md:max-h-[calc(100dvh-3.5rem)] overflow-y-auto overscroll-contain flex flex-col [&>*]:shrink-0 bg-base-100 p-4 sm:p-5 rounded-box gap-4 shadow-md relative">
       <div class="flex flex-row gap-2 items-center" v-if="isCurrent">
         <div class="relative flex items-center justify-center">
           <div class="indicator absolute opacity-75 animate-ping"></div>

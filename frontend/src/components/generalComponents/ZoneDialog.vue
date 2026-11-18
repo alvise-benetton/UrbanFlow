@@ -127,7 +127,7 @@ function reportAlert() {
 <template>
   <div>
     <div
-      class="w-full md:w-80 lg:w-96 max-h-[58dvh] md:max-h-[calc(100vh-2.5rem)] overflow-y-auto flex flex-col bg-base-100 p-4 sm:p-5 rounded-box gap-4 shadow-md"
+      class="w-full md:w-80 lg:w-96 max-h-[58dvh] md:max-h-[calc(100dvh-3.5rem)] overflow-y-auto overscroll-contain flex flex-col [&>*]:shrink-0 bg-base-100 p-4 sm:p-5 rounded-box gap-4 shadow-md"
       v-if="localZone"
     >
     <div

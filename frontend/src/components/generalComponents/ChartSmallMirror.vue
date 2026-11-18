@@ -242,12 +242,12 @@ onUnmounted(() => {
 </script>
 
 <template>
-  <div class="flex flex-col bg-base-200 rounded-box p-4 gap-2 overflow-hidden shadow-inner">
+  <div class="flex flex-col shrink-0 bg-base-200 rounded-box p-4 gap-2 shadow-inner">
     <div class="flex justify-between items-center text-xs font-semibold text-gray-500">
       <span>Andamento densità (ultime 24h)</span>
       <span v-if="hasData" class="badge badge-sm badge-info text-white">Live</span>
     </div>
-    <div v-if="hasData" class="relative w-full h-40">
+    <div v-if="hasData" class="relative w-full h-40 min-h-40 shrink-0">
       <canvas ref="chartCanvas"></canvas>
     </div>
     <div v-else class="flex flex-col items-center justify-center p-6 text-gray-400 text-xs gap-1">

@@ -99,7 +99,7 @@ watch(
       <div
         v-if="!id"
         key="zones-list"
-        class="flex flex-col gap-4 rounded-box p-4 sm:p-5 bg-base-200 shadow-md max-h-[55dvh] md:max-h-[calc(100vh-7rem)] overflow-y-auto"
+        class="flex flex-col [&>*]:shrink-0 gap-4 rounded-box p-4 sm:p-5 bg-base-200 shadow-md max-h-[55dvh] md:max-h-[calc(100dvh-7rem)] overflow-y-auto overscroll-contain"
       >
         <!-- Selettore Zone-Allerte -->
         <ul class="menu menu-horizontal bg-base-100 rounded-xl flex gap-1 w-fit m-auto p-1">

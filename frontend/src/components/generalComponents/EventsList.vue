@@ -57,7 +57,7 @@ function setEvent(ev) {
       <div
         v-if="urlId === null && urlId !== 'nuovo'"
         key="events-list"
-        class="flex flex-col gap-4 rounded-box p-4 sm:p-5 bg-base-200 shadow-md max-h-[55dvh] md:max-h-[calc(100vh-7rem)] overflow-y-auto"
+        class="flex flex-col [&>*]:shrink-0 gap-4 rounded-box p-4 sm:p-5 bg-base-200 shadow-md max-h-[55dvh] md:max-h-[calc(100dvh-7rem)] overflow-y-auto overscroll-contain"
       >
         <div
           class="flex items-center justify-between sticky top-0 bg-base-200 border-b border-base-300 pb-3 z-10"
