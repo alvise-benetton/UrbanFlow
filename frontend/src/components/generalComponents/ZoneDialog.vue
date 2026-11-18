@@ -199,7 +199,7 @@ function reportAlert() {
         <button
           v-if="alert.active"
           type="button"
-          class="btn h-10 min-h-10 px-3.5 rounded-lg btn-error text-white flex-1 inline-flex items-center justify-center gap-1.5 text-sm font-medium whitespace-nowrap touch-manipulation"
+          class="btn h-10 min-h-10 px-2.5 rounded-lg btn-error text-white flex-1 inline-flex flex-nowrap items-center justify-center gap-1.5 text-sm font-medium whitespace-nowrap touch-manipulation"
           aria-label="Segnala superamento limite"
           title="Segnala superamento limite"
           @click="reportAlert"
@@ -208,7 +208,7 @@ function reportAlert() {
         </button>
         <button
           type="button"
-          class="btn h-10 min-h-10 px-3.5 rounded-lg btn-outline border-base-300 flex-1 inline-flex items-center justify-center gap-1.5 text-sm font-medium whitespace-nowrap touch-manipulation"
+          class="btn h-10 min-h-10 px-2.5 rounded-lg btn-outline border-base-300 flex-1 inline-flex flex-nowrap items-center justify-center gap-1.5 text-sm font-medium whitespace-nowrap touch-manipulation"
           aria-label="Modifica limite"
           @click="startEditing"
         >
