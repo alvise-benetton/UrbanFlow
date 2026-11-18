@@ -109,13 +109,14 @@ watch(
 </script>
 
 <template>
-  <div class="w-full flex flex-col">
+  <div class="w-full flex flex-col md:h-full md:min-h-0">
     <Transition name="card-fade" mode="out-in">
       <div
         v-if="!id"
         key="zones-list"
-        class="flex flex-col [&>*]:shrink-0 gap-3 max-h-[50dvh] md:max-h-[calc(100dvh-11rem)] overflow-y-auto overscroll-contain pr-0.5"
+        class="flex flex-col [&>*]:shrink-0 gap-3 max-h-[50dvh] md:max-h-none md:flex-1 overflow-y-auto overscroll-contain pr-0.5"
       >
+        <h2 class="hidden md:block text-xl font-bold tracking-tight">Zone</h2>
         <!-- Selettore Zone-Allerte -->
         <div
           class="grid grid-cols-2 gap-1 bg-base-200/80 rounded-xl p-1 border border-base-300/60 w-full"
@@ -202,7 +203,7 @@ watch(
             v-for="zone in filteredZones"
             :key="zone._id"
             type="button"
-            class="btn h-auto py-3 px-3.5 bg-base-100 border border-base-300/80 w-full flex items-center justify-between gap-2.5 touch-manipulation"
+            class="btn h-auto min-h-[50px] py-2.5 px-3.5 bg-base-100 hover:bg-base-100/90 border border-base-300/60 rounded-2xl shadow-sm w-full flex items-center justify-between gap-2.5 touch-manipulation"
             @click="goToZone(zone._id)"
           >
             <div class="flex flex-col flex-1 min-w-0 gap-1.5 text-left">
@@ -250,7 +251,7 @@ watch(
               v-for="zone in alertList"
               :key="zone._id"
               type="button"
-              class="btn h-auto py-3 px-3.5 btn-error text-white w-full flex justify-between min-h-11 touch-manipulation"
+              class="btn h-auto min-h-[50px] py-2.5 px-3.5 rounded-2xl shadow-sm btn-error text-white w-full flex justify-between touch-manipulation"
               @click="goToZone(zone._id)"
             >
               <span class="truncate text-left">{{ zone.name }}</span>

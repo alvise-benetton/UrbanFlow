@@ -1,7 +1,15 @@
 <script setup>
-import { computed, inject, ref, provide, onMounted, onUnmounted, watch } from "vue";
+import { computed, inject, nextTick, ref, provide, onMounted, onUnmounted, watch } from "vue";
 import { useRouter, useRoute } from "vue-router";
-import { ChevronDownIcon, ChevronUpIcon } from "@heroicons/vue/20/solid";
+import {
+  Bars3Icon,
+  ChevronDownIcon,
+  ChevronLeftIcon,
+  ChevronUpIcon,
+  ExclamationTriangleIcon,
+  MagnifyingGlassIcon,
+  XMarkIcon,
+} from "@heroicons/vue/20/solid";
 
 // Componenti
 import Map from "./Map.vue";
@@ -27,6 +35,8 @@ const isInit = ref(false);
 const isLoading = ref(true);
 const zoneTabFocus = ref("zones");
 const isSheetCollapsed = ref(false);
+const isRailCollapsed = ref(false);
+const isSearchDrawerOpen = ref(false);
 
 const loadZones = async () => {
   try {
@@ -166,22 +176,58 @@ const selectedEventZoneIds = computed(() => {
   return ev.zones.filter(Boolean).map((z) => String(z._id || z));
 });
 
-const activeAlertsCount = computed(() => {
-  if (!zonesData.value || !measureData.value) return 0;
-  return zonesData.value.filter((zone) => {
-    const m = measureData.value.find((item) => String(item.zone) === String(zone._id));
-    const density = m?.data?.[0]?.density ?? 0;
-    return zone.threshold && density > zone.threshold;
-  }).length;
+const alertZonesQuickList = computed(() => {
+  if (!zonesData.value || !measureData.value) return [];
+  return zonesData.value
+    .map((zone) => {
+      const m = measureData.value.find((item) => String(item.zone) === String(zone._id));
+      const density = m?.data?.[0]?.density ?? null;
+      const pct =
+        density != null && zone.threshold ? Math.floor(((density - zone.threshold) / zone.threshold) * 100) : 0;
+      return { ...zone, density, pct };
+    })
+    .filter((z) => z.density != null && z.threshold && z.density > z.threshold)
+    .sort((a, b) => b.pct - a.pct);
+});
+
+const activeAlertsCount = computed(() => alertZonesQuickList.value.length);
+
+const showDesktopCard = computed(
+  () => appSection.value === "Zone" || appSection.value === "Eventi" || (appSection.value === "Mappa" && isSearchDrawerOpen.value)
+);
+
+const desktopLeftInset = computed(() => {
+  const railW = isRailCollapsed.value ? 0 : 212;
+  const cardW = showDesktopCard.value ? 390 : 0;
+  return railW + cardW;
 });
 
 function openAlertsFromSummary() {
   zoneTabFocus.value = "alerts";
+  isSearchDrawerOpen.value = false;
   router.push("/Zone");
+}
+
+function openSearchDrawer() {
+  if (appSection.value !== "Mappa") {
+    router.push("/Mappa");
+  }
+  isSearchDrawerOpen.value = true;
+  nextTick(() => {
+    document.querySelector('#appleSearchCard input')?.focus();
+  });
+}
+
+function closeSearchDrawer() {
+  isSearchDrawerOpen.value = false;
+  searchTerm.value = "";
 }
 
 watch([appSection, currentId], () => {
   isSheetCollapsed.value = false;
+  if (appSection.value !== "Mappa") {
+    isSearchDrawerOpen.value = false;
+  }
 });
 
 </script>
@@ -193,65 +239,191 @@ watch([appSection, currentId], () => {
       :selectedZoneId="appSection === 'Zone' ? currentId : null"
       :highlightedZoneIds="selectedEventZoneIds"
       :hasOpenPanel="appSection !== 'Mappa' && !isSheetCollapsed"
+      :leftInset="desktopLeftInset"
     ></Map>
   </section>
 
-  <!-- Account pill top-right (stile Apple Maps Web) -->
+  <!-- Account pill top-right -->
   <section
     id="leftSideBox"
     v-if="appSection !== 'User'"
-    class="fixed top-3 right-3 md:top-4 md:right-4 flex gap-5 z-30"
+    class="fixed top-3 right-3 md:top-5 md:right-5 flex gap-3 z-30"
   >
     <UserButtons></UserButtons>
   </section>
 
-  <!-- Dock laterale sinistro su desktop (maps.apple.com) + ricerca in alto e sheet in basso su mobile -->
+  <!-- Pulsante riapertura rail quando collassata su desktop -->
+  <button
+    v-if="isRailCollapsed"
+    type="button"
+    class="hidden md:flex fixed top-5 left-4 z-30 h-9 w-9 items-center justify-center rounded-[12px] bg-base-100/80 backdrop-blur-2xl border border-base-300/60 uf-apple-control-shadow text-base-content/80 hover:text-base-content transition-colors"
+    aria-label="Mostra barra laterale"
+    title="Mostra barra laterale"
+    @click="isRailCollapsed = false"
+  >
+    <Bars3Icon class="size-4" />
+  </button>
+
+  <!-- Barra laterale sinistra stile Apple Maps Web (212px fissa full-height su desktop) -->
+  <aside
+    v-show="!isRailCollapsed"
+    id="appleRail"
+    class="hidden md:flex fixed top-0 left-0 bottom-0 w-[212px] z-20 flex-col bg-base-100/80 backdrop-blur-2xl border-r border-base-300/60 select-none"
+  >
+    <!-- Header brand + collassa -->
+    <div class="h-[68px] px-4 flex items-center justify-between gap-2 shrink-0">
+      <div class="flex items-center gap-2 min-w-0">
+        <span class="font-bold text-lg tracking-tight text-base-content">UrbanFlow</span>
+        <span class="px-1.5 py-0.5 rounded-md bg-base-300/70 text-[10px] font-semibold text-base-content/65 uppercase">
+          Trento
+        </span>
+      </div>
+      <button
+        type="button"
+        class="w-7 h-7 rounded-lg inline-flex items-center justify-center text-base-content/60 hover:text-base-content hover:bg-base-content/5 transition-colors"
+        aria-label="Nascondi barra laterale"
+        title="Nascondi barra laterale"
+        @click="isRailCollapsed = true"
+      >
+        <ChevronLeftIcon class="size-4" />
+      </button>
+    </div>
+
+    <!-- Navigazione principale -->
+    <div class="px-2.5 flex flex-col gap-1 shrink-0">
+      <button
+        type="button"
+        class="w-full h-[46px] px-2.5 rounded-[12px] flex items-center gap-3 text-sm transition-colors text-left"
+        :class="
+          isSearchDrawerOpen && appSection === 'Mappa'
+            ? 'bg-base-content/[0.06] font-semibold text-base-content'
+            : 'hover:bg-base-content/[0.04] text-base-content/80 font-medium'
+        "
+        @click="openSearchDrawer"
+      >
+        <span
+          class="w-[30px] h-[30px] rounded-[9px] inline-flex items-center justify-center shrink-0 transition-colors"
+          :class="
+            isSearchDrawerOpen && appSection === 'Mappa'
+              ? 'bg-primary text-white shadow-sm'
+              : 'bg-base-200 text-base-content/70'
+          "
+        >
+          <MagnifyingGlassIcon class="size-4" />
+        </span>
+        <span>Cerca</span>
+      </button>
+
+      <SectionsBar v-model="appSection" />
+    </div>
+
+    <!-- Allerte attive rapide (stile "Recenti >" di Apple Maps) -->
+    <div class="flex-1 overflow-y-auto px-2.5 mt-5 pb-3 flex flex-col gap-1 min-h-0">
+      <div class="px-2.5 pb-1 flex items-center justify-between">
+        <button
+          type="button"
+          class="text-xs font-semibold text-base-content/55 hover:text-base-content inline-flex items-center gap-0.5 transition-colors"
+          @click="openAlertsFromSummary"
+        >
+          <span>Allerte attive</span>
+          <span aria-hidden="true">›</span>
+        </button>
+        <span v-if="activeAlertsCount > 0" class="text-[11px] font-semibold text-error tabular-nums">
+          {{ activeAlertsCount }}
+        </span>
+      </div>
+
+      <button
+        v-for="az in alertZonesQuickList.slice(0, 6)"
+        :key="az._id"
+        type="button"
+        class="w-full h-[44px] px-2.5 rounded-[12px] flex items-center gap-2.5 text-sm transition-colors text-left"
+        :class="
+          String(currentId) === String(az._id)
+            ? 'bg-base-content/[0.07] font-semibold text-base-content'
+            : 'hover:bg-base-content/[0.04] text-base-content/85'
+        "
+        @click="router.push(`/Zone/${az._id}`)"
+      >
+        <span class="w-7 h-7 rounded-full bg-error text-white inline-flex items-center justify-center shrink-0">
+          <ExclamationTriangleIcon class="size-3.5" />
+        </span>
+        <span class="truncate flex-1 text-[13px]">{{ az.name }}</span>
+        <span class="text-[11px] font-semibold text-error tabular-nums shrink-0">+{{ az.pct }}%</span>
+      </button>
+
+      <p v-if="!isLoading && alertZonesQuickList.length === 0" class="px-2.5 py-2 text-xs text-base-content/50">
+        Nessuna allerta attiva
+      </p>
+    </div>
+
+    <!-- Footer riepilogo -->
+    <div class="px-4 py-3 border-t border-base-300/60 text-xs text-base-content/60 shrink-0 tabular-nums">
+      <div class="font-medium text-base-content/80">{{ zonesData.length }} zone monitorate</div>
+      <div>{{ eventsData.length }} eventi registrati</div>
+    </div>
+  </aside>
+
+  <!-- Card secondaria sliding (.mw-card di maps.apple.com) su desktop; ricerca top + bottom sheet su mobile -->
   <section
     id="rightSideBox"
-    class="fixed top-3 left-3 right-16 md:right-auto md:top-4 md:left-4 md:w-[380px] z-20 pointer-events-none flex flex-col md:bg-base-100/90 md:backdrop-blur-xl md:border md:border-base-300/80 md:rounded-[18px] md:uf-panel-shadow md:p-3 md:gap-2.5"
+    class="fixed z-20 pointer-events-none"
+    :class="[
+      isRailCollapsed ? 'md:left-0' : 'md:left-[212px]',
+      'md:top-0 md:bottom-0 md:right-auto top-3 left-3 right-16 flex flex-col',
+    ]"
   >
-    <MapSearchBar
-      v-show="!currentId"
-      v-model:appSection="appSection"
-      v-model:searchTerm="searchTerm"
-      v-model:zones="zonesData"
-      v-model:events="eventsData"
-      class="pointer-events-auto"
-    ></MapSearchBar>
+    <!-- Mobile search pill in alto -->
+    <div v-show="!currentId" class="md:hidden pointer-events-auto">
+      <MapSearchBar
+        v-model:appSection="appSection"
+        v-model:searchTerm="searchTerm"
+        v-model:zones="zonesData"
+        v-model:events="eventsData"
+      ></MapSearchBar>
+    </div>
 
+    <!-- Desktop Search Drawer (quando si clicca "Cerca" su /Mappa) -->
+    <Transition name="card-slide">
+      <div
+        v-if="appSection === 'Mappa' && isSearchDrawerOpen"
+        id="appleSearchCard"
+        class="hidden md:flex flex-col w-[390px] h-full bg-base-100/70 backdrop-blur-2xl uf-apple-card-shadow border-r border-base-300/60 pointer-events-auto p-5 gap-4 overflow-y-auto"
+      >
+        <div class="flex items-center justify-between">
+          <h2 class="text-xl font-bold tracking-tight">Cerca</h2>
+          <button
+            type="button"
+            class="w-7 h-7 rounded-full bg-base-content/10 hover:bg-base-content/15 inline-flex items-center justify-center text-base-content/70 transition-colors"
+            aria-label="Chiudi ricerca"
+            @click="closeSearchDrawer"
+          >
+            <XMarkIcon class="size-4" />
+          </button>
+        </div>
+        <MapSearchBar
+          v-model:appSection="appSection"
+          v-model:searchTerm="searchTerm"
+          v-model:zones="zonesData"
+          v-model:events="eventsData"
+          :showInlineSuggestions="true"
+        ></MapSearchBar>
+      </div>
+    </Transition>
+
+    <!-- Contenitore pannelli Zone/Eventi (drawer laterale full-height su desktop, bottom sheet su mobile) -->
     <div
-      class="fixed bottom-3 inset-x-3 md:static pointer-events-auto flex flex-col-reverse md:flex-col gap-2 bg-base-100/95 md:bg-transparent backdrop-blur-xl md:backdrop-blur-none border border-base-300/80 md:border-none rounded-[18px] md:rounded-none uf-panel-shadow md:shadow-none p-2 md:p-0"
+      class="fixed bottom-3 inset-x-3 md:static pointer-events-auto flex flex-col-reverse md:flex-col gap-2 md:gap-0 bg-base-100/95 md:bg-transparent backdrop-blur-xl md:backdrop-blur-none border border-base-300/80 md:border-none rounded-[18px] md:rounded-none uf-panel-shadow md:shadow-none p-2 md:p-0 md:h-full"
     >
-      <div id="rootBox" class="w-full">
+      <div id="rootBox" class="w-full md:hidden">
         <SectionsBar v-model="appSection" />
       </div>
 
-      <!-- Riepilogo stato rapido nella sidebar desktop su /Mappa -->
-      <div
-        v-if="appSection === 'Mappa' && !searchTerm.trim() && !isLoading && zonesData.length > 0"
-        class="hidden md:flex items-center justify-between gap-2 pt-2 border-t border-base-300/80 text-xs tabular-nums"
-      >
-        <span class="text-base-content/75">
-          <strong class="text-base-content">{{ zonesData.length }}</strong> zone monitorate ·
-          <span :class="activeAlertsCount > 0 ? 'text-error font-semibold' : 'text-base-content/60'">
-            {{ activeAlertsCount }} {{ activeAlertsCount === 1 ? "allerta" : "allerte" }}
-          </span>
-        </span>
-        <button
-          v-if="activeAlertsCount > 0"
-          type="button"
-          class="text-primary font-semibold hover:underline shrink-0"
-          @click="openAlertsFromSummary"
-        >
-          Mostra allerte
-        </button>
-      </div>
-
-      <Transition name="panel-slide" mode="out-in">
+      <Transition name="card-slide" mode="out-in">
         <div
           v-if="appSection === 'Eventi' || appSection === 'Zone'"
           :key="appSection"
-          class="flex flex-col items-stretch border-b md:border-b-0 md:border-t border-base-300/80 pb-2 md:pb-0 md:pt-2.5"
+          class="flex flex-col items-stretch border-b md:border-b-0 border-base-300/80 pb-2 md:pb-0 md:w-[390px] md:h-full md:bg-base-100/70 md:backdrop-blur-2xl md:uf-apple-card-shadow md:border-r md:border-base-300/60 md:p-5"
         >
           <div class="md:hidden flex justify-center mb-1.5">
             <button
@@ -264,7 +436,7 @@ watch([appSection, currentId], () => {
               <span>{{ isSheetCollapsed ? "Espandi pannello" : "Riduci a mappa" }}</span>
             </button>
           </div>
-          <div :class="{ 'hidden md:block': isSheetCollapsed }">
+          <div :class="isSheetCollapsed ? 'hidden md:flex md:flex-col md:h-full md:min-h-0' : 'md:flex md:flex-col md:h-full md:min-h-0'">
             <EventsList
               v-if="appSection === 'Eventi'"
               v-model:events="eventsData"
@@ -284,11 +456,18 @@ watch([appSection, currentId], () => {
 </template>
 
 <style scoped>
+.card-slide-enter-active,
 .panel-slide-enter-active {
-  transition: transform 0.18s cubic-bezier(0.16, 1, 0.3, 1), opacity 0.18s ease-out;
+  transition: transform 0.2s cubic-bezier(0.16, 1, 0.3, 1), opacity 0.2s ease-out;
 }
+.card-slide-leave-active,
 .panel-slide-leave-active {
-  transition: transform 0.12s ease-in, opacity 0.12s ease-in;
+  transition: transform 0.14s ease-in, opacity 0.14s ease-in;
+}
+.card-slide-enter-from,
+.card-slide-leave-to {
+  opacity: 0;
+  transform: translateX(-12px);
 }
 .panel-slide-enter-from,
 .panel-slide-leave-to {
@@ -296,6 +475,8 @@ watch([appSection, currentId], () => {
   transform: translateY(8px);
 }
 @media (prefers-reduced-motion: reduce) {
+  .card-slide-enter-active,
+  .card-slide-leave-active,
   .panel-slide-enter-active,
   .panel-slide-leave-active {
     transition: none;

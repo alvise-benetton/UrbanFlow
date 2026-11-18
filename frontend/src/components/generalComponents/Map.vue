@@ -19,6 +19,7 @@ const props = defineProps({
   selectedZoneId: { type: String, default: null },
   highlightedZoneIds: { type: Array, default: () => [] },
   hasOpenPanel: { type: Boolean, default: false },
+  leftInset: { type: Number, default: 212 },
 });
 
 const listaZone = inject("listaZone");
@@ -210,7 +211,7 @@ function focusZones(zoneIds) {
   map.fitBounds(bounds, {
     padding: isMobile
       ? { top: 70, bottom: 320, left: 40, right: 40 }
-      : { top: 80, bottom: 80, left: 420, right: 80 },
+      : { top: 70, bottom: 70, left: Math.max(80, props.leftInset + 40), right: 80 },
     maxZoom: 16.5,
     duration: 650,
   });
@@ -461,14 +462,27 @@ onUnmounted(() => {
         />
       </button>
     </div>
+    <!-- Desktop legenda in basso a sinistra dell'area mappa libera (stile controlli Apple Maps) -->
     <div
-      class="flex items-end justify-end gap-2.5 fixed bottom-24 right-3 md:bottom-10 md:right-4 z-10"
+      class="hidden md:flex fixed bottom-5 z-10 transition-[left] duration-200 items-center gap-3 bg-base-100/80 backdrop-blur-2xl px-3.5 py-2.5 rounded-[12px] uf-apple-control-shadow border border-base-300/60 text-xs text-base-content/85 select-none tabular-nums"
+      :style="{ left: leftInset + 20 + 'px' }"
+      aria-label="Legenda densità"
+    >
+      <span class="flex items-center gap-1.5 py-0.5"><span class="w-3 h-3 rounded-full bg-[#2feb0e]"></span>&lt;50%</span>
+      <span class="flex items-center gap-1.5 py-0.5"><span class="w-3 h-3 rounded-full bg-[#83f30d]"></span>50–70%</span>
+      <span class="flex items-center gap-1.5 py-0.5"><span class="w-3 h-3 rounded-full bg-[#ffef02]"></span>70–100%</span>
+      <span class="flex items-center gap-1.5 py-0.5"><span class="w-3 h-3 rounded-full bg-[#ff7900]"></span>100–150%</span>
+      <span class="flex items-center gap-1.5 py-0.5"><span class="w-3 h-3 rounded-full bg-[#ff0000]"></span>≥150%</span>
+    </div>
+
+    <!-- Pod controlli mappa bottom-right sopra attribuzione -->
+    <div
+      class="flex items-end justify-end gap-2 fixed bottom-24 right-3 md:bottom-10 md:right-5 z-10"
       :class="{ 'max-md:hidden': hasOpenPanel }"
     >
       <div
-        class="items-center gap-3 flex-wrap max-w-[66vw] sm:max-w-none bg-base-100/90 backdrop-blur-xl px-3.5 py-2.5 sm:py-3 rounded-xl uf-panel-shadow border border-base-300/80 text-xs text-base-content/85 select-none tabular-nums"
-        :class="showMobileLegend ? 'flex' : 'hidden sm:flex'"
-        aria-label="Legenda densità"
+        v-if="showMobileLegend"
+        class="md:hidden flex items-center gap-2.5 flex-wrap max-w-[66vw] bg-base-100/90 backdrop-blur-2xl px-3 py-2 rounded-[12px] uf-apple-control-shadow border border-base-300/60 text-xs text-base-content/85 select-none tabular-nums"
       >
         <span class="flex items-center gap-1.5 py-0.5"><span class="w-3 h-3 rounded-full bg-[#2feb0e]"></span>&lt;50%</span>
         <span class="flex items-center gap-1.5 py-0.5"><span class="w-3 h-3 rounded-full bg-[#83f30d]"></span>50–70%</span>
@@ -478,7 +492,7 @@ onUnmounted(() => {
       </div>
       <button
         type="button"
-        class="sm:hidden btn btn-square min-h-10 h-10 w-10 bg-base-100/90 backdrop-blur-xl border border-base-300/80 uf-panel-shadow touch-manipulation"
+        class="md:hidden btn btn-square min-h-9 h-9 w-9 rounded-[12px] bg-base-100/85 backdrop-blur-2xl border border-base-300/60 uf-apple-control-shadow touch-manipulation"
         :class="{ 'btn-primary text-white border-primary': showMobileLegend }"
         aria-label="Mostra legenda densità"
         :aria-expanded="showMobileLegend"

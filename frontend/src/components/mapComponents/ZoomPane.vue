@@ -18,9 +18,9 @@ function zoomOut() {
 </script>
 
 <template>
-  <div class="flex flex-col bg-base-100/90 backdrop-blur-xl rounded-xl uf-panel-shadow overflow-hidden border border-base-300/80">
+  <div class="w-9 flex flex-col bg-base-100/80 backdrop-blur-2xl rounded-[12px] uf-apple-control-shadow overflow-hidden border border-base-300/60">
     <button
-      class="w-10 h-10 flex justify-center items-center hover:bg-base-200 transition-colors"
+      class="w-9 h-9 flex justify-center items-center hover:bg-base-content/5 transition-colors"
       id="zoomIn"
       @click="zoomIn"
       :disabled="model >= 17"
@@ -29,9 +29,9 @@ function zoomOut() {
     >
       <PlusIcon class="size-4" />
     </button>
-    <div class="h-px bg-base-300"></div>
+    <div class="h-px bg-base-300/70"></div>
     <button
-      class="w-10 h-10 flex justify-center items-center hover:bg-base-300 transition-colors"
+      class="w-9 h-9 flex justify-center items-center hover:bg-base-content/5 transition-colors"
       id="zoomOut"
       @click="zoomOut"
       :disabled="model <= 15"
@@ -40,10 +40,10 @@ function zoomOut() {
     >
       <MinusIcon class="size-4" />
     </button>
-    <div class="h-px bg-base-300"></div>
+    <div class="h-px bg-base-300/70"></div>
     <button
       type="button"
-      class="w-10 h-10 flex justify-center items-center hover:bg-base-300 transition-colors touch-manipulation"
+      class="w-9 h-9 flex justify-center items-center hover:bg-base-content/5 transition-colors touch-manipulation"
       id="zoomReset"
       @click="emit('reset')"
       aria-label="Ricentra mappa"

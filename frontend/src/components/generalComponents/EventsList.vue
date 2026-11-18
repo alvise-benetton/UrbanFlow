@@ -72,17 +72,17 @@ function setEvent(ev) {
 </script>
 
 <template>
-  <div class="w-full flex flex-col">
+  <div class="w-full flex flex-col md:h-full md:min-h-0">
     <Transition name="card-fade" mode="out-in">
       <div
         v-if="urlId === null && urlId !== 'nuovo'"
         key="events-list"
-        class="flex flex-col [&>*]:shrink-0 gap-3 max-h-[50dvh] md:max-h-[calc(100dvh-11rem)] overflow-y-auto overscroll-contain pr-0.5"
+        class="flex flex-col [&>*]:shrink-0 gap-3 max-h-[50dvh] md:max-h-none md:flex-1 overflow-y-auto overscroll-contain pr-0.5"
       >
         <div
-          class="flex items-center justify-between sticky top-0 bg-base-100/90 backdrop-blur-md border-b border-base-300/80 pb-2.5 z-10"
+          class="flex items-center justify-between sticky top-0 bg-base-100/85 backdrop-blur-md border-b border-base-300/60 pb-2.5 z-10"
         >
-          <span class="font-bold text-base">Eventi</span>
+          <span class="font-bold text-base md:text-xl tracking-tight">Eventi</span>
           <button
             type="button"
             class="btn btn-square btn-sm btn-primary text-white touch-manipulation"
@@ -106,7 +106,7 @@ function setEvent(ev) {
               :key="ev._id"
               type="button"
               @click="setEvent(ev)"
-              class="btn h-auto py-3 px-3.5 bg-base-100 border border-base-300/80 justify-start text-left touch-manipulation"
+              class="btn h-auto min-h-[50px] py-2.5 px-3.5 bg-base-100 hover:bg-base-100/90 border border-base-300/60 rounded-2xl shadow-sm justify-start text-left touch-manipulation"
             >
               <div class="flex flex-col items-start min-w-0 w-full gap-0.5">
                 <span class="truncate w-full font-medium text-sm">{{ ev.title }}</span>

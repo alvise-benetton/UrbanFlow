@@ -20,6 +20,14 @@ body {
   box-shadow: 0 2px 0 rgba(29, 38, 51, 0.08), 0 8px 24px rgba(29, 38, 51, 0.14);
 }
 
+.uf-apple-control-shadow {
+  box-shadow: 0 -2px 20px rgba(0, 0, 0, 0.1), 0 0 12px rgba(0, 0, 0, 0.1);
+}
+
+.uf-apple-card-shadow {
+  box-shadow: 10px 1px 16px rgba(0, 0, 0, 0.06);
+}
+
 .notyf__toast {
   border-radius: 0.75rem !important;
   font-family: "Atkinson Hyperlegible Next", ui-sans-serif, system-ui, sans-serif !important;

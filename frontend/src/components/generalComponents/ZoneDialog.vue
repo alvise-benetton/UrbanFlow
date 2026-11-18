@@ -137,17 +137,17 @@ function reportAlert() {
 </script>
 
 <template>
-  <div>
+  <div class="md:h-full md:min-h-0 md:flex md:flex-col">
     <div
-      class="w-full max-h-[56dvh] md:max-h-[calc(100dvh-7.5rem)] overflow-y-auto overscroll-contain flex flex-col [&>*]:shrink-0 gap-3.5 pr-0.5"
+      class="w-full max-h-[56dvh] md:max-h-none md:flex-1 overflow-y-auto overscroll-contain flex flex-col [&>*]:shrink-0 gap-3.5 pr-0.5"
       v-if="localZone"
     >
       <!-- Header sticky con titolo e chiusura -->
-      <div class="sticky top-0 bg-base-100/90 backdrop-blur-md z-10 pb-2.5 border-b border-base-300 flex items-center justify-between gap-2">
+      <div class="sticky top-0 bg-base-100/85 backdrop-blur-md z-10 pb-2.5 border-b border-base-300/60 flex items-center justify-between gap-2">
         <span class="font-bold text-xl leading-tight card-title truncate">{{ localZone.name }}</span>
         <button
           type="button"
-          class="btn btn-square btn-sm btn-ghost touch-manipulation shrink-0"
+          class="w-7 h-7 rounded-full bg-base-content/10 hover:bg-base-content/15 flex items-center justify-center transition-colors touch-manipulation shrink-0"
           aria-label="Chiudi scheda zona"
           @click="closeCard"
         >
