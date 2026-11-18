@@ -112,20 +112,20 @@ const searchUserTerm = ref("");
   <div class="flex flex-col gap-5 max-w-4xl">
     <div>
       <h2 class="text-lg font-semibold">Tutti gli utenti</h2>
-      <span class="text-sm text-black/50">
+      <span class="text-sm text-base-content/60">
         Gestisci tutti gli utenti iscritti alla piattaforma
       </span>
     </div>
 
     <div class="flex flex-col sm:flex-row justify-between gap-3">
       <label
-        class="flex flex-row gap-2 border-2 border-base-200 rounded-lg px-3 py-2.5 bg-white text-gray-500 items-center w-full sm:min-w-72 sm:max-w-sm"
+        class="flex flex-row gap-2 border-2 border-base-300 rounded-lg px-3 py-2.5 bg-base-100 text-base-content/60 items-center w-full sm:min-w-72 sm:max-w-sm"
       >
         <MagnifyingGlassIcon class="size-5 shrink-0" />
         <input
           v-model="searchUserTerm"
           type="text"
-          class="outline-none grow min-w-0 text-base md:text-sm"
+          class="outline-none grow min-w-0 text-base md:text-sm bg-transparent text-base-content"
           placeholder="Cerca utente per nome o email..."
         />
       </label>

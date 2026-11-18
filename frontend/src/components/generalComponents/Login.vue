@@ -10,14 +10,14 @@
             type="email"
             placeholder="Email"
             required
-            class="w-full px-4 py-2.5 text-base md:text-sm border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+            class="w-full px-4 py-2.5 text-base md:text-sm bg-white text-gray-900 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
           />
           <input
             v-model="password"
             type="password"
             placeholder="Password"
             required
-            class="w-full px-4 py-2.5 text-base md:text-sm border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+            class="w-full px-4 py-2.5 text-base md:text-sm bg-white text-gray-900 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
           />
 
           <button

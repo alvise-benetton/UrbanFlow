@@ -62,13 +62,13 @@ async function cambiaPass() {
   <div v-if="user" class="flex flex-col gap-5 max-w-2xl">
     <div>
       <h2 class="text-lg font-semibold">Il tuo utente</h2>
-      <span class="text-sm text-black/50">
+      <span class="text-sm text-base-content/60">
         Visualizza le informazioni associate al tuo account
       </span>
     </div>
 
     <!-- Nome e cognome -->
-    <div class="card-box rounded-md shadow-md bg-white flex flex-col sm:flex-row gap-2 sm:gap-6">
+    <div class="card-box rounded-md shadow-md bg-base-100 flex flex-col sm:flex-row gap-2 sm:gap-6">
       <div class="item-box">
         <span class="item-title">Nome:</span>
         <span class="item-value">{{ user?.name }}</span>
@@ -80,7 +80,7 @@ async function cambiaPass() {
     </div>
 
     <!-- Email -->
-    <div class="card-box rounded-md shadow-md bg-white flex flex-row gap-3">
+    <div class="card-box rounded-md shadow-md bg-base-100 flex flex-row gap-3">
       <div class="item-box min-w-0 w-full">
         <span class="item-title">Email:</span>
         <span class="item-value [overflow-wrap:anywhere]">{{ user?.email }}</span>
@@ -88,7 +88,7 @@ async function cambiaPass() {
     </div>
 
     <!-- Ruolo -->
-    <div class="card-box rounded-md shadow-md bg-white flex flex-row gap-3">
+    <div class="card-box rounded-md shadow-md bg-base-100 flex flex-row gap-3">
       <div class="item-box">
         <span class="item-title">Ruolo:</span>
         <span class="item-value">
@@ -155,15 +155,15 @@ async function cambiaPass() {
   @apply flex flex-col gap-1.5 p-4 sm:p-5 w-fit;
 }
 .item-title {
-  @apply text-sm text-black/50;
+  @apply text-sm text-base-content/60;
 }
 .item-value {
   @apply font-normal text-lg sm:text-xl;
 }
 .item-input {
-  @apply outline-none border-2 border-base-200 rounded-md p-2.5;
+  @apply outline-none border-2 border-base-300 bg-base-100 rounded-md p-2.5;
 }
 .item-label {
-  @apply text-sm text-black/50;
+  @apply text-sm text-base-content/60;
 }
 </style>
