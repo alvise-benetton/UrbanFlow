@@ -1,10 +1,32 @@
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
+
 * {
   margin: 0;
   padding: 0;
 }
+
+body {
+  font-family: "Atkinson Hyperlegible Next", ui-sans-serif, system-ui, sans-serif;
+  -webkit-font-smoothing: antialiased;
+}
+
+.tabular-nums {
+  font-variant-numeric: tabular-nums;
+}
+
+.uf-panel-shadow {
+  box-shadow: 0 2px 0 rgba(29, 38, 51, 0.08), 0 8px 24px rgba(29, 38, 51, 0.14);
+}
+
+.notyf__toast {
+  border-radius: 0.75rem !important;
+  font-family: "Atkinson Hyperlegible Next", ui-sans-serif, system-ui, sans-serif !important;
+  font-size: 0.875rem !important;
+  box-shadow: 0 4px 16px rgba(29, 38, 51, 0.18) !important;
+}
+
 .boxFadeIn {
   animation: boxFadeIn 0.4s ease-out;
 }

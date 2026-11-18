@@ -29,14 +29,34 @@ const currentEvents = computed(() => {
   });
 });
 
-const otherEvents = computed(() => {
+const upcomingEvents = computed(() => {
   const now = new Date();
-  return filteredEventsData.value.filter((ev) => {
-    const startDate = new Date(ev.startDate);
-    const endDate = new Date(ev.endDate);
-    return startDate > now || endDate < now;
-  });
+  return filteredEventsData.value.filter((ev) => new Date(ev.startDate) > now);
 });
+
+const pastEvents = computed(() => {
+  const now = new Date();
+  return filteredEventsData.value.filter((ev) => new Date(ev.endDate) < now);
+});
+
+const eventGroups = computed(() => [
+  { key: "current", label: "In corso:", items: currentEvents.value },
+  { key: "upcoming", label: "In programma:", items: upcomingEvents.value },
+  { key: "past", label: "Conclusi:", items: pastEvents.value },
+].filter((g) => g.items.length > 0));
+
+function formatDateRange(ev) {
+  if (!ev?.startDate || !ev?.endDate) return "";
+  const fmt = new Intl.DateTimeFormat("it-IT", {
+    day: "numeric",
+    month: "short",
+    year: "numeric",
+  });
+  const s = new Date(ev.startDate);
+  const e = new Date(ev.endDate);
+  if (isNaN(s.getTime()) || isNaN(e.getTime())) return "";
+  return `${fmt.format(s)} – ${fmt.format(e)}`;
+}
 
 const isEditing = ref(false);
 
@@ -57,7 +77,7 @@ function setEvent(ev) {
       <div
         v-if="urlId === null && urlId !== 'nuovo'"
         key="events-list"
-        class="flex flex-col [&>*]:shrink-0 gap-4 rounded-box p-4 sm:p-5 bg-base-200 shadow-md max-h-[55dvh] md:max-h-[calc(100dvh-7rem)] overflow-y-auto overscroll-contain"
+        class="flex flex-col [&>*]:shrink-0 gap-4 rounded-box p-4 sm:p-5 bg-base-200 uf-panel-shadow border border-base-300 max-h-[55dvh] md:max-h-[calc(100dvh-7rem)] overflow-y-auto overscroll-contain"
       >
         <div
           class="flex items-center justify-between sticky top-0 bg-base-200 border-b border-base-300 pb-3 z-10"
@@ -79,29 +99,21 @@ function setEvent(ev) {
         </div>
 
         <template v-else>
-          <div v-if="currentEvents.length > 0" class="flex flex-col gap-2.5">
-            <small class="text-base-content/70">In corso:</small>
+          <div v-for="group in eventGroups" :key="group.key" class="flex flex-col gap-2">
+            <small class="text-base-content/70 font-medium">{{ group.label }}</small>
             <button
-              v-for="currentEvent in currentEvents"
-              :key="currentEvent._id"
+              v-for="ev in group.items"
+              :key="ev._id"
               type="button"
-              @click="setEvent(currentEvent)"
-              class="btn bg-base-100 justify-start text-left min-h-11 touch-manipulation"
+              @click="setEvent(ev)"
+              class="btn h-auto py-2.5 px-3 bg-base-100 border border-base-300/80 justify-start text-left touch-manipulation"
             >
-              <span class="truncate w-full">{{ currentEvent.title }}</span>
-            </button>
-          </div>
-
-          <div v-if="otherEvents.length > 0" class="flex flex-col gap-2.5">
-            <small class="text-base-content/70">Altri:</small>
-            <button
-              v-for="otherEvent in otherEvents"
-              :key="otherEvent._id"
-              type="button"
-              @click="setEvent(otherEvent)"
-              class="btn bg-base-100 justify-start text-left min-h-11 touch-manipulation"
-            >
-              <span class="truncate w-full">{{ otherEvent.title }}</span>
+              <div class="flex flex-col items-start min-w-0 w-full gap-0.5">
+                <span class="truncate w-full font-medium text-sm">{{ ev.title }}</span>
+                <span class="text-xs text-base-content/60 font-normal tabular-nums">
+                  {{ formatDateRange(ev) }}
+                </span>
+              </div>
             </button>
           </div>
 

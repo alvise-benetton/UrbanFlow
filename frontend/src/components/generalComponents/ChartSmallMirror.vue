@@ -242,15 +242,15 @@ onUnmounted(() => {
 </script>
 
 <template>
-  <div class="flex flex-col shrink-0 bg-base-200 rounded-box p-4 gap-2 shadow-inner">
-    <div class="flex justify-between items-center text-xs font-semibold text-gray-500">
+  <div class="flex flex-col shrink-0 bg-base-200 rounded-box p-4 gap-2 border border-base-300/80">
+    <div class="flex justify-between items-center text-xs font-semibold text-base-content/70">
       <span>Andamento densità (ultime 24h)</span>
-      <span v-if="hasData" class="badge badge-sm badge-info text-white">Live</span>
+      <span v-if="hasData" class="badge badge-sm badge-primary text-white">Live</span>
     </div>
     <div v-if="hasData" class="relative w-full h-40 min-h-40 shrink-0">
       <canvas ref="chartCanvas"></canvas>
     </div>
-    <div v-else class="flex flex-col items-center justify-center p-6 text-gray-400 text-xs gap-1">
+    <div v-else class="flex flex-col items-center justify-center p-6 text-base-content/50 text-xs gap-1">
       <svg class="size-6 opacity-50" fill="none" viewBox="0 0 24 24" stroke="currentColor">
         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" />
       </svg>

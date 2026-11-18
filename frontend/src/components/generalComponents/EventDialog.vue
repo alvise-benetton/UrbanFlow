@@ -175,74 +175,66 @@ function closeEvent() {
 
 <template>
   <div>
-    <div class="w-full md:w-80 lg:w-96 max-h-[58dvh] md:max-h-[calc(100dvh-3.5rem)] overflow-y-auto overscroll-contain flex flex-col [&>*]:shrink-0 bg-base-100 p-4 sm:p-5 rounded-box gap-4 shadow-md relative">
+    <div class="w-full md:w-80 lg:w-96 max-h-[58dvh] md:max-h-[calc(100dvh-3.5rem)] overflow-y-auto overscroll-contain flex flex-col [&>*]:shrink-0 bg-base-100 p-4 sm:p-5 rounded-box gap-3.5 uf-panel-shadow border border-base-300 relative">
+      <!-- Intestazione sticky con titolo e azioni -->
+      <div class="sticky top-0 bg-base-100 z-10 pb-2.5 border-b border-base-300 flex items-center justify-between gap-2">
+        <span
+          v-if="!isEditing && urlId !== 'nuovo'"
+          class="titleSpan font-bold text-xl leading-tight card-title truncate"
+        >
+          {{ localEvent.title }}
+        </span>
+        <input
+          v-else
+          type="text"
+          v-model="localEvent.title"
+          class="font-bold text-base md:text-lg pb-1 border-b-2 border-primary text-primary outline-none w-full bg-transparent min-w-0"
+          placeholder="Aggiungi un titolo..."
+        />
+
+        <div
+          class="flex flex-row items-center gap-1 shrink-0"
+          v-if="!isEditing && urlId !== 'nuovo'"
+        >
+          <button
+            type="button"
+            class="btn btn-square btn-sm btn-ghost touch-manipulation"
+            aria-label="Modifica evento"
+            title="Modifica evento"
+            @click="isEditing = true; localEvent = { ...event }"
+          >
+            <PencilIcon class="size-4" />
+          </button>
+          <button
+            type="button"
+            class="btn btn-square btn-sm btn-ghost touch-manipulation"
+            aria-label="Chiudi scheda evento"
+            @click="closeEvent()"
+          >
+            <XMarkIcon class="size-4" />
+          </button>
+        </div>
+        <div class="flex flex-row items-center gap-1.5 shrink-0" v-else>
+          <button type="button" class="btn btn-sm btn-ghost" @click="abortChanges()">
+            Annulla
+          </button>
+          <button
+            type="button"
+            class="btn btn-sm btn-primary text-white"
+            :disabled="(urlId !== 'nuovo' && JSON.stringify(event) === JSON.stringify(localEvent)) || !localEvent.title?.trim()"
+            @click="saveChanges()"
+          >
+            Salva
+          </button>
+        </div>
+      </div>
+
       <div class="flex flex-row gap-2 items-center" v-if="isCurrent">
         <div class="relative flex items-center justify-center">
           <div class="indicator absolute opacity-75 animate-ping"></div>
           <div class="indicator scale-75"></div>
         </div>
-        <span class="text-red-500 text-xs font-bold tracking-wide">LIVE</span>
-      </div>
-
-      <div
-        class="flex flex-row justify-end gap-2 bg-base-100"
-        v-if="!isEditing && urlId !== 'nuovo'"
-      >
-        <button
-          type="button"
-          class="btn btn-square btn-sm touch-manipulation"
-          aria-label="Modifica evento"
-          @click="isEditing = true; localEvent = { ...event }"
-        >
-          <PencilIcon class="size-4" />
-        </button>
-        <button
-          type="button"
-          class="btn btn-square btn-sm touch-manipulation"
-          aria-label="Chiudi scheda evento"
-          @click="closeEvent()"
-        >
-          <XMarkIcon class="size-4" />
-        </button>
-        <button
-          type="button"
-          class="btn btn-square btn-sm btn-error text-white touch-manipulation"
-          aria-label="Elimina evento"
-          @click="deleteEventModal?.showModal()"
-        >
-          <TrashIcon class="size-4" />
-        </button>
-      </div>
-      <div class="flex flex-row justify-end gap-2" v-else>
-        <button type="button" class="btn btn-sm btn-error text-white" @click="abortChanges()">
-          Annulla
-        </button>
-        <button
-          type="button"
-          class="btn btn-sm btn-primary text-white"
-          :disabled="(urlId !== 'nuovo' && JSON.stringify(event) === JSON.stringify(localEvent)) || !localEvent.title?.trim()"
-          @click="saveChanges()"
-        >
-          Salva
-        </button>
-      </div>
-
-      <!-- Titolo evento -->
-      <div>
-        <span
-          v-if="!isEditing && urlId !== 'nuovo'"
-          class="titleSpan font-bold card-title w-full"
-        >
-          {{ localEvent.title }}
-        </span>
-
-        <input
-          v-else
-          type="text"
-          v-model="localEvent.title"
-          class="font-bold card-title text-base md:text-lg pb-2 border-b-2 border-primary text-primary outline-none w-full bg-transparent"
-          placeholder="Aggiungi un titolo..."
-        />
+        <span class="text-error text-xs font-semibold">Evento in corso</span>
       </div>
 
       <!-- Zone evento -->
@@ -253,21 +245,40 @@ function closeEvent() {
       />
 
       <!-- Data evento -->
-      <DatePicker
-        v-if="localEvent && localEvent.startDate && localEvent.endDate"
-        v-model:event="localEvent"
-        v-model:isEditing="isEditing"
-      />
+      <div class="border-t border-base-300 pt-3">
+        <DatePicker
+          v-if="localEvent && localEvent.startDate && localEvent.endDate"
+          v-model:event="localEvent"
+          v-model:isEditing="isEditing"
+        />
+      </div>
 
       <!-- Dati storici -->
-      <ChartSmallMirror
-        v-if="urlId !== 'nuovo'"
-        v-model:event="localEvent"
-        v-model:zoneList="zoneList"
-        :class="{
-          'opacity-50 grayscale-[50%] pointer-events-none': isEditing,
-        }"
-      />
+      <div v-if="urlId !== 'nuovo'" class="border-t border-base-300 pt-3">
+        <ChartSmallMirror
+          v-model:event="localEvent"
+          v-model:zoneList="zoneList"
+          :class="{
+            'opacity-50 grayscale-[50%] pointer-events-none': isEditing,
+          }"
+        />
+      </div>
+
+      <!-- Elimina evento in fondo lontano dalla chiusura -->
+      <div
+        v-if="!isEditing && urlId !== 'nuovo'"
+        class="border-t border-base-300 pt-3"
+      >
+        <button
+          type="button"
+          class="btn btn-sm btn-ghost text-error hover:bg-error/10 w-full justify-center gap-1.5 touch-manipulation"
+          aria-label="Elimina evento"
+          @click="deleteEventModal?.showModal()"
+        >
+          <TrashIcon class="size-4" />
+          <span>Elimina evento</span>
+        </button>
+      </div>
     </div>
 
     <dialog class="modal" ref="deleteEventModal">

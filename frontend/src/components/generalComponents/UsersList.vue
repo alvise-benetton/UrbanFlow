@@ -67,8 +67,8 @@ const deleteDialog = ref(null);
 </script>
 
 <template>
-  <div class="rounded-lg overflow-hidden shadow-md bg-base-100 border border-base-200">
-    <div v-if="filteredUsers.length > 0" class="divide-y divide-base-200">
+  <div class="rounded-box overflow-hidden shadow-sm bg-base-100 border border-base-300">
+    <div v-if="filteredUsers.length > 0" class="divide-y divide-base-300">
       <div
         class="bg-base-100 flex flex-row items-center justify-between gap-3 p-4 sm:p-5 hover:bg-base-200/50 transition-colors"
         v-for="user in filteredUsers"
@@ -86,18 +86,15 @@ const deleteDialog = ref(null);
               Sei tu
             </span>
           </div>
-          <h3 class="text-xs sm:text-sm text-gray-500 font-mono [overflow-wrap:anywhere]">
+          <h3 class="text-xs sm:text-sm text-base-content/60 [overflow-wrap:anywhere]">
             {{ user.email }}
           </h3>
-          <div class="flex flex-row gap-1 uppercase mt-2">
+          <div class="flex flex-row gap-1 mt-2">
             <span
-              class="badge text-white p-2.5 text-xs font-semibold"
-              :class="{
-                'bg-blue-600': user.role === 'admin',
-                'bg-purple-600': user.role === 'base' || user.role === 'user',
-              }"
+              class="badge badge-sm p-2.5 text-xs font-medium"
+              :class="user.role === 'admin' ? 'badge-primary text-white' : 'badge-neutral'"
             >
-              {{ user.role === "admin" ? "Amministratore" : "Operatore Base" }}
+              {{ user.role === "admin" ? "Amministratore" : "Operatore base" }}
             </span>
           </div>
         </div>
@@ -126,7 +123,7 @@ const deleteDialog = ref(null);
       </div>
     </div>
 
-    <div v-else class="flex flex-col items-center justify-center p-12 text-gray-400 gap-2">
+    <div v-else class="flex flex-col items-center justify-center p-12 text-base-content/50 gap-2">
       <svg class="size-8 opacity-40" fill="none" viewBox="0 0 24 24" stroke="currentColor">
         <path
           stroke-linecap="round"

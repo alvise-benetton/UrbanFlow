@@ -72,10 +72,11 @@ function goToZone(zoneId) {
         v-for="zone in (zoneList || []).filter((z) => localZones.includes(String(z._id)))"
         :key="zone._id"
         type="button"
-        class="btn btn-sm bg-base-200 border-none rounded-md touch-manipulation"
+        class="btn btn-sm bg-base-200 border border-base-300 rounded-lg gap-1.5 touch-manipulation"
         @click="goToZone(zone._id)"
       >
-        Zona {{ zone.name }}
+        <MapPinIcon class="size-3.5 text-primary shrink-0" />
+        <span>{{ zone.name }}</span>
       </button>
       <span
         v-if="!isEditing && localZones.length === 0"

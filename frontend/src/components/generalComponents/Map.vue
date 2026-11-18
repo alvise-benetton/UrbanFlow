@@ -7,6 +7,7 @@ import ZoomPane from "../mapComponents/ZoomPane.vue";
 import eventBus from "../utility/eventBus";
 import ZoneTooltip from "../mapComponents/ZoneTooltip.vue";
 import router from "../utility/router";
+import { InformationCircleIcon } from "@heroicons/vue/20/solid";
 
 maplibregl.setWorkerUrl(workerUrl);
 
@@ -32,6 +33,7 @@ let lastFocusedKey = "";
 
 const zoomLevel = ref(15);
 const zonesVisible = ref(true);
+const showMobileLegend = ref(false);
 const isTouchDevice = ref(
   typeof window !== "undefined" && Boolean(window.matchMedia?.("(pointer: coarse)")?.matches)
 );
@@ -460,17 +462,29 @@ onUnmounted(() => {
       </button>
     </div>
     <div
-      class="flex items-end gap-2.5 fixed bottom-20 left-3 md:bottom-5 md:left-5 z-10"
+      class="flex items-end gap-2 fixed bottom-20 left-3 md:bottom-5 md:left-5 z-10"
       :class="{ 'max-md:hidden': hasOpenPanel }"
     >
       <ZoomPane v-model="zoomLevel" @reset="resetView"></ZoomPane>
+      <button
+        type="button"
+        class="sm:hidden btn btn-sm btn-square bg-base-100/95 border border-base-300 uf-panel-shadow touch-manipulation"
+        :class="{ 'btn-primary text-white border-primary': showMobileLegend }"
+        aria-label="Mostra legenda densità"
+        :aria-expanded="showMobileLegend"
+        @click="showMobileLegend = !showMobileLegend"
+      >
+        <InformationCircleIcon class="size-4" />
+      </button>
       <div
-        class="hidden sm:flex items-center gap-2.5 bg-base-200/95 backdrop-blur px-3 py-2 rounded-box shadow-md border border-base-300 text-xs text-base-content/80 select-none"
+        class="items-center gap-2 sm:gap-2.5 flex-wrap max-w-[70vw] sm:max-w-none bg-base-100/95 backdrop-blur px-3 py-2 rounded-box uf-panel-shadow border border-base-300 text-xs text-base-content/85 select-none tabular-nums"
+        :class="showMobileLegend ? 'flex' : 'hidden sm:flex'"
         aria-label="Legenda densità"
       >
         <span class="flex items-center gap-1"><span class="w-2.5 h-2.5 rounded-full bg-[#2feb0e]"></span>&lt;50%</span>
-        <span class="flex items-center gap-1"><span class="w-2.5 h-2.5 rounded-full bg-[#ffef02]"></span>&gt;70%</span>
-        <span class="flex items-center gap-1"><span class="w-2.5 h-2.5 rounded-full bg-[#ff7900]"></span>&gt;100%</span>
+        <span class="flex items-center gap-1"><span class="w-2.5 h-2.5 rounded-full bg-[#83f30d]"></span>50–70%</span>
+        <span class="flex items-center gap-1"><span class="w-2.5 h-2.5 rounded-full bg-[#ffef02]"></span>70–100%</span>
+        <span class="flex items-center gap-1"><span class="w-2.5 h-2.5 rounded-full bg-[#ff7900]"></span>100–150%</span>
         <span class="flex items-center gap-1"><span class="w-2.5 h-2.5 rounded-full bg-[#ff0000]"></span>≥150%</span>
       </div>
     </div>

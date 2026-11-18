@@ -102,7 +102,7 @@ function selectResult(path) {
 <template>
   <div class="w-full md:w-80 lg:w-96">
     <label
-      class="input w-full h-11 md:h-12 flex items-center gap-2 bg-base-100 px-3"
+      class="w-full h-11 md:h-12 flex items-center gap-2 bg-base-100 rounded-box border border-base-300 uf-panel-shadow focus-within:ring-2 focus-within:ring-primary focus-within:border-primary transition-shadow px-3.5"
       id="searchBar"
     >
       <input
@@ -129,7 +129,7 @@ function selectResult(path) {
 
     <div
       v-if="normalizedQuery && appSection === 'Mappa'"
-      class="w-full max-h-[55dvh] md:max-h-[calc(100vh-6rem)] overflow-y-auto flex flex-col gap-3 bg-base-200 p-4 rounded-box mt-3 shadow-lg border border-base-300"
+      class="w-full max-h-[55dvh] md:max-h-[calc(100vh-6rem)] overflow-y-auto flex flex-col gap-3 bg-base-200 p-4 rounded-box mt-3 uf-panel-shadow border border-base-300"
     >
       <p class="text-xs text-base-content/70">Risultati per: "{{ searchTerm.trim() }}"</p>
 
@@ -140,13 +140,13 @@ function selectResult(path) {
             v-for="(zone, idx) in matchedZones"
             :key="zone._id"
             type="button"
-            class="btn bg-base-100 w-full flex justify-between text-left min-h-11"
+            class="btn bg-base-100 border border-base-300/70 w-full flex justify-between text-left min-h-11"
             :class="{ 'ring-2 ring-primary': activeIndex === idx }"
             @click="selectResult(`/Zone/${zone._id}`)"
           >
             <span class="truncate">{{ zone.name }}</span>
             <span v-if="getZoneDensity(zone._id) !== null" class="flex items-center gap-1.5 shrink-0">
-              <span class="badge badge-sm">{{ getZoneDensity(zone._id) }}</span>
+              <span class="badge badge-sm tabular-nums">{{ getZoneDensity(zone._id) }}</span>
               <span v-if="isZoneAlert(zone)" class="badge badge-error badge-sm text-white">
                 <ExclamationTriangleIcon class="size-3.5" />
               </span>
@@ -162,15 +162,15 @@ function selectResult(path) {
             v-for="(event, idx) in matchedEvents"
             :key="event._id"
             type="button"
-            class="btn bg-base-100 w-full flex justify-between text-left min-h-11"
+            class="btn bg-base-100 border border-base-300/70 w-full flex justify-between text-left min-h-11"
             :class="{ 'ring-2 ring-primary': activeIndex === matchedZones.length + idx }"
             @click="selectResult(`/Eventi/${event._id}`)"
           >
             <span class="truncate">{{ event.title }}</span>
-            <span v-if="isEventLive(event)" class="badge badge-error badge-xs text-white font-bold shrink-0">
-              LIVE
+            <span v-if="isEventLive(event)" class="badge badge-error badge-xs text-white font-semibold shrink-0">
+              In corso
             </span>
-            <span v-else class="text-xs text-base-content/60 font-mono shrink-0">
+            <span v-else class="text-xs text-base-content/60 tabular-nums shrink-0">
               {{ formatEventDate(event.startDate) }}
             </span>
           </button>
@@ -188,8 +188,4 @@ function selectResult(path) {
 </template>
 
 <style scoped>
-.input {
-  outline: none !important;
-  border: none !important;
-}
 </style>

@@ -67,34 +67,48 @@ async function cambiaPass() {
       </span>
     </div>
 
-    <!-- Nome e cognome -->
-    <div class="card-box rounded-md shadow-md bg-base-100 flex flex-col sm:flex-row gap-2 sm:gap-6">
-      <div class="item-box">
-        <span class="item-title">Nome:</span>
-        <span class="item-value">{{ user?.name }}</span>
+    <div class="bg-base-100 rounded-box border border-base-300 shadow-sm divide-y divide-base-300 overflow-hidden">
+      <!-- Avatar header -->
+      <div class="flex items-center gap-4 p-4 sm:p-5 bg-base-100">
+        <div class="avatar placeholder">
+          <div class="bg-primary text-primary-content rounded-full w-12 h-12 flex items-center justify-center text-lg font-bold">
+            {{ user?.name ? user.name.charAt(0).toUpperCase() : "U" }}{{ user?.surname ? user.surname.charAt(0).toUpperCase() : "" }}
+          </div>
+        </div>
+        <div class="flex flex-col min-w-0">
+          <span class="font-semibold text-base sm:text-lg truncate">
+            {{ user?.name }} {{ user?.surname }}
+          </span>
+          <span
+            class="badge badge-sm font-medium w-fit mt-1"
+            :class="user?.role == 'admin' ? 'badge-primary text-white' : 'badge-neutral'"
+          >
+            {{ user?.role == "admin" ? "Amministratore" : "Operatore base" }}
+          </span>
+        </div>
       </div>
-      <div class="item-box">
-        <span class="item-title">Cognome:</span>
-        <span class="item-value">{{ user?.surname }}</span>
-      </div>
-    </div>
 
-    <!-- Email -->
-    <div class="card-box rounded-md shadow-md bg-base-100 flex flex-row gap-3">
-      <div class="item-box min-w-0 w-full">
-        <span class="item-title">Email:</span>
-        <span class="item-value [overflow-wrap:anywhere]">{{ user?.email }}</span>
-      </div>
-    </div>
-
-    <!-- Ruolo -->
-    <div class="card-box rounded-md shadow-md bg-base-100 flex flex-row gap-3">
-      <div class="item-box">
-        <span class="item-title">Ruolo:</span>
-        <span class="item-value">
-          {{ user?.role == "admin" ? "Amministratore" : "Base" }}
-        </span>
-      </div>
+      <!-- Lista definizione compatta -->
+      <dl class="divide-y divide-base-300 text-sm">
+        <div class="flex flex-col sm:flex-row sm:justify-between gap-1 px-4 sm:px-5 py-3.5">
+          <dt class="text-base-content/60">Nome</dt>
+          <dd class="font-medium sm:text-right">{{ user?.name }}</dd>
+        </div>
+        <div class="flex flex-col sm:flex-row sm:justify-between gap-1 px-4 sm:px-5 py-3.5">
+          <dt class="text-base-content/60">Cognome</dt>
+          <dd class="font-medium sm:text-right">{{ user?.surname }}</dd>
+        </div>
+        <div class="flex flex-col sm:flex-row sm:justify-between gap-1 px-4 sm:px-5 py-3.5">
+          <dt class="text-base-content/60">Email</dt>
+          <dd class="font-medium sm:text-right [overflow-wrap:anywhere]">{{ user?.email }}</dd>
+        </div>
+        <div class="flex flex-col sm:flex-row sm:justify-between gap-1 px-4 sm:px-5 py-3.5">
+          <dt class="text-base-content/60">Ruolo</dt>
+          <dd class="font-medium sm:text-right">
+            {{ user?.role == "admin" ? "Amministratore" : "Operatore base" }}
+          </dd>
+        </div>
+      </dl>
     </div>
 
     <button
@@ -151,15 +165,6 @@ async function cambiaPass() {
 </template>
 
 <style scoped>
-.item-box {
-  @apply flex flex-col gap-1.5 p-4 sm:p-5 w-fit;
-}
-.item-title {
-  @apply text-sm text-base-content/60;
-}
-.item-value {
-  @apply font-normal text-lg sm:text-xl;
-}
 .item-input {
   @apply outline-none border-2 border-base-300 bg-base-100 rounded-md p-2.5;
 }

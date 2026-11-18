@@ -1,6 +1,5 @@
 <script setup>
 import {
-  ExclamationTriangleIcon,
   PencilIcon,
   QuestionMarkCircleIcon,
   XMarkIcon,
@@ -68,6 +67,19 @@ const alert = computed(() => {
   };
 });
 
+const pressurePercent = computed(() => {
+  if (currentDensity.value == null || !zone.value?.threshold) return 0;
+  return Math.min(100, Math.max(4, Math.round((currentDensity.value / zone.value.threshold) * 100)));
+});
+
+const pressureBarClass = computed(() => {
+  if (currentDensity.value == null || !zone.value?.threshold) return "bg-base-300";
+  const ratio = currentDensity.value / zone.value.threshold;
+  if (ratio > 1) return "bg-error";
+  if (ratio > 0.7) return "bg-warning";
+  return "bg-success";
+});
+
 function closeCard() {
   router.push("/Zone");
 }
@@ -127,134 +139,144 @@ function reportAlert() {
 <template>
   <div>
     <div
-      class="w-full md:w-80 lg:w-96 max-h-[58dvh] md:max-h-[calc(100dvh-3.5rem)] overflow-y-auto overscroll-contain flex flex-col [&>*]:shrink-0 bg-base-100 p-4 sm:p-5 rounded-box gap-4 shadow-md"
+      class="w-full md:w-80 lg:w-96 max-h-[58dvh] md:max-h-[calc(100dvh-3.5rem)] overflow-y-auto overscroll-contain flex flex-col [&>*]:shrink-0 bg-base-100 p-4 sm:p-5 rounded-box gap-3.5 uf-panel-shadow border border-base-300"
       v-if="localZone"
     >
-    <div
-      class="flex flex-row justify-end gap-2 bg-base-100"
-      v-if="!isEditing"
-    >
-      <button
-        type="button"
-        class="btn btn-square btn-sm touch-manipulation"
-        aria-label="Chiudi scheda zona"
-        @click="closeCard"
-      >
-        <XMarkIcon class="size-4" />
-      </button>
-    </div>
-    <div class="flex flex-row justify-end gap-2" v-else>
-      <button type="button" class="btn btn-sm btn-error text-white" @click="abortChanges">
-        Annulla
-      </button>
-      <button
-        type="button"
-        class="btn btn-sm btn-primary text-white"
-        :disabled="Number(zone?.threshold) === Number(localZone?.threshold)"
-        @click="saveChanges"
-      >
-        Salva
-      </button>
-    </div>
-
-    <span class="font-bold card-title w-full">{{ localZone.name }}</span>
-
-    <!-- Limite e modifica limite -->
-    <div class="flex flex-row items-center gap-2">
-      <button
-        type="button"
-        class="btn btn-sm bg-base-200 border-none rounded-md flex items-center gap-1 touch-manipulation"
-        aria-label="Informazioni su limite e allerta"
-        @click="thresholdDialog.showModal()"
-      >
-        <QuestionMarkCircleIcon class="size-4" />
-        <span>Limite:</span>
-      </button>
-      <input
-        v-model.number="localZone.threshold"
-        ref="thresholdInput"
-        type="number"
-        min="1"
-        class="input input-sm bg-transparent w-full text-base md:text-sm outline-none border rounded-md"
-        :class="{
-          'text-primary border-primary': isEditing,
-          'border-base-300': !isEditing,
-        }"
-        :disabled="!isEditing"
-        placeholder="Imposta un valore"
-      />
-      <button
-        v-if="!isEditing"
-        type="button"
-        class="btn btn-sm btn-square btn-primary btn-outline touch-manipulation"
-        aria-label="Modifica limite"
-        @click="startEditing"
-      >
-        <PencilIcon class="size-4" />
-      </button>
-    </div>
-
-    <!-- Dati densità -->
-    <p class="text-sm">
-      All'ultima rilevazione, il numero di pedoni rilevati in
-      {{ localZone.name }} è stato di
-      <span class="font-semibold">{{ currentDensity !== null ? currentDensity : "--" }}</span>.
-    </p>
-
-    <!-- Card allerta -->
-    <div
-      v-if="alert.active"
-      class="bg-red-500 text-white rounded-box p-4 sm:p-5 flex flex-col gap-3"
-      :class="{ unfocus: isEditing }"
-    >
-      <ExclamationTriangleIcon class="size-8" />
-      <p class="text-sm">
-        Il numero di pedoni rilevati in {{ localZone.name }} è stato superiore al limite impostato di
-        {{ zone?.threshold }}.
-      </p>
-      <div class="flex flex-row items-baseline justify-between gap-2">
-        <span class="stat-value text-2xl">
-          {{ currentDensity }} <span class="text-sm font-normal">pedoni</span>
-        </span>
-        <span class="stat-value text-2xl">+{{ alert.increment_pcent }}%</span>
+      <!-- Header sticky con titolo e chiusura -->
+      <div class="sticky top-0 bg-base-100 z-10 pb-2.5 border-b border-base-300 flex items-center justify-between gap-2">
+        <span class="font-bold text-xl leading-tight card-title truncate">{{ localZone.name }}</span>
+        <button
+          type="button"
+          class="btn btn-square btn-sm btn-ghost touch-manipulation shrink-0"
+          aria-label="Chiudi scheda zona"
+          @click="closeCard"
+        >
+          <XMarkIcon class="size-4" />
+        </button>
       </div>
-      <button
-        type="button"
-        class="btn btn-sm sm:btn-md border-none bg-red-700 hover:bg-red-800 text-white touch-manipulation"
-        @click="reportAlert"
-      >
-        Segnala
-      </button>
-    </div>
 
-    <!-- Lista eventi in corso nella zona -->
-    <div
-      class="flex flex-col gap-2 p-3 bg-base-200 rounded-box items-center"
-      :class="{ unfocus: isEditing }"
-    >
-      <button
-        v-for="event in eventiZona"
-        :key="event._id"
-        type="button"
-        class="btn btn-sm bg-base-100 justify-between w-full min-h-10 touch-manipulation"
-        @click="router.push(`/Eventi/${event._id}`)"
-      >
-        <span class="truncate">{{ event.title }}</span>
-        <div class="indicator relative shrink-0">
-          <div class="indicator absolute top-0 left-0 animate-ping"></div>
+      <!-- Dato principale + stato + barra di pressione -->
+      <div class="flex flex-col gap-2">
+        <div class="flex items-baseline justify-between gap-2 flex-wrap">
+          <div class="flex items-baseline gap-1.5 tabular-nums">
+            <span class="text-3xl font-bold tracking-tight">
+              {{ currentDensity !== null ? currentDensity : "--" }}
+            </span>
+            <span class="text-sm text-base-content/60">pedoni</span>
+          </div>
+          <span
+            v-if="alert.active"
+            class="badge badge-error text-white font-semibold tabular-nums"
+          >
+            Oltre il limite · +{{ alert.increment_pcent }}%
+          </span>
+          <span v-else class="badge badge-ghost text-base-content/70">
+            Nella norma
+          </span>
         </div>
-      </button>
-      <small v-if="eventiZona.length === 0" class="text-base-content/60">
-        Nessun evento in corso nella zona
-      </small>
-    </div>
 
-    <!-- Grafico andamento densità -->
-    <ChartSmallMirror
-      v-model:zone="localZone"
-      :class="{ unfocus: isEditing }"
-    />
-  </div>
+        <div class="flex flex-col gap-1">
+          <div class="h-2 w-full rounded-full bg-base-300 overflow-hidden">
+            <div
+              class="h-full rounded-full transition-all duration-300"
+              :class="pressureBarClass"
+              :style="{ width: pressurePercent + '%' }"
+            ></div>
+          </div>
+          <div class="flex items-center justify-between text-xs text-base-content/60 tabular-nums">
+            <span>Limite: {{ zone?.threshold ?? "--" }} pedoni</span>
+            <span v-if="currentDensity !== null && zone?.threshold">
+              {{ Math.round((currentDensity / zone.threshold) * 100) }}% della soglia
+            </span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Azioni principali e modifica limite inline -->
+      <div v-if="!isEditing" class="flex flex-wrap items-center gap-2">
+        <button
+          v-if="alert.active"
+          type="button"
+          class="btn btn-sm btn-error text-white flex-1 touch-manipulation"
+          @click="reportAlert"
+        >
+          Segnala alla centrale
+        </button>
+        <button
+          type="button"
+          class="btn btn-sm btn-outline border-base-300 gap-1.5 touch-manipulation"
+          :class="{ 'flex-1': !alert.active }"
+          aria-label="Modifica limite"
+          @click="startEditing"
+        >
+          <PencilIcon class="size-3.5" />
+          <span>Modifica limite</span>
+        </button>
+        <button
+          type="button"
+          class="btn btn-sm btn-square btn-ghost text-base-content/60 touch-manipulation"
+          aria-label="Informazioni su limite e allerta"
+          @click="thresholdDialog.showModal()"
+        >
+          <QuestionMarkCircleIcon class="size-4" />
+        </button>
+      </div>
+      <div v-else class="flex flex-col gap-2 bg-base-200 p-3 rounded-lg border border-base-300">
+        <label class="text-xs font-semibold text-base-content/70">
+          Imposta nuovo limite (pedoni)
+        </label>
+        <div class="flex items-center gap-2">
+          <input
+            v-model.number="localZone.threshold"
+            ref="thresholdInput"
+            type="number"
+            min="1"
+            class="input input-sm input-bordered w-full text-base md:text-sm tabular-nums bg-base-100"
+            placeholder="Imposta un valore"
+          />
+          <button
+            type="button"
+            class="btn btn-sm btn-primary text-white shrink-0"
+            :disabled="Number(zone?.threshold) === Number(localZone?.threshold)"
+            @click="saveChanges"
+          >
+            Salva
+          </button>
+          <button type="button" class="btn btn-sm btn-ghost shrink-0" @click="abortChanges">
+            Annulla
+          </button>
+        </div>
+      </div>
+
+      <!-- Eventi in corso nella zona -->
+      <div
+        class="border-t border-base-300 pt-3 flex flex-col gap-2"
+        :class="{ unfocus: isEditing }"
+      >
+        <div class="flex items-center justify-between text-xs">
+          <span class="font-semibold text-base-content/70">Eventi in corso</span>
+          <span v-if="eventiZona.length === 0" class="text-base-content/50">Nessuno</span>
+        </div>
+        <button
+          v-for="event in eventiZona"
+          :key="event._id"
+          type="button"
+          class="btn btn-sm bg-base-200 border-base-300 justify-between w-full min-h-10 touch-manipulation"
+          @click="router.push(`/Eventi/${event._id}`)"
+        >
+          <span class="truncate">{{ event.title }}</span>
+          <span class="badge badge-error badge-xs text-white font-semibold">In corso</span>
+        </button>
+      </div>
+
+      <!-- Grafico andamento densità -->
+      <div class="border-t border-base-300 pt-3">
+        <ChartSmallMirror
+          v-model:zone="localZone"
+          :class="{ unfocus: isEditing }"
+        />
+      </div>
+    </div>
 
   <dialog class="modal" ref="thresholdDialog">
     <div class="modal-box flex flex-col gap-3 max-w-md">

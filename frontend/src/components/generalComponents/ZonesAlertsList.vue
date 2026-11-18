@@ -72,6 +72,21 @@ function getOverThresholdPercent(zone) {
   return Math.floor((density / zone.threshold) * 100 - 100);
 }
 
+function getPressurePercent(zone) {
+  const d = getDensity(zone._id);
+  if (d == null || !zone.threshold) return 0;
+  return Math.min(100, Math.max(4, Math.round((d / zone.threshold) * 100)));
+}
+
+function getPressureClass(zone) {
+  const d = getDensity(zone._id);
+  if (d == null || !zone.threshold) return "bg-base-300";
+  const ratio = d / zone.threshold;
+  if (ratio > 1) return "bg-error";
+  if (ratio > 0.7) return "bg-warning";
+  return "bg-success";
+}
+
 function goToZone(urlId) {
   router.push(`/Zone/${urlId}`);
 }
@@ -99,7 +114,7 @@ watch(
       <div
         v-if="!id"
         key="zones-list"
-        class="flex flex-col [&>*]:shrink-0 gap-4 rounded-box p-4 sm:p-5 bg-base-200 shadow-md max-h-[55dvh] md:max-h-[calc(100dvh-7rem)] overflow-y-auto overscroll-contain"
+        class="flex flex-col [&>*]:shrink-0 gap-4 rounded-box p-4 sm:p-5 bg-base-200 uf-panel-shadow border border-base-300 max-h-[55dvh] md:max-h-[calc(100dvh-7rem)] overflow-y-auto overscroll-contain"
       >
         <!-- Selettore Zone-Allerte -->
         <ul class="menu menu-horizontal bg-base-100 rounded-xl flex gap-1 w-fit m-auto p-1">
@@ -171,26 +186,41 @@ watch(
         </div>
 
         <!-- Lista zone -->
-        <div v-else-if="inFocus.zones && filteredZones.length > 0" class="flex flex-col gap-2.5">
+        <div v-else-if="inFocus.zones && filteredZones.length > 0" class="flex flex-col gap-2">
           <button
             v-for="zone in filteredZones"
             :key="zone._id"
             type="button"
-            class="btn bg-base-100 w-full flex justify-between min-h-11 touch-manipulation"
+            class="btn h-auto py-2.5 px-3 bg-base-100 border border-base-300/80 w-full flex items-center justify-between gap-2.5 touch-manipulation"
             @click="goToZone(zone._id)"
           >
-            <span class="truncate text-left">{{ zone.name }}</span>
-            <div v-if="getDensity(zone._id) !== null" class="flex gap-2 shrink-0">
-              <div class="badge">
-                {{ getDensity(zone._id) }}
+            <div class="flex flex-col flex-1 min-w-0 gap-1.5 text-left">
+              <div class="flex items-center justify-between gap-2">
+                <span class="truncate font-medium text-sm">{{ zone.name }}</span>
+                <span
+                  v-if="getDensity(zone._id) !== null"
+                  class="text-xs tabular-nums text-base-content/70 shrink-0"
+                >
+                  {{ getDensity(zone._id) }}/{{ zone.threshold || "—" }}
+                </span>
               </div>
               <div
-                class="badge badge-error text-white"
-                v-if="getDensity(zone._id) > zone.threshold"
+                v-if="getDensity(zone._id) !== null"
+                class="h-1 w-full rounded-full bg-base-300 overflow-hidden"
               >
-                <ExclamationTriangleIcon class="size-4" />
+                <div
+                  class="h-full rounded-full"
+                  :class="getPressureClass(zone)"
+                  :style="{ width: getPressurePercent(zone) + '%' }"
+                ></div>
               </div>
             </div>
+            <span
+              v-if="getDensity(zone._id) !== null && getDensity(zone._id) > zone.threshold"
+              class="badge badge-error badge-sm text-white shrink-0"
+            >
+              <ExclamationTriangleIcon class="size-3.5" />
+            </span>
           </button>
         </div>
         <p
@@ -209,18 +239,16 @@ watch(
               v-for="zone in alertList"
               :key="zone._id"
               type="button"
-              class="btn w-full flex justify-between bg-red-600 hover:bg-red-800 border-none min-h-11 touch-manipulation"
+              class="btn btn-error text-white w-full flex justify-between min-h-11 touch-manipulation"
               @click="goToZone(zone._id)"
             >
-              <span class="text-white truncate text-left">{{ zone.name }}</span>
+              <span class="truncate text-left">{{ zone.name }}</span>
 
-              <div class="flex gap-2 shrink-0">
-                <div class="badge">
+              <div class="flex gap-2 shrink-0 items-center tabular-nums">
+                <div class="badge bg-black/20 border-none text-white font-semibold">
                   +{{ getOverThresholdPercent(zone) }}%
                 </div>
-                <div class="badge badge-error text-white">
-                  <ExclamationTriangleIcon class="size-4" />
-                </div>
+                <ExclamationTriangleIcon class="size-4 shrink-0" />
               </div>
             </button>
           </template>

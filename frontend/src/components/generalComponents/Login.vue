@@ -1,54 +1,72 @@
 <template>
-  <div class="min-h-dvh flex items-center justify-center bg-gray-100 p-4">
-    <div class="bg-white shadow-lg rounded-lg p-6 sm:p-8 w-full max-w-sm">
-      <h2 class="text-2xl font-bold text-center text-gray-800">Accedi</h2>
-      <p class="text-center text-gray-500 mb-6">Inserisci le tue credenziali</p>
+  <div class="min-h-dvh flex items-center justify-center bg-base-200 p-4 text-base-content">
+    <div class="bg-base-100 uf-panel-shadow border border-base-300 rounded-box p-6 sm:p-8 w-full max-w-sm">
+      <div class="flex flex-col items-center text-center mb-6">
+        <div class="flex items-center gap-2 mb-2">
+          <div class="w-9 h-9 rounded-lg bg-primary text-primary-content flex items-center justify-center font-bold text-base">
+            UF
+          </div>
+          <span class="text-xl font-bold tracking-tight">UrbanFlow</span>
+        </div>
+        <p class="text-xs text-base-content/60 mb-3">Monitoraggio flussi pedonali · Trento</p>
+        <h2 class="text-lg font-semibold">Accedi al pannello</h2>
+      </div>
+
       <form @submit.prevent="login">
-        <div class="space-y-4">
+        <div class="space-y-3.5">
           <input
             v-model="email"
             type="email"
             placeholder="Email"
             required
-            class="w-full px-4 py-2.5 text-base md:text-sm bg-white text-gray-900 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+            class="input input-bordered w-full text-base md:text-sm bg-base-100"
           />
-          <input
-            v-model="password"
-            type="password"
-            placeholder="Password"
-            required
-            class="w-full px-4 py-2.5 text-base md:text-sm bg-white text-gray-900 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
-          />
+          <div class="relative flex items-center">
+            <input
+              v-model="password"
+              :type="showPassword ? 'text' : 'password'"
+              placeholder="Password"
+              required
+              class="input input-bordered w-full pr-10 text-base md:text-sm bg-base-100"
+            />
+            <button
+              type="button"
+              class="btn btn-ghost btn-xs btn-circle absolute right-2 text-base-content/60"
+              :aria-label="showPassword ? 'Nascondi password' : 'Mostra password'"
+              @click="showPassword = !showPassword"
+            >
+              <EyeSlashIcon v-if="showPassword" class="size-4" />
+              <EyeIcon v-else class="size-4" />
+            </button>
+          </div>
 
           <button
             type="submit"
-            class="w-full min-h-11 bg-blue-500 text-white py-2 rounded-lg hover:bg-blue-600 active:scale-[0.99] transition touch-manipulation"
+            class="btn btn-primary text-white w-full min-h-11 touch-manipulation"
             :disabled="loading"
           >
-            {{ loading ? "Caricamento..." : "Accedi" }}
+            {{ loading ? "Accesso in corso..." : "Accedi" }}
           </button>
         </div>
       </form>
 
-      <div class="text-xs text-center text-gray-500 mt-5 space-y-1.5">
-        <p class="font-semibold text-gray-700">Account demo (clicca per compilare)</p>
+      <div class="text-xs text-center text-base-content/70 mt-6 pt-4 border-t border-base-300 space-y-1.5">
+        <p class="font-semibold text-base-content">Account demo (clicca per compilare)</p>
         <button
           type="button"
-          class="w-full hover:bg-gray-100 rounded-md px-2 py-1.5 transition cursor-pointer touch-manipulation"
+          class="w-full bg-base-200 hover:bg-base-300 rounded-lg px-2.5 py-2 transition cursor-pointer touch-manipulation flex items-center justify-between gap-2"
           @click="fillDemo('mario.rossi@example.com', 'password_mario')"
         >
-          <span class="font-mono text-gray-700">mario.rossi@example.com</span> ·
-          <span class="font-mono">password_mario</span>
-          <span class="text-gray-400"> (admin)</span>
+          <span class="truncate font-medium">mario.rossi@example.com</span>
+          <span class="badge badge-primary badge-xs text-white shrink-0">Admin</span>
         </button>
         <button
           type="button"
-          class="w-full hover:bg-gray-100 rounded-md px-2 py-1.5 transition cursor-pointer touch-manipulation"
+          class="w-full bg-base-200 hover:bg-base-300 rounded-lg px-2.5 py-2 transition cursor-pointer touch-manipulation flex items-center justify-between gap-2"
           @click="fillDemo('luca.bianchi@example.com', 'password_luca')"
         >
-          <span class="font-mono text-gray-700">luca.bianchi@example.com</span> ·
-          <span class="font-mono">password_luca</span>
-          <span class="text-gray-400"> (operatore)</span>
+          <span class="truncate font-medium">luca.bianchi@example.com</span>
+          <span class="badge badge-neutral badge-xs shrink-0">Operatore</span>
         </button>
       </div>
 
@@ -56,24 +74,17 @@
       <div
         v-if="showError"
         id="toast-error"
-        class="flex items-center w-full p-4 text-gray-600 bg-red-50 border border-red-200 rounded-lg shadow-sm mt-4"
+        class="alert alert-error text-white text-sm mt-4 py-2.5 px-3"
         role="alert"
       >
-        <div class="inline-flex items-center justify-center shrink-0 w-8 h-8 text-red-500 bg-red-100 rounded-lg">
-          <svg class="w-5 h-5" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" fill="currentColor" viewBox="0 0 20 20">
-            <path d="M10 .5a9.5 9.5 0 1 0 9.5 9.5A9.51 9.51 0 0 0 10 .5Zm3.707 11.793a1 1 0 1 1-1.414 1.414L10 11.414l-2.293 2.293a1 1 0 0 1-1.414-1.414L8.586 10 6.293 7.707a1 1 0 0 1 1.414-1.414L10 8.586l2.293-2.293a1 1 0 0 1 1.414 1.414L11.414 10l2.293 2.293Z"/>
-          </svg>
-        </div>
-        <div class="ms-3 text-sm font-normal">{{ errorMessage }}</div>
+        <span class="flex-1">{{ errorMessage }}</span>
         <button
           type="button"
           aria-label="Chiudi errore"
           @click="showError = false"
-          class="ms-auto -mx-1.5 -my-1.5 bg-white text-gray-400 hover:text-gray-900 rounded-lg focus:ring-2 focus:ring-gray-300 p-1.5 hover:bg-gray-100 inline-flex items-center justify-center h-8 w-8"
+          class="btn btn-ghost btn-xs btn-circle text-white"
         >
-          <svg class="w-3 h-3" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 14 14">
-            <path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="m1 1 6 6m0 0 6 6M7 7l6-6M7 7l-6 6"/>
-          </svg>
+          ✕
         </button>
       </div>
     </div>
@@ -83,6 +94,7 @@
 <script setup>
 import { ref } from "vue";
 import { useRouter } from "vue-router";
+import { EyeIcon, EyeSlashIcon } from "@heroicons/vue/20/solid";
 import { authFetch } from "../utility/router";
 import { API_BASE_URL as API_URL } from "@/services/apiConfig";
 
@@ -90,6 +102,7 @@ const router = useRouter();
 
 const email = ref("");
 const password = ref("");
+const showPassword = ref(false);
 const loading = ref(false);
 const showError = ref(false);
 const errorMessage = ref("");

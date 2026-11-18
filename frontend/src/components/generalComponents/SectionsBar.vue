@@ -1,9 +1,14 @@
 <script setup>
 import { computed, inject, ref } from "vue";
+import { CalendarDaysIcon, MapIcon, MapPinIcon } from "@heroicons/vue/20/solid";
 import router from "../utility/router";
 
 const model = defineModel({ default: "Mappa" });
-const sectionsList = ref(["Zone", "Mappa", "Eventi"]);
+const sectionsList = [
+  { name: "Zone", icon: MapPinIcon },
+  { name: "Mappa", icon: MapIcon },
+  { name: "Eventi", icon: CalendarDaysIcon },
+];
 
 const listaZone = inject("listaZone", ref([]));
 const listaMisurazioni = inject("listaMisurazioni", ref([]));
@@ -32,24 +37,25 @@ const openAlertsTab = () => {
 
 <template>
   <ul
-    class="menu menu-horizontal bg-base-200 rounded-box gap-1.5 sm:gap-2 px-2.5 shadow-md touch-manipulation select-none"
+    class="menu menu-horizontal bg-base-100/95 backdrop-blur rounded-box gap-1 sm:gap-1.5 p-1.5 uf-panel-shadow border border-base-300 touch-manipulation select-none"
     role="navigation"
     aria-label="Sezioni principali"
   >
-    <li v-for="section in sectionsList" :key="section">
+    <li v-for="section in sectionsList" :key="section.name">
       <button
         type="button"
-        :class="{ active: section === model }"
-        class="cursor-pointer min-h-10 px-3.5 sm:px-4 transition-transform active:scale-95 flex items-center gap-1.5"
-        :aria-current="section === model ? 'page' : undefined"
-        @click="setActive(section)"
+        :class="{ active: section.name === model }"
+        class="cursor-pointer min-h-10 px-3 sm:px-4 transition-transform active:scale-95 flex items-center gap-1.5 font-medium"
+        :aria-current="section.name === model ? 'page' : undefined"
+        @click="setActive(section.name)"
       >
-        <span>{{ section }}</span>
+        <component :is="section.icon" class="size-4 shrink-0" />
+        <span>{{ section.name }}</span>
         <span
-          v-if="section === 'Zone' && activeAlertsCount > 0"
+          v-if="section.name === 'Zone' && activeAlertsCount > 0"
           role="button"
           tabindex="0"
-          class="badge badge-error badge-xs text-white font-bold cursor-pointer hover:scale-110 transition-transform"
+          class="badge badge-error badge-xs text-white font-bold cursor-pointer hover:scale-110 transition-transform tabular-nums"
           title="Vai alle allerte attive"
           :aria-label="`Vai alle ${activeAlertsCount} allerte attive`"
           @click.stop="openAlertsTab"

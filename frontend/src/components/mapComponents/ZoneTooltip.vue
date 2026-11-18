@@ -61,14 +61,14 @@ onUnmounted(() => {
   <div
     v-if="zone"
     id="tooltip"
-    class="fixed pointer-events-none bg-base-100/90 backdrop-blur-md p-3.5 rounded-box flex flex-col gap-2 shadow-xl border border-base-300 z-50 min-w-56"
+    class="fixed pointer-events-none bg-base-100/95 backdrop-blur-md p-3.5 rounded-box flex flex-col gap-2 uf-panel-shadow border border-base-300 z-50 min-w-56"
     ref="tooltip"
   >
     <div class="flex justify-between items-center gap-3">
       <span class="font-bold text-sm text-base-content">{{ zone.name }}</span>
       <div
         v-if="isAlert"
-        class="badge badge-error badge-sm text-white gap-1 font-semibold animate-pulse"
+        class="badge badge-error badge-sm text-white gap-1 font-semibold"
       >
         <ExclamationTriangleIcon class="size-3" />
         Allerta
@@ -77,9 +77,9 @@ onUnmounted(() => {
 
     <!-- Metriche densità -->
     <div class="flex items-center justify-between text-xs bg-base-200/80 p-2 rounded-lg gap-3">
-      <span class="text-gray-500">Densità stimata:</span>
+      <span class="text-base-content/60">Densità stimata:</span>
       <span
-        class="font-mono font-bold"
+        class="tabular-nums font-bold"
         :class="isAlert ? 'text-error' : 'text-success'"
       >
         {{ density !== null ? density : '--' }} / {{ zone.threshold || '--' }} pers/m²
@@ -87,8 +87,8 @@ onUnmounted(() => {
     </div>
 
     <!-- Eventi in corso -->
-    <div v-if="currentEvents.length > 0" class="flex flex-col gap-1 pt-1 border-t border-base-200">
-      <small class="text-xs text-gray-500 font-medium">Eventi in corso:</small>
+    <div v-if="currentEvents.length > 0" class="flex flex-col gap-1 pt-1 border-t border-base-300">
+      <small class="text-xs text-base-content/60 font-medium">Eventi in corso:</small>
       <div class="flex flex-col gap-1">
         <span
           v-for="event in currentEvents"

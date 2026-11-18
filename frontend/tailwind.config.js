@@ -1,12 +1,76 @@
 // tailwind.config.js
 module.exports = {
   content: ["./index.html", "./src/**/*.{vue,js,ts,jsx,tsx}"],
-  darkMode: true, // or 'media' or 'class'
   theme: {
-    extend: {},
+    extend: {
+      fontFamily: {
+        sans: ["'Atkinson Hyperlegible Next'", "ui-sans-serif", "system-ui", "sans-serif"],
+      },
+    },
   },
   variants: {
     extend: {},
   },
   plugins: [require("daisyui")],
+  daisyui: {
+    themes: [
+      {
+        "urbanflow-light": {
+          "color-scheme": "light",
+          primary: "#1F4FA3",
+          "primary-content": "#FFFFFF",
+          secondary: "#3B69B8",
+          "secondary-content": "#FFFFFF",
+          accent: "#F59331",
+          "accent-content": "#1D2633",
+          neutral: "#334155",
+          "neutral-content": "#F8FAFC",
+          "base-100": "#FFFFFF",
+          "base-200": "#F3F5F8",
+          "base-300": "#DCE1E8",
+          "base-content": "#1D2633",
+          info: "#1F4FA3",
+          "info-content": "#FFFFFF",
+          success: "#1F7A4C",
+          "success-content": "#FFFFFF",
+          warning: "#D97706",
+          "warning-content": "#1D2633",
+          error: "#B3261E",
+          "error-content": "#FFFFFF",
+          "--rounded-box": "0.875rem",
+          "--rounded-btn": "0.5rem",
+          "--rounded-badge": "9999px",
+        },
+      },
+      {
+        "urbanflow-dark": {
+          "color-scheme": "dark",
+          primary: "#5B8DEF",
+          "primary-content": "#FFFFFF",
+          secondary: "#7BA5F5",
+          "secondary-content": "#121820",
+          accent: "#F59331",
+          "accent-content": "#121820",
+          neutral: "#2A3442",
+          "neutral-content": "#E6EAF0",
+          "base-100": "#18202B",
+          "base-200": "#121820",
+          "base-300": "#2A3442",
+          "base-content": "#E6EAF0",
+          info: "#5B8DEF",
+          "info-content": "#FFFFFF",
+          success: "#34A86B",
+          "success-content": "#FFFFFF",
+          warning: "#F59E0B",
+          "warning-content": "#121820",
+          error: "#E04F44",
+          "error-content": "#FFFFFF",
+          "--rounded-box": "0.875rem",
+          "--rounded-btn": "0.5rem",
+          "--rounded-badge": "9999px",
+        },
+      },
+    ],
+    darkTheme: "urbanflow-dark",
+  },
 };

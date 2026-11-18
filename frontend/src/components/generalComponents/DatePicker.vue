@@ -77,7 +77,7 @@ const eventStatus = computed(() => {
       />
       <span
         v-else
-        class="btn-sm rounded-md btn btn-primary btn-outline font-mono text-xs flex items-center justify-center w-full"
+        class="bg-base-200/80 border border-base-300 rounded-lg px-3 py-1.5 text-xs tabular-nums flex items-center justify-center w-full"
       >
         {{ changeDateFormat(event.startDate) }}
       </span>
@@ -95,7 +95,7 @@ const eventStatus = computed(() => {
       />
       <span
         v-else
-        class="btn-sm rounded-md btn btn-primary btn-outline font-mono text-xs flex items-center justify-center w-full"
+        class="bg-base-200/80 border border-base-300 rounded-lg px-3 py-1.5 text-xs tabular-nums flex items-center justify-center w-full"
       >
         {{ changeDateFormat(event.endDate) }}
       </span>
