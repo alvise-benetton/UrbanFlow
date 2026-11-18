@@ -14,18 +14,11 @@ const misurazioni = inject("listaMisurazioni", ref([]));
 const injectedZones = inject("listaZone", ref([]));
 
 const PALETTE = [
-  "rgb(59, 130, 246)",
-  "rgb(16, 185, 129)",
-  "rgb(245, 158, 11)",
-  "rgb(168, 85, 247)",
-  "rgb(236, 72, 153)",
-];
-const FILL_PALETTE = [
-  "rgba(59, 130, 246, 0.14)",
-  "rgba(16, 185, 129, 0.12)",
-  "rgba(245, 158, 11, 0.12)",
-  "rgba(168, 85, 247, 0.12)",
-  "rgba(236, 72, 153, 0.12)",
+  "#1F4FA3",
+  "#0D9488",
+  "#D97706",
+  "#7C3AED",
+  "#DB2777",
 ];
 
 function extractRecentPoints(rec) {
@@ -57,13 +50,17 @@ const contextKey = computed(() => {
   return "default";
 });
 
+const isSingleZoneMode = computed(
+  () => Boolean(zone.value && (zone.value._id || typeof zone.value === "string"))
+);
+
 const chartDatasets = computed(() => {
   if (!misurazioni.value || misurazioni.value.length === 0) return [];
 
   const availableZones = zones?.value?.length ? zones.value : injectedZones?.value || [];
 
-  // Single-zone view with threshold line and above-threshold point highlighting
-  if (zone.value && (zone.value._id || typeof zone.value === "string")) {
+  // Single-zone view with threshold line and clean breach highlights
+  if (isSingleZoneMode.value) {
     const targetId = String(zone.value._id || zone.value);
     const rec = misurazioni.value.find((m) => String(m.zone) === targetId);
     const pts = extractRecentPoints(rec);
@@ -71,8 +68,9 @@ const chartDatasets = computed(() => {
 
     const threshold = Number(zone.value.threshold);
     const hasThreshold = Number.isFinite(threshold) && threshold > 0;
+    const pointRadii = pts.map((p) => (hasThreshold && p.y > threshold ? 3 : 0));
     const pointColors = pts.map((p) =>
-      hasThreshold && p.y > threshold ? "rgb(239, 68, 68)" : "rgb(59, 130, 246)"
+      hasThreshold && p.y > threshold ? "#B3261E" : "#1F4FA3"
     );
 
     const datasets = [
@@ -80,14 +78,15 @@ const chartDatasets = computed(() => {
         label: zone.value.name || "Densità pedonale",
         data: pts,
         fill: true,
-        backgroundColor: FILL_PALETTE[0],
-        borderColor: PALETTE[0],
+        borderColor: "#1F4FA3",
         borderWidth: 2,
         tension: 0.35,
-        pointRadius: 2,
-        pointHoverRadius: 4.5,
+        pointRadius: pointRadii,
+        pointHoverRadius: 5,
+        pointHitRadius: 12,
         pointBackgroundColor: pointColors,
         pointBorderColor: pointColors,
+        _useAreaGradient: true,
       },
     ];
 
@@ -98,12 +97,13 @@ const chartDatasets = computed(() => {
           { x: pts[0].x, y: threshold },
           { x: pts[pts.length - 1].x, y: threshold },
         ],
-        borderColor: "rgba(239, 68, 68, 0.85)",
+        borderColor: "rgba(179, 38, 30, 0.85)",
         backgroundColor: "transparent",
         borderDash: [5, 4],
         borderWidth: 1.5,
         pointRadius: 0,
         pointHoverRadius: 0,
+        pointHitRadius: 0,
         fill: false,
       });
     }
@@ -131,20 +131,49 @@ const chartDatasets = computed(() => {
         label: matchedZone?.name || `Zona ${idx + 1}`,
         data: pts,
         fill: matchedRecords.length === 1,
-        backgroundColor: matchedRecords.length === 1 ? FILL_PALETTE[idx % FILL_PALETTE.length] : "transparent",
+        backgroundColor: "transparent",
         borderColor: color,
         borderWidth: 2,
         tension: 0.35,
-        pointRadius: 1.5,
-        pointHoverRadius: 4,
+        pointRadius: 0,
+        pointHoverRadius: 4.5,
+        pointHitRadius: 12,
         pointBackgroundColor: color,
         pointBorderColor: color,
+        _useAreaGradient: matchedRecords.length === 1,
       };
     })
     .filter(Boolean);
 });
 
 const hasData = computed(() => chartDatasets.value.length > 0);
+
+const peakDensity = computed(() => {
+  let maxVal = null;
+  chartDatasets.value.forEach((ds) => {
+    if (String(ds.label || "").startsWith("Limite")) return;
+    ds.data.forEach((pt) => {
+      if (maxVal === null || pt.y > maxVal) maxVal = pt.y;
+    });
+  });
+  return maxVal;
+});
+
+const legendItems = computed(() => {
+  if (isSingleZoneMode.value) {
+    const items = [{ label: "Densità", color: "#1F4FA3", dashed: false }];
+    const threshold = Number(zone.value?.threshold);
+    if (Number.isFinite(threshold) && threshold > 0) {
+      items.push({ label: `Limite (${threshold})`, color: "#B3261E", dashed: true });
+    }
+    return items;
+  }
+  return chartDatasets.value.map((ds) => ({
+    label: ds.label,
+    color: ds.borderColor,
+    dashed: false,
+  }));
+});
 
 function renderChart() {
   if (!chartCanvas.value) return;
@@ -158,8 +187,19 @@ function renderChart() {
     return;
   }
 
-  const datasets = chartDatasets.value.map((ds) => ({ ...ds, data: [...ds.data] }));
-  const showLegend = datasets.length > 1;
+  const ctx = chartCanvas.value.getContext("2d");
+  const areaGradient = ctx.createLinearGradient(0, 0, 0, 160);
+  areaGradient.addColorStop(0, "rgba(31, 79, 163, 0.26)");
+  areaGradient.addColorStop(1, "rgba(31, 79, 163, 0.0)");
+
+  const datasets = chartDatasets.value.map((ds) => {
+    const { _useAreaGradient, ...clean } = ds;
+    return {
+      ...clean,
+      backgroundColor: _useAreaGradient ? areaGradient : clean.backgroundColor,
+      data: [...clean.data],
+    };
+  });
 
   if (
     chartInstance &&
@@ -169,7 +209,6 @@ function renderChart() {
     datasets.forEach((ds, i) => {
       Object.assign(chartInstance.data.datasets[i], ds);
     });
-    chartInstance.options.plugins.legend.display = showLegend;
     chartInstance.update("none");
     return;
   }
@@ -179,28 +218,44 @@ function renderChart() {
     chartInstance = null;
   }
 
-  const ctx = chartCanvas.value.getContext("2d");
   chartInstance = new Chart(ctx, {
     type: "line",
     data: { datasets },
     options: {
       responsive: true,
       maintainAspectRatio: false,
+      interaction: {
+        mode: "index",
+        intersect: false,
+      },
       plugins: {
-        legend: {
-          display: showLegend,
-          labels: {
-            boxWidth: 10,
-            boxHeight: 10,
-            usePointStyle: true,
-            color: "#9ca3af",
-            font: { size: 10 },
-          },
-        },
+        legend: { display: false },
         tooltip: {
           enabled: true,
-          mode: "index",
-          intersect: false,
+          backgroundColor: "#1D2633",
+          titleColor: "#E6EAF0",
+          bodyColor: "#FFFFFF",
+          borderColor: "rgba(220, 225, 232, 0.25)",
+          borderWidth: 1,
+          cornerRadius: 8,
+          padding: 10,
+          displayColors: true,
+          boxWidth: 8,
+          boxHeight: 8,
+          usePointStyle: true,
+          titleFont: {
+            family: "'Atkinson Hyperlegible Next', sans-serif",
+            size: 11,
+            weight: "600",
+          },
+          bodyFont: {
+            family: "'Atkinson Hyperlegible Next', sans-serif",
+            size: 12,
+          },
+          filter: (item) => !String(item.dataset.label || "").startsWith("Limite"),
+          callbacks: {
+            label: (ctxItem) => ` ${ctxItem.dataset.label}: ${ctxItem.parsed.y} pedoni`,
+          },
         },
       },
       scales: {
@@ -211,13 +266,23 @@ function renderChart() {
             displayFormats: { hour: "HH:mm" },
             tooltipFormat: "dd/MM HH:mm",
           },
-          grid: { color: "rgba(200, 200, 200, 0.15)" },
-          ticks: { maxTicksLimit: 6, color: "#888", font: { size: 10 } },
+          border: { display: false },
+          grid: { display: false },
+          ticks: {
+            maxTicksLimit: 5,
+            color: "#64748B",
+            font: { family: "'Atkinson Hyperlegible Next', sans-serif", size: 10 },
+          },
         },
         y: {
           beginAtZero: true,
-          grid: { color: "rgba(200, 200, 200, 0.15)" },
-          ticks: { color: "#888", font: { size: 10 } },
+          border: { display: false, dash: [4, 4] },
+          grid: { color: "rgba(148, 163, 184, 0.22)" },
+          ticks: {
+            maxTicksLimit: 5,
+            color: "#64748B",
+            font: { family: "'Atkinson Hyperlegible Next', sans-serif", size: 10 },
+          },
         },
       },
     },
@@ -242,11 +307,34 @@ onUnmounted(() => {
 </script>
 
 <template>
-  <div class="flex flex-col shrink-0 bg-base-200 rounded-box p-4 gap-2 border border-base-300/80">
-    <div class="flex justify-between items-center text-xs font-semibold text-base-content/70">
-      <span>Andamento densità (ultime 24h)</span>
-      <span v-if="hasData" class="badge badge-sm badge-primary text-white">Live</span>
+  <div class="flex flex-col shrink-0 bg-base-200/80 rounded-box p-3.5 sm:p-4 gap-2.5 border border-base-300/80">
+    <div class="flex justify-between items-center gap-2 text-xs">
+      <span class="font-semibold text-base-content/75">Andamento densità · ultime 24h</span>
+      <div v-if="hasData" class="flex items-center gap-2 shrink-0">
+        <span v-if="peakDensity !== null" class="text-base-content/60 tabular-nums">
+          Picco: <strong class="text-base-content">{{ peakDensity }}</strong>
+        </span>
+        <span class="h-5 px-2 rounded-full bg-primary text-white text-[11px] font-semibold leading-none inline-flex items-center justify-center">
+          Live
+        </span>
+      </div>
     </div>
+
+    <!-- Legenda pulita HTML -->
+    <div v-if="hasData && legendItems.length > 0" class="flex flex-wrap items-center gap-x-3 gap-y-1 text-[11px] text-base-content/70 tabular-nums">
+      <span v-for="item in legendItems" :key="item.label" class="inline-flex items-center gap-1.5">
+        <span
+          class="inline-block w-3.5 h-0.5 rounded-full"
+          :style="
+            item.dashed
+              ? { borderTop: `2px dashed ${item.color}`, backgroundColor: 'transparent', height: '0' }
+              : { backgroundColor: item.color }
+          "
+        ></span>
+        <span>{{ item.label }}</span>
+      </span>
+    </div>
+
     <div v-if="hasData" class="relative w-full h-40 min-h-40 shrink-0">
       <canvas ref="chartCanvas"></canvas>
     </div>

@@ -11,17 +11,24 @@ const user = inject("user");
     <div
       class="w-full md:w-1/4 md:h-full bg-base-300 p-3 sm:p-4 md:pt-20 md:p-10 flex flex-row md:flex-col items-center md:items-stretch justify-between gap-2 shrink-0"
     >
-      <ul class="menu menu-horizontal md:menu-vertical flex gap-1 sm:gap-2 p-0">
-        <li>
-          <RouterLink class="min-h-10 touch-manipulation" to="info">Il mio profilo</RouterLink>
-        </li>
-        <li v-if="user?.role === 'admin'">
-          <RouterLink class="min-h-10 touch-manipulation" to="manage">Gestisci utenti</RouterLink>
-        </li>
-      </ul>
+      <nav class="inline-flex md:flex md:flex-col items-center md:items-stretch gap-1 p-1 md:p-0 bg-base-200/70 md:bg-transparent rounded-xl">
+        <RouterLink
+          class="h-10 px-3.5 rounded-lg inline-flex items-center justify-center md:justify-start text-sm font-medium text-base-content/75 hover:text-base-content transition-colors touch-manipulation"
+          to="info"
+        >
+          Il mio profilo
+        </RouterLink>
+        <RouterLink
+          v-if="user?.role === 'admin'"
+          class="h-10 px-3.5 rounded-lg inline-flex items-center justify-center md:justify-start text-sm font-medium text-base-content/75 hover:text-base-content transition-colors touch-manipulation"
+          to="manage"
+        >
+          Gestisci utenti
+        </RouterLink>
+      </nav>
       <button
         type="button"
-        class="btn btn-primary btn-sm md:btn-md text-white md:mt-auto w-fit touch-manipulation shrink-0"
+        class="btn btn-primary h-10 min-h-10 px-4 text-white md:mt-auto w-fit touch-manipulation shrink-0"
         @click="router.push('/')"
       >
         Torna alla mappa
@@ -35,6 +42,6 @@ const user = inject("user");
 
 <style scoped>
 .router-link-active {
-  @apply active;
+  @apply bg-neutral text-neutral-content shadow-sm;
 }
 </style>

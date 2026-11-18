@@ -117,62 +117,73 @@ watch(
         class="flex flex-col [&>*]:shrink-0 gap-4 rounded-box p-4 sm:p-5 bg-base-200 uf-panel-shadow border border-base-300 max-h-[55dvh] md:max-h-[calc(100dvh-7rem)] overflow-y-auto overscroll-contain"
       >
         <!-- Selettore Zone-Allerte -->
-        <ul class="menu menu-horizontal bg-base-100 rounded-xl flex gap-1 w-fit m-auto p-1">
-          <li>
-            <button
-              type="button"
-              class="text-base-content/60 h-auto min-h-10 py-2 px-3.5 touch-manipulation"
-              :class="{ active: inFocus.zones }"
-              @click="changeFocusedList(true, false)"
+        <div
+          class="grid grid-cols-2 gap-1 bg-base-100 rounded-xl p-1 border border-base-300/60 w-full"
+          role="tablist"
+        >
+          <button
+            type="button"
+            role="tab"
+            :aria-selected="inFocus.zones"
+            class="h-9 px-3 rounded-lg inline-flex items-center justify-center gap-1.5 text-sm font-medium transition-colors touch-manipulation"
+            :class="
+              inFocus.zones
+                ? 'bg-neutral text-neutral-content shadow-sm'
+                : 'text-base-content/70 hover:text-base-content'
+            "
+            @click="changeFocusedList(true, false)"
+          >
+            Zone
+          </button>
+          <button
+            type="button"
+            role="tab"
+            :aria-selected="inFocus.alerts"
+            class="h-9 px-3 rounded-lg inline-flex items-center justify-center gap-1.5 text-sm font-medium transition-colors touch-manipulation"
+            :class="
+              inFocus.alerts
+                ? 'bg-neutral text-neutral-content shadow-sm'
+                : 'text-base-content/70 hover:text-base-content'
+            "
+            @click="changeFocusedList(false, true)"
+          >
+            <span>Allerte</span>
+            <span
+              v-if="alertList.length > 0"
+              class="h-5 min-w-[1.25rem] px-1.5 rounded-full bg-error text-white text-xs font-bold leading-none inline-flex items-center justify-center tabular-nums"
             >
-              Zone
-            </button>
-          </li>
-          <li>
-            <button
-              type="button"
-              class="text-base-content/60 h-auto min-h-10 py-2 px-3.5 flex items-center gap-1.5 touch-manipulation"
-              :class="{ active: inFocus.alerts }"
-              @click="changeFocusedList(false, true)"
-            >
-              <span>Allerte</span>
-              <span
-                v-if="alertList.length > 0"
-                class="badge h-auto py-0.5 px-2 badge-error text-white font-bold tabular-nums"
-              >
-                {{ alertList.length }}
-              </span>
-            </button>
-          </li>
-        </ul>
+              {{ alertList.length }}
+            </span>
+          </button>
+        </div>
 
         <!-- Ordinamento rapido zone -->
         <div
           v-if="inFocus.zones && !isLoading && zonesList.length > 0"
           class="flex items-center justify-between gap-2 text-xs"
         >
-          <span class="text-base-content/60">Ordina:</span>
-          <div class="flex gap-1 bg-base-100 rounded-lg p-1">
+          <span class="text-base-content/60 shrink-0">Ordina:</span>
+          <div class="inline-grid grid-cols-3 gap-1 bg-base-100 rounded-lg p-1 border border-base-300/60">
             <button
               type="button"
-              class="btn btn-xs h-auto min-h-8 py-1.5 px-2.5 border-none"
-              :class="sortBy === 'name' ? 'btn-primary text-white' : 'btn-ghost text-base-content/70'"
+              class="h-7 px-2.5 rounded-md text-xs font-medium inline-flex items-center justify-center transition-colors"
+              :class="sortBy === 'name' ? 'bg-primary text-white' : 'text-base-content/70 hover:text-base-content'"
               @click="sortBy = 'name'"
             >
               A-Z
             </button>
             <button
               type="button"
-              class="btn btn-xs h-auto min-h-8 py-1.5 px-2.5 border-none"
-              :class="sortBy === 'density' ? 'btn-primary text-white' : 'btn-ghost text-base-content/70'"
+              class="h-7 px-2.5 rounded-md text-xs font-medium inline-flex items-center justify-center transition-colors whitespace-nowrap"
+              :class="sortBy === 'density' ? 'bg-primary text-white' : 'text-base-content/70 hover:text-base-content'"
               @click="sortBy = 'density'"
             >
               Densità ↓
             </button>
             <button
               type="button"
-              class="btn btn-xs h-auto min-h-8 py-1.5 px-2.5 border-none"
-              :class="sortBy === 'ratio' ? 'btn-primary text-white' : 'btn-ghost text-base-content/70'"
+              class="h-7 px-2.5 rounded-md text-xs font-medium inline-flex items-center justify-center transition-colors whitespace-nowrap"
+              :class="sortBy === 'ratio' ? 'bg-primary text-white' : 'text-base-content/70 hover:text-base-content'"
               @click="sortBy = 'ratio'"
             >
               Criticità %

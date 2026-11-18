@@ -36,45 +36,41 @@ const openAlertsTab = () => {
 </script>
 
 <template>
-  <ul
-    class="menu menu-horizontal bg-base-100/95 backdrop-blur rounded-box gap-1 sm:gap-1.5 p-1.5 uf-panel-shadow border border-base-300 touch-manipulation select-none"
+  <nav
+    class="inline-flex items-center bg-base-100/95 backdrop-blur rounded-box p-1.5 gap-1.5 uf-panel-shadow border border-base-300 touch-manipulation select-none"
     role="navigation"
     aria-label="Sezioni principali"
   >
-    <li v-for="section in sectionsList" :key="section.name">
-      <button
-        type="button"
-        :class="{ active: section.name === model }"
-        class="cursor-pointer h-auto min-h-11 py-2.5 px-4 transition-transform active:scale-95 flex items-center gap-2 font-medium"
-        :aria-current="section.name === model ? 'page' : undefined"
-        @click="setActive(section.name)"
+    <button
+      v-for="section in sectionsList"
+      :key="section.name"
+      type="button"
+      class="h-10 px-4 rounded-lg inline-flex items-center justify-center gap-2 text-sm font-medium cursor-pointer transition-colors active:scale-95"
+      :class="
+        section.name === model
+          ? 'bg-neutral text-neutral-content shadow-sm'
+          : 'text-base-content/75 hover:text-base-content hover:bg-base-200/70'
+      "
+      :aria-current="section.name === model ? 'page' : undefined"
+      @click="setActive(section.name)"
+    >
+      <component :is="section.icon" class="size-4 shrink-0" />
+      <span>{{ section.name }}</span>
+      <span
+        v-if="section.name === 'Zone' && activeAlertsCount > 0"
+        role="button"
+        tabindex="0"
+        class="h-5 min-w-[1.25rem] px-1.5 rounded-full bg-error text-white text-xs font-bold leading-none inline-flex items-center justify-center cursor-pointer hover:scale-110 transition-transform tabular-nums"
+        title="Vai alle allerte attive"
+        :aria-label="`Vai alle ${activeAlertsCount} allerte attive`"
+        @click.stop="openAlertsTab"
+        @keydown.enter.stop="openAlertsTab"
       >
-        <component :is="section.icon" class="size-4 shrink-0" />
-        <span>{{ section.name }}</span>
-        <span
-          v-if="section.name === 'Zone' && activeAlertsCount > 0"
-          role="button"
-          tabindex="0"
-          class="badge h-auto py-0.5 px-2 badge-error text-white font-bold cursor-pointer hover:scale-110 transition-transform tabular-nums"
-          title="Vai alle allerte attive"
-          :aria-label="`Vai alle ${activeAlertsCount} allerte attive`"
-          @click.stop="openAlertsTab"
-          @keydown.enter.stop="openAlertsTab"
-        >
-          {{ activeAlertsCount }}
-        </span>
-      </button>
-    </li>
-  </ul>
+        {{ activeAlertsCount }}
+      </span>
+    </button>
+  </nav>
 </template>
 
 <style scoped>
-button.active {
-  transform: scale(1.06);
-}
-@media (prefers-reduced-motion: reduce) {
-  button.active {
-    transform: none;
-  }
-}
 </style>
